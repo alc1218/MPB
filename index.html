@@ -1,8 +1,12 @@
-  <!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
   <title>MPB</title>
   <style>
+    .table-container {
+      overflow-x: auto;
+    }
+
     table {
       font-family: Arial, sans-serif;
       border-collapse: collapse;
@@ -21,67 +25,79 @@
     tr:nth-child(even) {
       background-color: #f8f8f8;
     }
+
+    @media (max-width: 600px) {
+      table {
+        font-size: 12px;
+      }
+
+      th, td {
+        padding: 4px;
+      }
+    }
   </style>
 </head>
 <body>
-  <table>
-    <thead>
-      <tr>
-        <th>Method</th>
-        <th>Year publication</th>
-        <th>Standard_1_10_5_5000</th>
-        <th>Severity_2</th>
-        <th>Severity_3</th>
-        <th>Severity_4</th>
-        <th>Severity_5</th>
-        <th>Severity_6</th>
-        <th>Peaks_1</th>
-        <th>Peaks_5</th>
-        <th>Peaks_20</th>
-        <th>Peaks_30</th>
-        <th>Peaks_40</th>
-        <th>Peaks_50</th>
-        <th>Peaks_100</th>
-        <th>Peaks_200</th>
-        <th>Dimensions_10</th>
-        <th>Dimensions_20</th>
-        <th>Dimensions_50</th>
-        <th>Dimensions_100</th>
-        <th>Frequencies_500</th>
-        <th>Frequencies_1000</th>
-        <th>Frequencies_2500</th>
-        <th>Frequencies_10000</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>EO</td>
-        <td>2010</td>
-        <td>0.25</td>
-        <td>0.47</td>
-        <td>0.49</td>
-        <td>0.53</td>
-        <td>0.65</td>
-        <td>0.77</td>
-        <td>7.47</td>
-        <td></td>
-        <td>0.40</td>
-        <td>0.49</td>
-        <td>0.56</td>
-        <td>0.59</td>
-        <td>0.66</td>
-        <td></td>
-        <td>2.25</td>
-        <td></td>
-        <td>6.22</td>
-        <td>17.80</td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-      </tr>
-      <!-- Add the remaining rows here -->
-    </tbody>
-  </table>
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Method</th>
+          <th>Year publication</th>
+          <th>Standard_1_10_5_5000</th>
+          <th>Severity_2</th>
+          <th>Severity_3</th>
+          <th>Severity_4</th>
+          <th>Severity_5</th>
+          <th>Severity_6</th>
+          <th>Peaks_1</th>
+          <th>Peaks_5</th>
+          <th>Peaks_20</th>
+          <th>Peaks_30</th>
+          <th>Peaks_40</th>
+          <th>Peaks_50</th>
+          <th>Peaks_100</th>
+          <th>Peaks_200</th>
+          <th>Dimensions_10</th>
+          <th>Dimensions_20</th>
+          <th>Dimensions_50</th>
+          <th>Dimensions_100</th>
+          <th>Frequencies_500</th>
+          <th>Frequencies_1000</th>
+          <th>Frequencies_2500</th>
+          <th>Frequencies_10000</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>EO</td>
+          <td>2010</td>
+          <td>0.25</td>
+          <td>0.47</td>
+          <td>0.49</td>
+          <td>0.53</td>
+          <td>0.65</td>
+          <td>0.77</td>
+          <td>7.47</td>
+          <td></td>
+          <td>0.40</td>
+          <td>0.49</td>
+          <td>0.56</td>
+          <td>0.59</td>
+          <td>0.66</td>
+          <td></td>
+          <td>2.25</td>
+          <td></td>
+          <td>6.22</td>
+          <td>17.80</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <!-- Add the remaining rows here -->
+      </tbody>
+    </table>
+  </div>
 </body>
 </html>
