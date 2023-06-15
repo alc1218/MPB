@@ -39,7 +39,11 @@
     }
 
   .table-separator th {
-    border-bottom: 2px solid black;
+    border-right: 2px solid black;
+  }
+
+  .table-separator th.no-separator {
+    border-right: none;
   }
   </style>
 </head>
@@ -57,31 +61,31 @@
           <th colspan="4">Dimensions</th>
           <th colspan="4">Frequencies</th>
         </tr>
-        <tr>
+        <tr class="table-separator">
           <th>Method</th>
           <th>Year publication</th>
           <th>#Runs</th>
-          <th>1</th>
-          <th>2</th>
-          <th>3</th>
-          <th>4</th>
-          <th>5</th>
+          <th class="no-separator">1</th>
+          <th class="no-separator">2</th>
+          <th class="no-separator">3</th>
+          <th class="no-separator">4</th>
+          <th class="no-separator">5</th>
           <th>6</th>
-          <th>1</th>
-          <th>5</th>
-          <th>20</th>
-          <th>30</th>
-          <th>40</th>
-          <th>50</th>
-          <th>100</th>
+          <th class="no-separator">1</th>
+          <th class="no-separator">5</th>
+          <th class="no-separator">20</th>
+          <th class="no-separator">30</th>
+          <th class="no-separator">40</th>
+          <th class="no-separator">50</th>
+          <th class="no-separator">100</th>
           <th>200</th>
-          <th>10</th>
-          <th>20</th>
-          <th>50</th>
+          <th class="no-separator">10</th>
+          <th class="no-separator">20</th>
+          <th class="no-separator">50</th>
           <th>100</th>
-          <th>500</th>
-          <th>1000</th>
-          <th>2500</th>
+          <th class="no-separator">500</th>
+          <th class="no-separator">1000</th>
+          <th class="no-separator">2500</th>
           <th>10000</th>
         </tr>
       </thead>
