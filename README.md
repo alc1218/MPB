@@ -2,7 +2,7 @@
 
 An interactive reference table of all algorithms benchmarked on the **Moving Peaks Benchmark (MPB) Scenario 2**, with support for filtering, sorting, and exporting results.
 
-🔗 **Live site:** `https://alc1218.github.io/MPB/`
+🔗 **Live site:** [https://alc1218.github.io/MPB/](https://alc1218.github.io/MPB/)
 
 ---
 
