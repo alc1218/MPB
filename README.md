@@ -2,7 +2,7 @@
 
 An interactive reference table of all algorithms benchmarked on the **Moving Peaks Benchmark (MPB) Scenario 2**, with support for filtering, sorting, and exporting results.
 
-🔗 **Live site:** `https://<your-username>.github.io/<your-repo>/`
+🔗 **Live site:** `https://alc1218.github.io/MPB/`
 
 ---
 
@@ -44,7 +44,7 @@ If an entry is missing or incorrect, please contact us at [mpb_benchmark@gmail.c
 1. Fork or clone this repository
 2. Go to **Settings → Pages**
 3. Under *Source*, select `main` branch and `/ (root)` folder
-4. Click **Save** — your site will be live at `https://<your-username>.github.io/<your-repo>/`
+4. Click **Save** — your site will be live at `https://alc1218.github.io/MPB/`
 
 No build step or dependencies are required. The page is fully static.
 
