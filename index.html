@@ -1,980 +1,1297 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>MPB Scenario 2 — Benchmark Results</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
-<style>
-  :root {
-    --bg: #f8f7f4;
-    --surface: #ffffff;
-    --surface2: #f0efe9;
-    --border: #e2e0d8;
-    --text: #1a1917;
-    --text-muted: #6b6860;
-    --text-faint: #9e9c94;
-    --accent: #1d4ed8;
-    --accent-light: #dbeafe;
-    --accent-hover: #1e40af;
-    --teal: #0d9488;
-    --teal-light: #ccfbf1;
-    --orange: #ea580c;
-    --orange-light: #ffedd5;
-    --severity-col: #7c3aed;
-    --peaks-col: #0369a1;
-    --dims-col: #047857;
-    --freq-col: #b45309;
-    --row-hover: #f5f4ef;
-    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
-    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -1px rgba(0,0,0,0.04);
-    --radius: 8px;
-    --font-mono: 'JetBrains Mono', monospace;
-  }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MPB Scenario 2 — Benchmark Results</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f8f7f4;
+      --surface: #ffffff;
+      --surface2: #f0efe9;
+      --border: #e2e0d8;
+      --text: #1a1917;
+      --text-muted: #6b6860;
+      --text-faint: #9e9c94;
+      --accent: #1d4ed8;
+      --accent-light: #dbeafe;
+      --accent-hover: #1e40af;
+      --teal: #0d9488;
+      --teal-light: #ccfbf1;
+      --orange: #ea580c;
+      --orange-light: #ffedd5;
+      --severity-col: #7c3aed;
+      --peaks-col: #0369a1;
+      --dims-col: #047857;
+      --freq-col: #b45309;
+      --row-hover: #f5f4ef;
+      --shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+      --radius: 8px;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
 
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    line-height: 1.6;
-    min-height: 100vh;
-  }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
 
-  /* ── HEADER ── */
-  header {
-    background: var(--text);
-    color: white;
-    padding: 48px 40px 40px;
-    position: relative;
-    overflow: hidden;
-  }
-  header::before {
-    content: '';
-    position: absolute;
-    top: -80px; right: -60px;
-    width: 420px; height: 420px;
-    border-radius: 50%;
-    background: rgba(29,78,216,0.15);
-    pointer-events: none;
-  }
-  header::after {
-    content: '';
-    position: absolute;
-    bottom: -100px; left: 30%;
-    width: 280px; height: 280px;
-    border-radius: 50%;
-    background: rgba(13,148,136,0.12);
-    pointer-events: none;
-  }
-  .header-inner { max-width: 1400px; margin: 0 auto; position: relative; z-index: 1; }
-  .header-tag {
-    display: inline-block;
-    font-family: var(--font-mono);
-    font-size: 10px;
-    letter-spacing: .12em;
-    text-transform: uppercase;
-    color: rgba(255,255,255,0.5);
-    border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 4px;
-    padding: 3px 10px;
-    margin-bottom: 16px;
-  }
-  header h1 {
-    font-family: 'Syne', sans-serif;
-    font-size: clamp(26px, 4vw, 42px);
-    font-weight: 800;
-    letter-spacing: -0.02em;
-    line-height: 1.1;
-    color: white;
-    margin-bottom: 14px;
-  }
-  header h1 span { color: #60a5fa; }
-  header p {
-    font-size: 15px;
-    color: rgba(255,255,255,0.65);
-    max-width: 680px;
-    line-height: 1.7;
-  }
-  .header-contact {
-    margin-top: 20px;
-    font-size: 13px;
-    color: rgba(255,255,255,0.5);
-  }
-  .header-contact a {
-    color: #93c5fd;
-    text-decoration: none;
-    font-family: var(--font-mono);
-    font-size: 12px;
-  }
-  .header-contact a:hover { text-decoration: underline; }
+    /* ── HEADER ── */
+    header {
+      background: var(--text);
+      color: white;
+      padding: 48px 40px 40px;
+      position: relative;
+      overflow: hidden;
+    }
 
-  /* ── MAIN LAYOUT ── */
-  .main-wrap { max-width: 1400px; margin: 0 auto; padding: 32px 24px 60px; }
+    header::before {
+      content: '';
+      position: absolute;
+      top: -80px;
+      right: -60px;
+      width: 420px;
+      height: 420px;
+      border-radius: 50%;
+      background: rgba(29, 78, 216, 0.15);
+      pointer-events: none;
+    }
 
-  /* ── CONTROL PANEL ── */
-  .control-panel {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow-md);
-    margin-bottom: 24px;
-    overflow: hidden;
-  }
-  .panel-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px 20px;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface2);
-  }
-  .panel-title {
-    font-family: 'Syne', sans-serif;
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: .06em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-  }
-  .panel-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-  .panel-body { padding: 20px; display: flex; flex-direction: column; gap: 20px; }
+    header::after {
+      content: '';
+      position: absolute;
+      bottom: -100px;
+      left: 30%;
+      width: 280px;
+      height: 280px;
+      border-radius: 50%;
+      background: rgba(13, 148, 136, 0.12);
+      pointer-events: none;
+    }
 
-  /* ── FILTER ROWS ── */
-  .filter-row { display: flex; flex-direction: column; gap: 8px; }
-  .filter-label {
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: .08em;
-    text-transform: uppercase;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .filter-label .dot {
-    width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
-  }
-  .dot-severity { background: var(--severity-col); }
-  .dot-peaks    { background: var(--peaks-col); }
-  .dot-dims     { background: var(--dims-col); }
-  .dot-freq     { background: var(--freq-col); }
+    .header-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
 
-  .chip-group { display: flex; flex-wrap: wrap; gap: 6px; }
-  .chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 4px 10px;
-    border-radius: 20px;
-    border: 1.5px solid var(--border);
-    background: var(--bg);
-    font-size: 12px;
-    font-family: var(--font-mono);
-    cursor: pointer;
-    transition: all .15s;
-    user-select: none;
-    color: var(--text-muted);
-    white-space: nowrap;
-  }
-  .chip:hover { border-color: currentColor; }
-  .chip input[type=checkbox] { display: none; }
+    .header-tag {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 4px;
+      padding: 3px 10px;
+      margin-bottom: 16px;
+    }
 
-  .chip.severity-chip.on { background: #ede9fe; border-color: var(--severity-col); color: var(--severity-col); }
-  .chip.peaks-chip.on    { background: #e0f2fe; border-color: var(--peaks-col); color: var(--peaks-col); }
-  .chip.dims-chip.on     { background: #d1fae5; border-color: var(--dims-col); color: var(--dims-col); }
-  .chip.freq-chip.on     { background: #fef3c7; border-color: var(--freq-col); color: var(--freq-col); }
+    header h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(26px, 4vw, 42px);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      color: white;
+      margin-bottom: 14px;
+    }
 
-  /* ── YEAR RANGE ── */
-  .year-range-row {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    flex-wrap: wrap;
-  }
-  .year-range-label {
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: .08em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    white-space: nowrap;
-  }
-  .year-inputs { display: flex; align-items: center; gap: 8px; }
-  .year-input {
-    width: 74px;
-    padding: 5px 8px;
-    border: 1.5px solid var(--border);
-    border-radius: 6px;
-    font-family: var(--font-mono);
-    font-size: 13px;
-    background: var(--bg);
-    color: var(--text);
-    outline: none;
-    transition: border-color .15s;
-  }
-  .year-input:focus { border-color: var(--accent); }
-  .year-sep { color: var(--text-muted); font-size: 13px; }
-  .year-range-track {
-    flex: 1; min-width: 160px;
-    height: 4px; background: var(--border);
-    border-radius: 2px; position: relative;
-  }
-  .year-range-fill {
-    position: absolute; height: 100%;
-    background: var(--accent); border-radius: 2px;
-    pointer-events: none;
-  }
+    header h1 span {
+      color: #60a5fa;
+    }
 
-  /* ── BUTTONS ── */
-  .btn {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 7px 14px;
-    border-radius: 6px;
-    border: 1.5px solid transparent;
-    font-size: 12.5px; font-weight: 500;
-    cursor: pointer;
-    transition: all .15s;
-    white-space: nowrap;
-    font-family: 'DM Sans', sans-serif;
-  }
-  .btn-ghost {
-    background: transparent;
-    border-color: var(--border);
-    color: var(--text-muted);
-  }
-  .btn-ghost:hover { border-color: var(--text-muted); color: var(--text); background: var(--bg); }
-  .btn-primary {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: white;
-  }
-  .btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
-  .btn-teal {
-    background: var(--teal);
-    border-color: var(--teal);
-    color: white;
-  }
-  .btn-teal:hover { background: #0f766e; border-color: #0f766e; }
-  .btn svg { flex-shrink: 0; }
+    header p {
+      font-size: 15px;
+      color: rgba(255, 255, 255, 0.65);
+      max-width: 680px;
+      line-height: 1.7;
+    }
 
-  /* ── STATS BAR ── */
-  .stats-bar {
-    display: flex; align-items: center; justify-content: space-between;
-    flex-wrap: wrap; gap: 12px;
-    margin-bottom: 12px;
-    padding: 0 2px;
-  }
-  .stats-info { font-size: 13px; color: var(--text-muted); }
-  .stats-info strong { color: var(--text); }
-  .export-group { display: flex; gap: 8px; }
+    .header-contact {
+      margin-top: 20px;
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.5);
+    }
 
-  /* ── TABLE WRAPPER ── */
-  .table-wrap {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow-md);
-    overflow: auto;
-    max-height: 70vh;
-  }
+    .header-contact a {
+      color: #93c5fd;
+      text-decoration: none;
+      font-family: var(--font-mono);
+      font-size: 12px;
+    }
 
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-  }
+    .header-contact a:hover {
+      text-decoration: underline;
+    }
 
-  thead {
-    position: sticky; top: 0; z-index: 10;
-    background: var(--text);
-    color: white;
-  }
+    /* ── MAIN LAYOUT ── */
+    .main-wrap {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 32px 24px 60px;
+    }
 
-  /* group headers */
-  .th-group {
-    padding: 8px 12px 4px;
-    text-align: center;
-    font-family: 'Syne', sans-serif;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: .1em;
-    text-transform: uppercase;
-    border-bottom: 2px solid rgba(255,255,255,0.1);
-  }
-  .th-group-severity { background: #3b0764; }
-  .th-group-peaks    { background: #0c4a6e; }
-  .th-group-dims     { background: #064e3b; }
-  .th-group-freq     { background: #451a03; }
-  .th-group-fixed    { background: #111; }
+    /* ── CONTROL PANEL ── */
+    .control-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-md);
+      margin-bottom: 24px;
+      overflow: hidden;
+    }
 
-  /* column headers */
-  th {
-    padding: 7px 12px;
-    text-align: left;
-    font-family: var(--font-mono);
-    font-size: 10px;
-    font-weight: 500;
-    letter-spacing: .05em;
-    white-space: nowrap;
-    border-right: 1px solid rgba(255,255,255,0.06);
-    background: #1f1e1b;
-    color: rgba(255,255,255,0.75);
-    cursor: pointer;
-    user-select: none;
-  }
-  th:hover { background: #2d2c28; color: white; }
-  th.sorted-asc::after  { content: ' ↑'; color: #60a5fa; }
-  th.sorted-desc::after { content: ' ↓'; color: #60a5fa; }
-  th.col-fixed { background: #141312; border-right: 2px solid rgba(255,255,255,0.12); }
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface2);
+    }
 
-  /* col colors in header */
-  th.col-severity { background: #2e1065; }
-  th.col-peaks    { background: #082f49; }
-  th.col-dims     { background: #022c22; }
-  th.col-freq     { background: #2c1400; }
+    .panel-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
 
-  /* body */
-  tbody tr { border-bottom: 1px solid var(--border); transition: background .1s; }
-  tbody tr:hover { background: var(--row-hover); }
-  tbody tr:last-child { border-bottom: none; }
+    .panel-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
 
-  td {
-    padding: 9px 12px;
-    border-right: 1px solid var(--border);
-    white-space: nowrap;
-    vertical-align: middle;
-  }
-  td:last-child { border-right: none; }
-  td.col-fixed {
-    background: inherit;
-    position: sticky; left: 0;
-    border-right: 2px solid var(--border);
-    z-index: 2;
-  }
-  tbody tr:hover td.col-fixed { background: var(--row-hover); }
+    .panel-body {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
 
-  .cell-method {
-    font-family: 'Syne', sans-serif;
-    font-weight: 700;
-    font-size: 13px;
-    color: var(--text);
-    min-width: 110px;
-  }
-  .cell-title {
-    color: var(--text-muted);
-    font-size: 12px;
-    max-width: 220px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .cell-title a { color: var(--accent); text-decoration: none; }
-  .cell-title a:hover { text-decoration: underline; }
-  .cell-year, .cell-runs {
-    font-family: var(--font-mono);
-    font-size: 12px;
-    color: var(--text-muted);
-    text-align: center;
-  }
-  .cell-num {
-    font-family: var(--font-mono);
-    font-size: 12px;
-    text-align: right;
-    white-space: nowrap;
-  }
-  .cell-num .val  { color: var(--text); font-weight: 500; }
-  .cell-num .pm   { color: var(--text-faint); font-size: 10px; margin: 0 2px; }
-  .cell-num .std  { color: var(--text-faint); font-size: 11px; }
-  .cell-num.severity .val { color: #6d28d9; }
-  .cell-num.peaks    .val { color: #0369a1; }
-  .cell-num.dims     .val { color: #047857; }
-  .cell-num.freq     .val { color: #b45309; }
-  .cell-empty { color: var(--text-faint); text-align: center; font-size: 11px; font-family: var(--font-mono); }
+    /* ── FILTER ROWS ── */
+    .filter-row {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
 
-  /* ── EMPTY STATE ── */
-  .empty-state {
-    text-align: center; padding: 60px 20px;
-    color: var(--text-faint);
-    font-size: 14px;
-  }
-  .empty-state svg { display: block; margin: 0 auto 12px; opacity: .3; }
+    .filter-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
 
-  /* ── FOOTER ── */
-  footer {
-    text-align: center;
-    padding: 32px 24px;
-    font-size: 12px;
-    color: var(--text-faint);
-    border-top: 1px solid var(--border);
-    margin-top: 40px;
-  }
-  footer a { color: var(--accent); text-decoration: none; }
-  footer a:hover { text-decoration: underline; }
+    .filter-label .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
 
-  /* ── RESPONSIVE ── */
-  @media (max-width: 700px) {
-    header { padding: 32px 20px 28px; }
-    .main-wrap { padding: 20px 16px 40px; }
-    .panel-body { padding: 14px; }
-    .panel-header { flex-direction: column; align-items: flex-start; gap: 10px; }
-  }
+    .dot-severity {
+      background: var(--severity-col);
+    }
 
-  /* scrollbar */
-  .table-wrap::-webkit-scrollbar { width: 6px; height: 6px; }
-  .table-wrap::-webkit-scrollbar-track { background: var(--bg); }
-  .table-wrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-  .table-wrap::-webkit-scrollbar-thumb:hover { background: var(--text-faint); }
+    .dot-peaks {
+      background: var(--peaks-col);
+    }
 
-  /* select-all toggle links */
-  .toggle-link {
-    font-size: 11px; color: var(--accent); cursor: pointer;
-    text-decoration: underline; background: none; border: none;
-    padding: 0; font-family: 'DM Sans', sans-serif;
-  }
-  .toggle-link:hover { color: var(--accent-hover); }
-</style>
+    .dot-dims {
+      background: var(--dims-col);
+    }
+
+    .dot-freq {
+      background: var(--freq-col);
+    }
+
+    .chip-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1.5px solid var(--border);
+      background: var(--bg);
+      font-size: 12px;
+      font-family: var(--font-mono);
+      cursor: pointer;
+      transition: all .15s;
+      user-select: none;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    .chip:hover {
+      border-color: currentColor;
+    }
+
+    .chip input[type=checkbox] {
+      display: none;
+    }
+
+    .chip.severity-chip.on {
+      background: #ede9fe;
+      border-color: var(--severity-col);
+      color: var(--severity-col);
+    }
+
+    .chip.peaks-chip.on {
+      background: #e0f2fe;
+      border-color: var(--peaks-col);
+      color: var(--peaks-col);
+    }
+
+    .chip.dims-chip.on {
+      background: #d1fae5;
+      border-color: var(--dims-col);
+      color: var(--dims-col);
+    }
+
+    .chip.freq-chip.on {
+      background: #fef3c7;
+      border-color: var(--freq-col);
+      color: var(--freq-col);
+    }
+
+    /* ── YEAR RANGE ── */
+    .year-range-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .year-range-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    .year-inputs {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .year-input {
+      width: 74px;
+      padding: 5px 8px;
+      border: 1.5px solid var(--border);
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      background: var(--bg);
+      color: var(--text);
+      outline: none;
+      transition: border-color .15s;
+    }
+
+    .year-input:focus {
+      border-color: var(--accent);
+    }
+
+    .year-sep {
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    .year-range-track {
+      flex: 1;
+      min-width: 160px;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      position: relative;
+    }
+
+    .year-range-fill {
+      position: absolute;
+      height: 100%;
+      background: var(--accent);
+      border-radius: 2px;
+      pointer-events: none;
+    }
+
+    /* ── BUTTONS ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border-radius: 6px;
+      border: 1.5px solid transparent;
+      font-size: 12.5px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all .15s;
+      white-space: nowrap;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      border-color: var(--border);
+      color: var(--text-muted);
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--text-muted);
+      color: var(--text);
+      background: var(--bg);
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-hover);
+      border-color: var(--accent-hover);
+    }
+
+    .btn-teal {
+      background: var(--teal);
+      border-color: var(--teal);
+      color: white;
+    }
+
+    .btn-teal:hover {
+      background: #0f766e;
+      border-color: #0f766e;
+    }
+
+    .btn svg {
+      flex-shrink: 0;
+    }
+
+    /* ── STATS BAR ── */
+    .stats-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 12px;
+      padding: 0 2px;
+    }
+
+    .stats-info {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .stats-info strong {
+      color: var(--text);
+    }
+
+    .export-group {
+      display: flex;
+      gap: 8px;
+    }
+
+    /* ── TABLE WRAPPER ── */
+    .table-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-md);
+      overflow: auto;
+      max-height: 70vh;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    thead {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--text);
+      color: white;
+    }
+
+    /* group headers */
+    .th-group {
+      padding: 8px 12px 4px;
+      text-align: center;
+      font-family: 'Syne', sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .th-group-severity {
+      background: #3b0764;
+    }
+
+    .th-group-peaks {
+      background: #0c4a6e;
+    }
+
+    .th-group-dims {
+      background: #064e3b;
+    }
+
+    .th-group-freq {
+      background: #451a03;
+    }
+
+    .th-group-fixed {
+      background: #111;
+    }
+
+    /* column headers */
+    th {
+      padding: 7px 12px;
+      text-align: left;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: .05em;
+      white-space: nowrap;
+      border-right: 1px solid rgba(255, 255, 255, 0.06);
+      background: #1f1e1b;
+      color: rgba(255, 255, 255, 0.75);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    th:hover {
+      background: #2d2c28;
+      color: white;
+    }
+
+    th.sorted-asc::after {
+      content: ' ↑';
+      color: #60a5fa;
+    }
+
+    th.sorted-desc::after {
+      content: ' ↓';
+      color: #60a5fa;
+    }
+
+    th.col-fixed {
+      background: #141312;
+      border-right: 2px solid rgba(255, 255, 255, 0.12);
+    }
+
+    /* col colors in header */
+    th.col-severity {
+      background: #2e1065;
+    }
+
+    th.col-peaks {
+      background: #082f49;
+    }
+
+    th.col-dims {
+      background: #022c22;
+    }
+
+    th.col-freq {
+      background: #2c1400;
+    }
+
+    /* body */
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background .1s;
+    }
+
+    tbody tr:hover {
+      background: var(--row-hover);
+    }
+
+    tbody tr:last-child {
+      border-bottom: none;
+    }
+
+    td {
+      padding: 9px 12px;
+      border-right: 1px solid var(--border);
+      white-space: nowrap;
+      vertical-align: middle;
+    }
+
+    td:last-child {
+      border-right: none;
+    }
+
+    td.col-fixed {
+      background: inherit;
+      position: sticky;
+      left: 0;
+      border-right: 2px solid var(--border);
+      z-index: 2;
+    }
+
+    tbody tr:hover td.col-fixed {
+      background: var(--row-hover);
+    }
+
+    .cell-method {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--text);
+      min-width: 110px;
+    }
+
+    .cell-title {
+      color: var(--text-muted);
+      font-size: 12px;
+      max-width: 220px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .cell-title a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .cell-title a:hover {
+      text-decoration: underline;
+    }
+
+    .cell-year,
+    .cell-runs {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    .cell-num {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .cell-num .val {
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .cell-num .pm {
+      color: var(--text-faint);
+      font-size: 10px;
+      margin: 0 2px;
+    }
+
+    .cell-num .std {
+      color: var(--text-faint);
+      font-size: 11px;
+    }
+
+    .cell-num.severity .val {
+      color: #6d28d9;
+    }
+
+    .cell-num.peaks .val {
+      color: #0369a1;
+    }
+
+    .cell-num.dims .val {
+      color: #047857;
+    }
+
+    .cell-num.freq .val {
+      color: #b45309;
+    }
+
+    .cell-empty {
+      color: var(--text-faint);
+      text-align: center;
+      font-size: 11px;
+      font-family: var(--font-mono);
+    }
+
+    /* ── EMPTY STATE ── */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-faint);
+      font-size: 14px;
+    }
+
+    .empty-state svg {
+      display: block;
+      margin: 0 auto 12px;
+      opacity: .3;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center;
+      padding: 32px 24px;
+      font-size: 12px;
+      color: var(--text-faint);
+      border-top: 1px solid var(--border);
+      margin-top: 40px;
+    }
+
+    footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 700px) {
+      header {
+        padding: 32px 20px 28px;
+      }
+
+      .main-wrap {
+        padding: 20px 16px 40px;
+      }
+
+      .panel-body {
+        padding: 14px;
+      }
+
+      .panel-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+    }
+
+    /* scrollbar */
+    .table-wrap::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    .table-wrap::-webkit-scrollbar-track {
+      background: var(--bg);
+    }
+
+    .table-wrap::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 3px;
+    }
+
+    .table-wrap::-webkit-scrollbar-thumb:hover {
+      background: var(--text-faint);
+    }
+
+    /* select-all toggle links */
+    .toggle-link {
+      font-size: 11px;
+      color: var(--accent);
+      cursor: pointer;
+      text-decoration: underline;
+      background: none;
+      border: none;
+      padding: 0;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .toggle-link:hover {
+      color: var(--accent-hover);
+    }
+  </style>
 </head>
+
 <body>
 
-<header>
-  <div class="header-inner">
-    <div class="header-tag">Moving Peaks Benchmark · Scenario 2</div>
-    <h1>MPB Benchmark<br/><span>Algorithm Results</span></h1>
-    <p>
-      To our knowledge, a comprehensive collection of all algorithms benchmarked
-      on the <strong style="color:rgba(255,255,255,.85)">Moving Peaks Benchmark Scenario 2</strong>.
-      Results are reported as the offline error (mean ± standard error) across multiple independent runs.
-      If any entry is missing or incorrect, please get in touch.
-    </p>
-    <div class="header-contact">
-      Missing an entry? &nbsp;→&nbsp;
-      <a href="mailto:mpb_benchmark@gmail.com">mpb_benchmark&#64;gmail.com</a>
+  <header>
+    <div class="header-inner">
+      <div class="header-tag">Moving Peaks Benchmark · Scenario 2</div>
+      <h1>MPB Benchmark<br /><span>Algorithm Results</span></h1>
+      <p>
+        To our knowledge, a comprehensive collection of all algorithms benchmarked
+        on the <strong style="color:rgba(255,255,255,.85)">Moving Peaks Benchmark Scenario 2</strong>.
+        Results are reported as the offline error (mean ± standard error) across multiple independent runs.
+        If any entry is missing or incorrect, please get in touch.
+      </p>
+      <div class="header-contact">
+        Missing an entry? &nbsp;→&nbsp;
+        <a href="mailto:mpb.benchmark@gmail.com">mpb.benchmark&#64;gmail.com</a>
+      </div>
     </div>
-  </div>
-</header>
+  </header>
 
-<div class="main-wrap">
+  <div class="main-wrap">
 
-  <!-- CONTROL PANEL -->
-  <div class="control-panel">
-    <div class="panel-header">
-      <span class="panel-title">Filters &amp; Display</span>
-      <div class="panel-actions">
-        <button class="btn btn-ghost" onclick="resetFilters()">
-          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2.5 8A5.5 5.5 0 1 0 8 2.5"/><polyline points="2.5,2.5 2.5,8 8,8"/></svg>
-          Reset All
+    <!-- CONTROL PANEL -->
+    <div class="control-panel">
+      <div class="panel-header">
+        <span class="panel-title">Filters &amp; Display</span>
+        <div class="panel-actions">
+          <button class="btn btn-ghost" onclick="resetFilters()">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M2.5 8A5.5 5.5 0 1 0 8 2.5" />
+              <polyline points="2.5,2.5 2.5,8 8,8" />
+            </svg>
+            Reset All
+          </button>
+        </div>
+      </div>
+      <div class="panel-body">
+
+        <!-- SEVERITY -->
+        <div class="filter-row">
+          <div class="filter-label">
+            <span class="dot dot-severity"></span>
+            Severity
+            <button class="toggle-link" onclick="toggleAll('severity', true)">all</button>/
+            <button class="toggle-link" onclick="toggleAll('severity', false)">none</button>
+          </div>
+          <div class="chip-group" id="chips-severity"></div>
+        </div>
+
+        <!-- PEAKS -->
+        <div class="filter-row">
+          <div class="filter-label">
+            <span class="dot dot-peaks"></span>
+            Peaks
+            <button class="toggle-link" onclick="toggleAll('peaks', true)">all</button>/
+            <button class="toggle-link" onclick="toggleAll('peaks', false)">none</button>
+          </div>
+          <div class="chip-group" id="chips-peaks"></div>
+        </div>
+
+        <!-- DIMENSIONS -->
+        <div class="filter-row">
+          <div class="filter-label">
+            <span class="dot dot-dims"></span>
+            Dimensions
+            <button class="toggle-link" onclick="toggleAll('dims', true)">all</button>/
+            <button class="toggle-link" onclick="toggleAll('dims', false)">none</button>
+          </div>
+          <div class="chip-group" id="chips-dims"></div>
+        </div>
+
+        <!-- FREQUENCIES -->
+        <div class="filter-row">
+          <div class="filter-label">
+            <span class="dot dot-freq"></span>
+            Frequencies
+            <button class="toggle-link" onclick="toggleAll('freq', true)">all</button>/
+            <button class="toggle-link" onclick="toggleAll('freq', false)">none</button>
+          </div>
+          <div class="chip-group" id="chips-freq"></div>
+        </div>
+
+        <!-- YEAR RANGE -->
+        <div class="year-range-row">
+          <span class="year-range-label">Year Range</span>
+          <div class="year-inputs">
+            <input type="number" class="year-input" id="yearFrom" placeholder="2006" min="2006" max="2025" />
+            <span class="year-sep">–</span>
+            <input type="number" class="year-input" id="yearTo" placeholder="2025" min="2006" max="2025" />
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- STATS + EXPORT -->
+    <div class="stats-bar">
+      <div class="stats-info" id="stats-info">Loading…</div>
+      <div class="export-group">
+        <button class="btn btn-ghost" onclick="exportCSV()">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M2 14h12M8 2v8M4 7l4 4 4-4" />
+          </svg>
+          Export CSV
+        </button>
+        <button class="btn btn-teal" onclick="exportLaTeX()">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="2" width="12" height="12" rx="1" />
+            <path d="M5 8h6M5 5h6M5 11h4" />
+          </svg>
+          Export LaTeX
         </button>
       </div>
     </div>
-    <div class="panel-body">
 
-      <!-- SEVERITY -->
-      <div class="filter-row">
-        <div class="filter-label">
-          <span class="dot dot-severity"></span>
-          Severity
-          <button class="toggle-link" onclick="toggleAll('severity', true)">all</button>/
-          <button class="toggle-link" onclick="toggleAll('severity', false)">none</button>
-        </div>
-        <div class="chip-group" id="chips-severity"></div>
-      </div>
-
-      <!-- PEAKS -->
-      <div class="filter-row">
-        <div class="filter-label">
-          <span class="dot dot-peaks"></span>
-          Peaks
-          <button class="toggle-link" onclick="toggleAll('peaks', true)">all</button>/
-          <button class="toggle-link" onclick="toggleAll('peaks', false)">none</button>
-        </div>
-        <div class="chip-group" id="chips-peaks"></div>
-      </div>
-
-      <!-- DIMENSIONS -->
-      <div class="filter-row">
-        <div class="filter-label">
-          <span class="dot dot-dims"></span>
-          Dimensions
-          <button class="toggle-link" onclick="toggleAll('dims', true)">all</button>/
-          <button class="toggle-link" onclick="toggleAll('dims', false)">none</button>
-        </div>
-        <div class="chip-group" id="chips-dims"></div>
-      </div>
-
-      <!-- FREQUENCIES -->
-      <div class="filter-row">
-        <div class="filter-label">
-          <span class="dot dot-freq"></span>
-          Frequencies
-          <button class="toggle-link" onclick="toggleAll('freq', true)">all</button>/
-          <button class="toggle-link" onclick="toggleAll('freq', false)">none</button>
-        </div>
-        <div class="chip-group" id="chips-freq"></div>
-      </div>
-
-      <!-- YEAR RANGE -->
-      <div class="year-range-row">
-        <span class="year-range-label">Year Range</span>
-        <div class="year-inputs">
-          <input type="number" class="year-input" id="yearFrom" placeholder="2006" min="2006" max="2025"/>
-          <span class="year-sep">–</span>
-          <input type="number" class="year-input" id="yearTo" placeholder="2025" min="2006" max="2025"/>
-        </div>
-      </div>
-
+    <!-- TABLE -->
+    <div class="table-wrap">
+      <table id="results-table">
+        <thead id="table-head"></thead>
+        <tbody id="table-body"></tbody>
+      </table>
     </div>
+
   </div>
 
-  <!-- STATS + EXPORT -->
-  <div class="stats-bar">
-    <div class="stats-info" id="stats-info">Loading…</div>
-    <div class="export-group">
-      <button class="btn btn-ghost" onclick="exportCSV()">
-        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 14h12M8 2v8M4 7l4 4 4-4"/></svg>
-        Export CSV
-      </button>
-      <button class="btn btn-teal" onclick="exportLaTeX()">
-        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="12" height="12" rx="1"/><path d="M5 8h6M5 5h6M5 11h4"/></svg>
-        Export LaTeX
-      </button>
-    </div>
-  </div>
+  <footer>
+    <p>Moving Peaks Benchmark · Scenario 2 · Algorithm Comparison Table</p>
+    <p style="margin-top:6px">To report a missing entry or correction: <a
+        href="mailto:mpb.benchmark@gmail.com">mpb.benchmark&#64;gmail.com</a></p>
+  </footer>
 
-  <!-- TABLE -->
-  <div class="table-wrap">
-    <table id="results-table">
-      <thead id="table-head"></thead>
-      <tbody id="table-body"></tbody>
-    </table>
-  </div>
+  <script src="data.js"></script>
+  <script>
+    // ─────────────────────────────────────────────
+    // DATA (loaded from data.js as base64)
+    // ─────────────────────────────────────────────
 
-</div>
+    // ─────────────────────────────────────────────
+    // COLUMN DEFINITIONS
+    // ─────────────────────────────────────────────
+    const COLUMN_GROUPS = [
+      {
+        id: 'severity', label: 'Severity', cls: 'severity',
+        cols: [
+          { id: 's0', label: 'Sev. 0', valKey: 'Severity_0', stdKey: 'STD_Error_Standard_0' },
+          { id: 's1', label: 'Sev. 1', valKey: 'Standard_1_10_5_5000', stdKey: 'STD_Error_Standard_1' },
+          { id: 's2', label: 'Sev. 2', valKey: 'Severity_2', stdKey: 'STD_Error_Standard_2' },
+          { id: 's3', label: 'Sev. 3', valKey: 'Severity_3', stdKey: 'STD_Error_Standard_3' },
+          { id: 's4', label: 'Sev. 4', valKey: 'Severity_4', stdKey: 'STD_Error_Standard_4' },
+          { id: 's5', label: 'Sev. 5', valKey: 'Severity_5', stdKey: 'STD_Error_Standard_5' },
+          { id: 's6', label: 'Sev. 6', valKey: 'Severity_6', stdKey: 'STD_Error_Standard_6' },
+        ]
+      },
+      {
+        id: 'peaks', label: 'Peaks', cls: 'peaks',
+        cols: [
+          { id: 'p1', label: 'P=1', valKey: 'Peaks_1', stdKey: 'STD_Error_Peaks_1' },
+          { id: 'p5', label: 'P=5', valKey: 'Peaks_5', stdKey: 'STD_Error_Peaks_5' },
+          { id: 'p20', label: 'P=20', valKey: 'Peaks_20', stdKey: 'STD_Error_Peaks_20' },
+          { id: 'p30', label: 'P=30', valKey: 'Peaks_30', stdKey: 'STD_Error_Peaks_30' },
+          { id: 'p40', label: 'P=40', valKey: 'Peaks_40', stdKey: 'STD_Error_Peaks_40' },
+          { id: 'p50', label: 'P=50', valKey: 'Peaks_50', stdKey: 'STD_Error_Peaks_50' },
+          { id: 'p100', label: 'P=100', valKey: 'Peaks_100', stdKey: 'STD_Error_Peaks_100' },
+          { id: 'p200', label: 'P=200', valKey: 'Peaks_200', stdKey: 'STD_Error_Peaks_200' },
+        ]
+      },
+      {
+        id: 'dims', label: 'Dimensions', cls: 'dims',
+        cols: [
+          { id: 'd10', label: 'D=10', valKey: 'Dimensions_10', stdKey: 'STD_Error_Dimensions_10' },
+          { id: 'd20', label: 'D=20', valKey: 'Dimensions_20', stdKey: 'STD_Error_Dimensions_20' },
+          { id: 'd50', label: 'D=50', valKey: 'Dimensions_50', stdKey: 'STD_Error_Dimensions_50' },
+          { id: 'd100', label: 'D=100', valKey: 'Dimensions_100', stdKey: 'STD_Error_Dimensions_100' },
+        ]
+      },
+      {
+        id: 'freq', label: 'Frequencies', cls: 'freq',
+        cols: [
+          { id: 'f500', label: 'f=500', valKey: 'Frequencies_500', stdKey: 'STD_Error_Frequencies_500' },
+          { id: 'f1000', label: 'f=1000', valKey: 'Frequencies_1000', stdKey: 'STD_Error_Frequencies_1000' },
+          { id: 'f2000', label: 'f=2000', valKey: 'Frequencies_2000', stdKey: 'STD_Error_Frequencies_2000' },
+          { id: 'f2500', label: 'f=2500', valKey: 'Frequencies_2500', stdKey: 'STD_Error_Frequencies_2500' },
+          { id: 'f3000', label: 'f=3000', valKey: 'Frequencies_3000', stdKey: 'STD_Error_Frequencies_3000' },
+          { id: 'f10000', label: 'f=10000', valKey: 'Frequencies_10000', stdKey: 'STD_Error_Frequencies_10000' },
+        ]
+      },
+    ];
 
-<footer>
-  <p>Moving Peaks Benchmark · Scenario 2 · Algorithm Comparison Table</p>
-  <p style="margin-top:6px">To report a missing entry or correction: <a href="mailto:mpb_benchmark@gmail.com">mpb_benchmark&#64;gmail.com</a></p>
-</footer>
+    // ─────────────────────────────────────────────
+    // PARSE CSV
+    // ─────────────────────────────────────────────
+    function parseCSV(raw) {
+      const lines = raw.trim().split('\n').map(l => l.replace(/\r/g, ''));
+      const headers = lines[0].split(';');
+      return lines.slice(1).map(line => {
+        const vals = line.split(';');
+        const obj = {};
+        headers.forEach((h, i) => { obj[h.trim()] = (vals[i] || '').trim(); });
+        return obj;
+      });
+    }
 
-<script src="data.js"></script>
-<script>
-// ─────────────────────────────────────────────
-// DATA (loaded from data.js as base64)
-// ─────────────────────────────────────────────
+    const ALL_DATA = parseCSV(new TextDecoder().decode(Uint8Array.from(atob(window._D), c => c.charCodeAt(0))));
 
-// ─────────────────────────────────────────────
-// COLUMN DEFINITIONS
-// ─────────────────────────────────────────────
-const COLUMN_GROUPS = [
-  {
-    id: 'severity', label: 'Severity', cls: 'severity',
-    cols: [
-      { id: 's0', label: 'Sev. 0',  valKey: 'Severity_0',           stdKey: 'STD_Error_Standard_0' },
-      { id: 's1', label: 'Sev. 1',  valKey: 'Standard_1_10_5_5000', stdKey: 'STD_Error_Standard_1' },
-      { id: 's2', label: 'Sev. 2',  valKey: 'Severity_2',           stdKey: 'STD_Error_Standard_2' },
-      { id: 's3', label: 'Sev. 3',  valKey: 'Severity_3',           stdKey: 'STD_Error_Standard_3' },
-      { id: 's4', label: 'Sev. 4',  valKey: 'Severity_4',           stdKey: 'STD_Error_Standard_4' },
-      { id: 's5', label: 'Sev. 5',  valKey: 'Severity_5',           stdKey: 'STD_Error_Standard_5' },
-      { id: 's6', label: 'Sev. 6',  valKey: 'Severity_6',           stdKey: 'STD_Error_Standard_6' },
-    ]
-  },
-  {
-    id: 'peaks', label: 'Peaks', cls: 'peaks',
-    cols: [
-      { id: 'p1',   label: 'P=1',   valKey: 'Peaks_1',   stdKey: 'STD_Error_Peaks_1' },
-      { id: 'p5',   label: 'P=5',   valKey: 'Peaks_5',   stdKey: 'STD_Error_Peaks_5' },
-      { id: 'p20',  label: 'P=20',  valKey: 'Peaks_20',  stdKey: 'STD_Error_Peaks_20' },
-      { id: 'p30',  label: 'P=30',  valKey: 'Peaks_30',  stdKey: 'STD_Error_Peaks_30' },
-      { id: 'p40',  label: 'P=40',  valKey: 'Peaks_40',  stdKey: 'STD_Error_Peaks_40' },
-      { id: 'p50',  label: 'P=50',  valKey: 'Peaks_50',  stdKey: 'STD_Error_Peaks_50' },
-      { id: 'p100', label: 'P=100', valKey: 'Peaks_100', stdKey: 'STD_Error_Peaks_100' },
-      { id: 'p200', label: 'P=200', valKey: 'Peaks_200', stdKey: 'STD_Error_Peaks_200' },
-    ]
-  },
-  {
-    id: 'dims', label: 'Dimensions', cls: 'dims',
-    cols: [
-      { id: 'd10',  label: 'D=10',  valKey: 'Dimensions_10',  stdKey: 'STD_Error_Dimensions_10' },
-      { id: 'd20',  label: 'D=20',  valKey: 'Dimensions_20',  stdKey: 'STD_Error_Dimensions_20' },
-      { id: 'd50',  label: 'D=50',  valKey: 'Dimensions_50',  stdKey: 'STD_Error_Dimensions_50' },
-      { id: 'd100', label: 'D=100', valKey: 'Dimensions_100', stdKey: 'STD_Error_Dimensions_100' },
-    ]
-  },
-  {
-    id: 'freq', label: 'Frequencies', cls: 'freq',
-    cols: [
-      { id: 'f500',   label: 'f=500',   valKey: 'Frequencies_500',   stdKey: 'STD_Error_Frequencies_500' },
-      { id: 'f1000',  label: 'f=1000',  valKey: 'Frequencies_1000',  stdKey: 'STD_Error_Frequencies_1000' },
-      { id: 'f2000',  label: 'f=2000',  valKey: 'Frequencies_2000',  stdKey: 'STD_Error_Frequencies_2000' },
-      { id: 'f2500',  label: 'f=2500',  valKey: 'Frequencies_2500',  stdKey: 'STD_Error_Frequencies_2500' },
-      { id: 'f3000',  label: 'f=3000',  valKey: 'Frequencies_3000',  stdKey: 'STD_Error_Frequencies_3000' },
-      { id: 'f10000', label: 'f=10000', valKey: 'Frequencies_10000', stdKey: 'STD_Error_Frequencies_10000' },
-    ]
-  },
-];
+    // ─────────────────────────────────────────────
+    // STATE
+    // ─────────────────────────────────────────────
+    const state = {
+      activeIds: new Set(),
+      yearFrom: null,
+      yearTo: null,
+      sortCol: null,
+      sortDir: 'asc',
+    };
 
-// ─────────────────────────────────────────────
-// PARSE CSV
-// ─────────────────────────────────────────────
-function parseCSV(raw) {
-  const lines = raw.trim().split('\n').map(l => l.replace(/\r/g, ''));
-  const headers = lines[0].split(';');
-  return lines.slice(1).map(line => {
-    const vals = line.split(';');
-    const obj = {};
-    headers.forEach((h, i) => { obj[h.trim()] = (vals[i] || '').trim(); });
-    return obj;
-  });
-}
+    // Initialize all checkboxes ON
+    COLUMN_GROUPS.forEach(g => g.cols.forEach(c => state.activeIds.add(c.id)));
 
-const ALL_DATA = parseCSV(new TextDecoder().decode(Uint8Array.from(atob(window._D),c=>c.charCodeAt(0))));
+    // ─────────────────────────────────────────────
+    // YEAR BOUNDS
+    // ─────────────────────────────────────────────
+    const years = ALL_DATA.map(r => parseInt(r['Year publication'])).filter(y => !isNaN(y));
+    const MIN_YEAR = Math.min(...years);
+    const MAX_YEAR = Math.max(...years);
 
-// ─────────────────────────────────────────────
-// STATE
-// ─────────────────────────────────────────────
-const state = {
-  activeIds: new Set(),
-  yearFrom: null,
-  yearTo: null,
-  sortCol: null,
-  sortDir: 'asc',
-};
+    // ─────────────────────────────────────────────
+    // BUILD CHIPS
+    // ─────────────────────────────────────────────
+    function buildChips() {
+      COLUMN_GROUPS.forEach(g => {
+        const container = document.getElementById(`chips-${g.id}`);
+        container.innerHTML = '';
+        g.cols.forEach(col => {
+          const chip = document.createElement('label');
+          chip.className = `chip ${g.id}-chip on`;
+          chip.dataset.id = col.id;
+          chip.innerHTML = `<input type="checkbox" checked/>${col.label}`;
+          chip.addEventListener('click', (e) => {
+            e.preventDefault();
+            const on = state.activeIds.has(col.id);
+            if (on) { state.activeIds.delete(col.id); chip.classList.remove('on'); }
+            else { state.activeIds.add(col.id); chip.classList.add('on'); }
+            render();
+          });
+          container.appendChild(chip);
+        });
+      });
+    }
 
-// Initialize all checkboxes ON
-COLUMN_GROUPS.forEach(g => g.cols.forEach(c => state.activeIds.add(c.id)));
+    function toggleAll(groupId, on) {
+      const g = COLUMN_GROUPS.find(x => x.id === groupId);
+      if (!g) return;
+      g.cols.forEach(col => {
+        if (on) state.activeIds.add(col.id);
+        else state.activeIds.delete(col.id);
+      });
+      document.querySelectorAll(`#chips-${groupId} .chip`).forEach(chip => {
+        chip.classList.toggle('on', on);
+      });
+      render();
+    }
 
-// ─────────────────────────────────────────────
-// YEAR BOUNDS
-// ─────────────────────────────────────────────
-const years = ALL_DATA.map(r => parseInt(r['Year publication'])).filter(y => !isNaN(y));
-const MIN_YEAR = Math.min(...years);
-const MAX_YEAR = Math.max(...years);
-
-// ─────────────────────────────────────────────
-// BUILD CHIPS
-// ─────────────────────────────────────────────
-function buildChips() {
-  COLUMN_GROUPS.forEach(g => {
-    const container = document.getElementById(`chips-${g.id}`);
-    container.innerHTML = '';
-    g.cols.forEach(col => {
-      const chip = document.createElement('label');
-      chip.className = `chip ${g.id}-chip on`;
-      chip.dataset.id = col.id;
-      chip.innerHTML = `<input type="checkbox" checked/>${col.label}`;
-      chip.addEventListener('click', (e) => {
-        e.preventDefault();
-        const on = state.activeIds.has(col.id);
-        if (on) { state.activeIds.delete(col.id); chip.classList.remove('on'); }
-        else { state.activeIds.add(col.id); chip.classList.add('on'); }
+    // ─────────────────────────────────────────────
+    // YEAR RANGE
+    // ─────────────────────────────────────────────
+    function initYearRange() {
+      const fromEl = document.getElementById('yearFrom');
+      const toEl = document.getElementById('yearTo');
+      fromEl.value = MIN_YEAR;
+      toEl.value = MAX_YEAR;
+      fromEl.min = MIN_YEAR; fromEl.max = MAX_YEAR;
+      toEl.min = MIN_YEAR; toEl.max = MAX_YEAR;
+      state.yearFrom = MIN_YEAR;
+      state.yearTo = MAX_YEAR;
+      fromEl.addEventListener('input', () => {
+        state.yearFrom = parseInt(fromEl.value) || MIN_YEAR;
         render();
       });
-      container.appendChild(chip);
-    });
-  });
-}
-
-function toggleAll(groupId, on) {
-  const g = COLUMN_GROUPS.find(x => x.id === groupId);
-  if (!g) return;
-  g.cols.forEach(col => {
-    if (on) state.activeIds.add(col.id);
-    else state.activeIds.delete(col.id);
-  });
-  document.querySelectorAll(`#chips-${groupId} .chip`).forEach(chip => {
-    chip.classList.toggle('on', on);
-  });
-  render();
-}
-
-// ─────────────────────────────────────────────
-// YEAR RANGE
-// ─────────────────────────────────────────────
-function initYearRange() {
-  const fromEl = document.getElementById('yearFrom');
-  const toEl   = document.getElementById('yearTo');
-  fromEl.value = MIN_YEAR;
-  toEl.value   = MAX_YEAR;
-  fromEl.min = MIN_YEAR; fromEl.max = MAX_YEAR;
-  toEl.min   = MIN_YEAR; toEl.max   = MAX_YEAR;
-  state.yearFrom = MIN_YEAR;
-  state.yearTo   = MAX_YEAR;
-  fromEl.addEventListener('input', () => {
-    state.yearFrom = parseInt(fromEl.value) || MIN_YEAR;
-    render();
-  });
-  toEl.addEventListener('input', () => {
-    state.yearTo = parseInt(toEl.value) || MAX_YEAR;
-    render();
-  });
-}
-
-// ─────────────────────────────────────────────
-// GET ACTIVE COLS
-// ─────────────────────────────────────────────
-function getActiveCols() {
-  const cols = [];
-  COLUMN_GROUPS.forEach(g => {
-    g.cols.forEach(c => {
-      if (state.activeIds.has(c.id)) cols.push({ ...c, groupId: g.id, groupCls: g.cls });
-    });
-  });
-  return cols;
-}
-
-// ─────────────────────────────────────────────
-// FILTER DATA
-// ─────────────────────────────────────────────
-function getFilteredData() {
-  return ALL_DATA.filter(row => {
-    const y = parseInt(row['Year publication']);
-    if (!isNaN(y)) {
-      if (state.yearFrom && y < state.yearFrom) return false;
-      if (state.yearTo   && y > state.yearTo)   return false;
+      toEl.addEventListener('input', () => {
+        state.yearTo = parseInt(toEl.value) || MAX_YEAR;
+        render();
+      });
     }
-    return true;
-  });
-}
 
-// ─────────────────────────────────────────────
-// SORTING
-// ─────────────────────────────────────────────
-function sortData(data) {
-  if (!state.sortCol) return data;
-  return [...data].sort((a, b) => {
-    let va = a[state.sortCol], vb = b[state.sortCol];
-    const na = parseFloat(va), nb = parseFloat(vb);
-    if (!isNaN(na) && !isNaN(nb)) { va = na; vb = nb; }
-    if (va < vb) return state.sortDir === 'asc' ? -1 : 1;
-    if (va > vb) return state.sortDir === 'asc' ? 1 : -1;
-    return 0;
-  });
-}
-
-function handleSort(colKey) {
-  if (state.sortCol === colKey) {
-    state.sortDir = state.sortDir === 'asc' ? 'desc' : 'asc';
-  } else {
-    state.sortCol = colKey;
-    state.sortDir = 'asc';
-  }
-  render();
-}
-
-// ─────────────────────────────────────────────
-// RENDER TABLE HEADER
-// ─────────────────────────────────────────────
-function renderHeader(activeCols) {
-  const thead = document.getElementById('table-head');
-
-  // Group row
-  let gRow = '<tr>';
-  gRow += '<th class="th-group th-group-fixed" colspan="4">Algorithm</th>';
-
-  // Group spans
-  const groupSpans = {};
-  activeCols.forEach(c => { groupSpans[c.groupId] = (groupSpans[c.groupId] || 0) + 1; });
-  COLUMN_GROUPS.forEach(g => {
-    if (groupSpans[g.id]) {
-      gRow += `<th class="th-group th-group-${g.id}" colspan="${groupSpans[g.id]}">${g.label}</th>`;
+    // ─────────────────────────────────────────────
+    // GET ACTIVE COLS
+    // ─────────────────────────────────────────────
+    function getActiveCols() {
+      const cols = [];
+      COLUMN_GROUPS.forEach(g => {
+        g.cols.forEach(c => {
+          if (state.activeIds.has(c.id)) cols.push({ ...c, groupId: g.id, groupCls: g.cls });
+        });
+      });
+      return cols;
     }
-  });
-  gRow += '</tr>';
 
-  // Column row
-  let cRow = '<tr>';
-  const fixedCols = [
-    { key: 'Method', label: 'Method' },
-    { key: 'Paper title', label: 'Paper Title' },
-    { key: 'Year publication', label: 'Year' },
-    { key: 'Runs', label: 'Runs' },
-  ];
-  fixedCols.forEach(fc => {
-    const sorted = state.sortCol === fc.key;
-    const cls = sorted ? (state.sortDir === 'asc' ? 'sorted-asc' : 'sorted-desc') : '';
-    cRow += `<th class="col-fixed ${cls}" onclick="handleSort('${fc.key}')">${fc.label}</th>`;
-  });
-  activeCols.forEach(c => {
-    const sorted = state.sortCol === c.valKey;
-    const cls = `col-${c.groupCls} ${sorted ? (state.sortDir === 'asc' ? 'sorted-asc' : 'sorted-desc') : ''}`;
-    cRow += `<th class="${cls}" onclick="handleSort('${c.valKey}')">${c.label}</th>`;
-  });
-  cRow += '</tr>';
+    // ─────────────────────────────────────────────
+    // FILTER DATA
+    // ─────────────────────────────────────────────
+    function getFilteredData() {
+      return ALL_DATA.filter(row => {
+        const y = parseInt(row['Year publication']);
+        if (!isNaN(y)) {
+          if (state.yearFrom && y < state.yearFrom) return false;
+          if (state.yearTo && y > state.yearTo) return false;
+        }
+        return true;
+      });
+    }
 
-  thead.innerHTML = gRow + cRow;
-}
+    // ─────────────────────────────────────────────
+    // SORTING
+    // ─────────────────────────────────────────────
+    function sortData(data) {
+      if (!state.sortCol) return data;
+      return [...data].sort((a, b) => {
+        let va = a[state.sortCol], vb = b[state.sortCol];
+        const na = parseFloat(va), nb = parseFloat(vb);
+        if (!isNaN(na) && !isNaN(nb)) { va = na; vb = nb; }
+        if (va < vb) return state.sortDir === 'asc' ? -1 : 1;
+        if (va > vb) return state.sortDir === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
 
-// ─────────────────────────────────────────────
-// FORMAT CELL
-// ─────────────────────────────────────────────
-function fmtNum(val, std, cls) {
-  const v = val.trim();
-  const s = std.trim();
-  if (!v) return `<td class="cell-empty">—</td>`;
-  const vn = parseFloat(v);
-  const sn = parseFloat(s);
-  const vStr = isNaN(vn) ? v : vn.toFixed(2);
-  const sStr = (!s || isNaN(sn)) ? '' : sn.toFixed(2);
-  return `<td class="cell-num ${cls}">
+    function handleSort(colKey) {
+      if (state.sortCol === colKey) {
+        state.sortDir = state.sortDir === 'asc' ? 'desc' : 'asc';
+      } else {
+        state.sortCol = colKey;
+        state.sortDir = 'asc';
+      }
+      render();
+    }
+
+    // ─────────────────────────────────────────────
+    // RENDER TABLE HEADER
+    // ─────────────────────────────────────────────
+    function renderHeader(activeCols) {
+      const thead = document.getElementById('table-head');
+
+      // Group row
+      let gRow = '<tr>';
+      gRow += '<th class="th-group th-group-fixed" colspan="4">Algorithm</th>';
+
+      // Group spans
+      const groupSpans = {};
+      activeCols.forEach(c => { groupSpans[c.groupId] = (groupSpans[c.groupId] || 0) + 1; });
+      COLUMN_GROUPS.forEach(g => {
+        if (groupSpans[g.id]) {
+          gRow += `<th class="th-group th-group-${g.id}" colspan="${groupSpans[g.id]}">${g.label}</th>`;
+        }
+      });
+      gRow += '</tr>';
+
+      // Column row
+      let cRow = '<tr>';
+      const fixedCols = [
+        { key: 'Method', label: 'Method' },
+        { key: 'Paper title', label: 'Paper Title' },
+        { key: 'Year publication', label: 'Year' },
+        { key: 'Runs', label: 'Runs' },
+      ];
+      fixedCols.forEach(fc => {
+        const sorted = state.sortCol === fc.key;
+        const cls = sorted ? (state.sortDir === 'asc' ? 'sorted-asc' : 'sorted-desc') : '';
+        cRow += `<th class="col-fixed ${cls}" onclick="handleSort('${fc.key}')">${fc.label}</th>`;
+      });
+      activeCols.forEach(c => {
+        const sorted = state.sortCol === c.valKey;
+        const cls = `col-${c.groupCls} ${sorted ? (state.sortDir === 'asc' ? 'sorted-asc' : 'sorted-desc') : ''}`;
+        cRow += `<th class="${cls}" onclick="handleSort('${c.valKey}')">${c.label}</th>`;
+      });
+      cRow += '</tr>';
+
+      thead.innerHTML = gRow + cRow;
+    }
+
+    // ─────────────────────────────────────────────
+    // FORMAT CELL
+    // ─────────────────────────────────────────────
+    function fmtNum(val, std, cls) {
+      const v = val.trim();
+      const s = std.trim();
+      if (!v) return `<td class="cell-empty">—</td>`;
+      const vn = parseFloat(v);
+      const sn = parseFloat(s);
+      const vStr = isNaN(vn) ? v : vn.toFixed(2);
+      const sStr = (!s || isNaN(sn)) ? '' : sn.toFixed(2);
+      return `<td class="cell-num ${cls}">
     <span class="val">${vStr}</span>${sStr ? `<span class="pm"> ± </span><span class="std">${sStr}</span>` : ''}
   </td>`;
-}
+    }
 
-// ─────────────────────────────────────────────
-// RENDER TABLE BODY
-// ─────────────────────────────────────────────
-function renderBody(data, activeCols) {
-  const tbody = document.getElementById('table-body');
-  if (data.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="${4 + activeCols.length}" class="empty-state">
+    // ─────────────────────────────────────────────
+    // RENDER TABLE BODY
+    // ─────────────────────────────────────────────
+    function renderBody(data, activeCols) {
+      const tbody = document.getElementById('table-body');
+      if (data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="${4 + activeCols.length}" class="empty-state">
       <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
       No results match the current filters.
     </td></tr>`;
-    return;
-  }
-  const rows = data.map(row => {
-    const method  = (row['Method'] || '').trim();
-    const title   = (row['Paper title'] || '').trim();
-    const link    = (row['Paper link'] || '').trim();
-    const year    = (row['Year publication'] || '').trim();
-    const runs    = (row['Runs'] || '').trim();
-    const titleCell = link
-      ? `<a href="${link}" target="_blank" rel="noopener" title="${title}">${title || '—'}</a>`
-      : (title || '—');
+        return;
+      }
+      const rows = data.map(row => {
+        const method = (row['Method'] || '').trim();
+        const title = (row['Paper title'] || '').trim();
+        const link = (row['Paper link'] || '').trim();
+        const year = (row['Year publication'] || '').trim();
+        const runs = (row['Runs'] || '').trim();
+        const titleCell = link
+          ? `<a href="${link}" target="_blank" rel="noopener" title="${title}">${title || '—'}</a>`
+          : (title || '—');
 
-    let tr = `<tr>
+        let tr = `<tr>
       <td class="col-fixed cell-method">${method || '—'}</td>
       <td class="cell-title">${titleCell}</td>
       <td class="cell-year">${year || '—'}</td>
       <td class="cell-runs">${runs || '—'}</td>`;
 
-    activeCols.forEach(c => {
-      tr += fmtNum(row[c.valKey] || '', row[c.stdKey] || '', c.groupCls);
-    });
-    tr += '</tr>';
-    return tr;
-  });
-  tbody.innerHTML = rows.join('');
-}
+        activeCols.forEach(c => {
+          tr += fmtNum(row[c.valKey] || '', row[c.stdKey] || '', c.groupCls);
+        });
+        tr += '</tr>';
+        return tr;
+      });
+      tbody.innerHTML = rows.join('');
+    }
 
-// ─────────────────────────────────────────────
-// RENDER ALL
-// ─────────────────────────────────────────────
-function render() {
-  const activeCols = getActiveCols();
-  const filtered = getFilteredData();
-  const sorted = sortData(filtered);
-  renderHeader(activeCols);
-  renderBody(sorted, activeCols);
-  // Stats
-  const info = document.getElementById('stats-info');
-  info.innerHTML = `Showing <strong>${sorted.length}</strong> of <strong>${ALL_DATA.length}</strong> algorithms · <strong>${activeCols.length}</strong> result columns`;
-}
+    // ─────────────────────────────────────────────
+    // RENDER ALL
+    // ─────────────────────────────────────────────
+    function render() {
+      const activeCols = getActiveCols();
+      const filtered = getFilteredData();
+      const sorted = sortData(filtered);
+      renderHeader(activeCols);
+      renderBody(sorted, activeCols);
+      // Stats
+      const info = document.getElementById('stats-info');
+      info.innerHTML = `Showing <strong>${sorted.length}</strong> of <strong>${ALL_DATA.length}</strong> algorithms · <strong>${activeCols.length}</strong> result columns`;
+    }
 
-// ─────────────────────────────────────────────
-// RESET
-// ─────────────────────────────────────────────
-function resetFilters() {
-  state.activeIds.clear();
-  COLUMN_GROUPS.forEach(g => g.cols.forEach(c => state.activeIds.add(c.id)));
-  document.querySelectorAll('.chip').forEach(c => c.classList.add('on'));
-  document.getElementById('yearFrom').value = MIN_YEAR;
-  document.getElementById('yearTo').value   = MAX_YEAR;
-  state.yearFrom = MIN_YEAR;
-  state.yearTo   = MAX_YEAR;
-  state.sortCol  = null;
-  state.sortDir  = 'asc';
-  render();
-}
+    // ─────────────────────────────────────────────
+    // RESET
+    // ─────────────────────────────────────────────
+    function resetFilters() {
+      state.activeIds.clear();
+      COLUMN_GROUPS.forEach(g => g.cols.forEach(c => state.activeIds.add(c.id)));
+      document.querySelectorAll('.chip').forEach(c => c.classList.add('on'));
+      document.getElementById('yearFrom').value = MIN_YEAR;
+      document.getElementById('yearTo').value = MAX_YEAR;
+      state.yearFrom = MIN_YEAR;
+      state.yearTo = MAX_YEAR;
+      state.sortCol = null;
+      state.sortDir = 'asc';
+      render();
+    }
 
-// ─────────────────────────────────────────────
-// EXPORT CSV
-// ─────────────────────────────────────────────
-function exportCSV() {
-  const activeCols = getActiveCols();
-  const filtered = sortData(getFilteredData());
+    // ─────────────────────────────────────────────
+    // EXPORT CSV
+    // ─────────────────────────────────────────────
+    function exportCSV() {
+      const activeCols = getActiveCols();
+      const filtered = sortData(getFilteredData());
 
-  const headers = ['Method', 'Paper title', 'Year publication', 'Runs',
-    ...activeCols.flatMap(c => [c.valKey, c.stdKey])];
-  const rows = filtered.map(row =>
-    headers.map(h => `"${(row[h] || '').trim().replace(/"/g, '""')}"`).join(',')
-  );
-  const csv = [headers.join(','), ...rows].join('\n');
-  downloadFile(csv, 'MPB_Scenario2_results.csv', 'text/csv');
-}
+      const headers = ['Method', 'Paper title', 'Year publication', 'Runs',
+        ...activeCols.flatMap(c => [c.valKey, c.stdKey])];
+      const rows = filtered.map(row =>
+        headers.map(h => `"${(row[h] || '').trim().replace(/"/g, '""')}"`).join(',')
+      );
+      const csv = [headers.join(','), ...rows].join('\n');
+      downloadFile(csv, 'MPB_Scenario2_results.csv', 'text/csv');
+    }
 
-// ─────────────────────────────────────────────
-// EXPORT LATEX  (one file per visible category,
-//                only if ≥1 row has data in it)
-// ─────────────────────────────────────────────
+    // ─────────────────────────────────────────────
+    // EXPORT LATEX  (one file per visible category,
+    //                only if ≥1 row has data in it)
+    // ─────────────────────────────────────────────
 
-// Escape special LaTeX characters in plain text
-function latexEsc(str) {
-  return str
-    .replace(/\\/g, '\\textbackslash{}')
-    .replace(/&/g, '\\&')
-    .replace(/%/g, '\\%')
-    .replace(/_/g, '\\_')
-    .replace(/\^/g, '\\^{}')
-    .replace(/#/g, '\\#')
-    .replace(/\$/g, '\\$')
-    .replace(/\{/g, '\\{')
-    .replace(/\}/g, '\\}')
-    .replace(/~/g, '\\textasciitilde{}');
-}
+    // Escape special LaTeX characters in plain text
+    function latexEsc(str) {
+      return str
+        .replace(/\\/g, '\\textbackslash{}')
+        .replace(/&/g, '\\&')
+        .replace(/%/g, '\\%')
+        .replace(/_/g, '\\_')
+        .replace(/\^/g, '\\^{}')
+        .replace(/#/g, '\\#')
+        .replace(/\$/g, '\\$')
+        .replace(/\{/g, '\\{')
+        .replace(/\}/g, '\\}')
+        .replace(/~/g, '\\textasciitilde{}');
+    }
 
-function buildLatexForGroup(group, groupCols, filtered, dateStr) {
-  // Only keep rows that have at least one non-empty value for this group
-  const usefulRows = filtered.filter(row =>
-    groupCols.some(c => (row[c.valKey] || '').trim() !== '')
-  );
-  if (usefulRows.length === 0) return null;
+    function buildLatexForGroup(group, groupCols, filtered, dateStr) {
+      // Only keep rows that have at least one non-empty value for this group
+      const usefulRows = filtered.filter(row =>
+        groupCols.some(c => (row[c.valKey] || '').trim() !== '')
+      );
+      if (usefulRows.length === 0) return null;
 
-  const nResultCols = groupCols.length;
-  const colSpec = 'll cc ' + groupCols.map(() => 'r').join(' ');
+      const nResultCols = groupCols.length;
+      const colSpec = 'll cc ' + groupCols.map(() => 'r').join(' ');
 
-  // Column header labels
-  const colHeaderParts = [
-    'Method',
-    'Paper title',
-    'Year',
-    'Runs',
-    ...groupCols.map(c => c.label.replace('=', '$=$'))
-  ];
-  const colHeaderRow = colHeaderParts.join(' & ');
+      // Column header labels
+      const colHeaderParts = [
+        'Method',
+        'Paper title',
+        'Year',
+        'Runs',
+        ...groupCols.map(c => c.label.replace('=', '$=$'))
+      ];
+      const colHeaderRow = colHeaderParts.join(' & ');
 
-  // cmidrule for result block (cols 5 … 4+n)
-  const resultStart = 5;
-  const resultEnd   = 4 + nResultCols;
-  const cmidrules = `\\cmidrule(lr){1-4} \\cmidrule(lr){${resultStart}-${resultEnd}}`;
+      // cmidrule for result block (cols 5 … 4+n)
+      const resultStart = 5;
+      const resultEnd = 4 + nResultCols;
+      const cmidrules = `\\cmidrule(lr){1-4} \\cmidrule(lr){${resultStart}-${resultEnd}}`;
 
-  // Group span row
-  const groupHeaderRow =
-    `\\multicolumn{4}{c}{Algorithm} & \\multicolumn{${nResultCols}}{c}{${group.label}}`;
+      // Group span row
+      const groupHeaderRow =
+        `\\multicolumn{4}{c}{Algorithm} & \\multicolumn{${nResultCols}}{c}{${group.label}}`;
 
-  // Data rows
-  const dataRows = usefulRows.map(row => {
-    const method = latexEsc((row['Method'] || '').trim());
-    const rawTitle = (row['Paper title'] || '').trim();
-    const title  = latexEsc(rawTitle.length > 48 ? rawTitle.substring(0, 45) + '...' : rawTitle);
-    const year   = (row['Year publication'] || '').trim() || '---';
-    const runs   = (row['Runs'] || '').trim() || '---';
-    const cells  = [method, title, year, runs];
-    groupCols.forEach(c => {
-      const v = (row[c.valKey] || '').trim();
-      const s = (row[c.stdKey] || '').trim();
-      if (!v) { cells.push('---'); return; }
-      const vn = parseFloat(v), sn = parseFloat(s);
-      const vStr = isNaN(vn) ? latexEsc(v) : vn.toFixed(2);
-      const sStr = (!s || isNaN(sn)) ? '' : ` $\\pm$ ${sn.toFixed(2)}`;
-      cells.push(`${vStr}${sStr}`);
-    });
-    return '    ' + cells.join(' & ') + ' \\\\';
-  });
+      // Data rows
+      const dataRows = usefulRows.map(row => {
+        const method = latexEsc((row['Method'] || '').trim());
+        const rawTitle = (row['Paper title'] || '').trim();
+        const title = latexEsc(rawTitle.length > 48 ? rawTitle.substring(0, 45) + '...' : rawTitle);
+        const year = (row['Year publication'] || '').trim() || '---';
+        const runs = (row['Runs'] || '').trim() || '---';
+        const cells = [method, title, year, runs];
+        groupCols.forEach(c => {
+          const v = (row[c.valKey] || '').trim();
+          const s = (row[c.stdKey] || '').trim();
+          if (!v) { cells.push('---'); return; }
+          const vn = parseFloat(v), sn = parseFloat(s);
+          const vStr = isNaN(vn) ? latexEsc(v) : vn.toFixed(2);
+          const sStr = (!s || isNaN(sn)) ? '' : ` $\\pm$ ${sn.toFixed(2)}`;
+          cells.push(`${vStr}${sStr}`);
+        });
+        return '    ' + cells.join(' & ') + ' \\\\';
+      });
 
-  return `% MPB Scenario 2 — ${group.label} Results
+      return `% MPB Scenario 2 — ${group.label} Results
 % Generated ${dateStr}
 % Algorithms: ${usefulRows.length} | Columns: ${nResultCols}
 % Requires: \\usepackage{booktabs}
@@ -993,52 +1310,53 @@ ${dataRows.join('\n')}
     \\bottomrule
   \\end{tabular}}
 \\end{table}`;
-}
+    }
 
-function exportLaTeX() {
-  const activeCols = getActiveCols();
-  const filtered   = sortData(getFilteredData());
-  const dateStr    = new Date().toISOString().slice(0, 10);
+    function exportLaTeX() {
+      const activeCols = getActiveCols();
+      const filtered = sortData(getFilteredData());
+      const dateStr = new Date().toISOString().slice(0, 10);
 
-  let filesExported = 0;
+      let filesExported = 0;
 
-  COLUMN_GROUPS.forEach(group => {
-    // Only columns that are currently active AND belong to this group
-    const groupCols = activeCols.filter(c => c.groupId === group.id);
-    if (groupCols.length === 0) return; // group entirely hidden — skip
+      COLUMN_GROUPS.forEach(group => {
+        // Only columns that are currently active AND belong to this group
+        const groupCols = activeCols.filter(c => c.groupId === group.id);
+        if (groupCols.length === 0) return; // group entirely hidden — skip
 
-    const latex = buildLatexForGroup(group, groupCols, filtered, dateStr);
-    if (!latex) return; // no row had data for this group — skip
+        const latex = buildLatexForGroup(group, groupCols, filtered, dateStr);
+        if (!latex) return; // no row had data for this group — skip
 
-    // Stagger downloads slightly so browsers don't block them
-    setTimeout(() => {
-      downloadFile(latex, `MPB_Scenario2_${group.id}.tex`, 'text/plain');
-    }, filesExported * 300);
-    filesExported++;
-  });
+        // Stagger downloads slightly so browsers don't block them
+        setTimeout(() => {
+          downloadFile(latex, `MPB_Scenario2_${group.id}.tex`, 'text/plain');
+        }, filesExported * 300);
+        filesExported++;
+      });
 
-  if (filesExported === 0) {
-    alert('No data to export: no visible columns have results for the current filter selection.');
-  }
-}
+      if (filesExported === 0) {
+        alert('No data to export: no visible columns have results for the current filter selection.');
+      }
+    }
 
-// ─────────────────────────────────────────────
-// DOWNLOAD HELPER
-// ─────────────────────────────────────────────
-function downloadFile(content, filename, mime) {
-  const blob = new Blob([content], { type: mime });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href = url; a.download = filename; a.click();
-  URL.revokeObjectURL(url);
-}
+    // ─────────────────────────────────────────────
+    // DOWNLOAD HELPER
+    // ─────────────────────────────────────────────
+    function downloadFile(content, filename, mime) {
+      const blob = new Blob([content], { type: mime });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename; a.click();
+      URL.revokeObjectURL(url);
+    }
 
-// ─────────────────────────────────────────────
-// INIT
-// ─────────────────────────────────────────────
-buildChips();
-initYearRange();
-render();
-</script>
+    // ─────────────────────────────────────────────
+    // INIT
+    // ─────────────────────────────────────────────
+    buildChips();
+    initYearRange();
+    render();
+  </script>
 </body>
+
 </html>

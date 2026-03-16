@@ -12,7 +12,7 @@ The Moving Peaks Benchmark is a widely used dynamic optimisation benchmark. This
 
 Results are reported as **offline error (mean ± standard error)** across multiple independent runs.
 
-If an entry is missing or incorrect, please contact us at [mpb_benchmark@gmail.com](mailto:mpb_benchmark@gmail.com).
+If an entry is missing or incorrect, please contact us at [mpb.benchmark@gmail.com](mailto:mpb.benchmark@gmail.com).
 
 ---
 
@@ -80,10 +80,10 @@ Each cell displays `mean ± std. error`. A dash (`—`) indicates the condition 
 
 ## Citation
 
-If you use this collection in your research, please cite the individual papers listed in the table. If you wish to cite the benchmark table itself, please contact us at [mpb_benchmark@gmail.com](mailto:mpb_benchmark@gmail.com).
+If you use this collection in your research, please cite the individual papers listed in the table. If you wish to cite the benchmark table itself, please contact us at [mpb.benchmark@gmail.com](mailto:mpb.benchmark@gmail.com).
 
 ---
 
 ## Contact
 
-Missing an entry? Found an error? Reach out at [mpb_benchmark@gmail.com](mailto:mpb_benchmark@gmail.com).
+Missing an entry? Found an error? Reach out at [mpb.benchmark@gmail.com](mailto:mpb.benchmark@gmail.com).
