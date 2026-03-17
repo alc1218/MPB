@@ -1,1297 +1,1152 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MPB Scenario 2 — Benchmark Results</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=JetBrains+Mono:wght@400;500&display=swap"
-    rel="stylesheet" />
-  <style>
-    :root {
-      --bg: #f8f7f4;
-      --surface: #ffffff;
-      --surface2: #f0efe9;
-      --border: #e2e0d8;
-      --text: #1a1917;
-      --text-muted: #6b6860;
-      --text-faint: #9e9c94;
-      --accent: #1d4ed8;
-      --accent-light: #dbeafe;
-      --accent-hover: #1e40af;
-      --teal: #0d9488;
-      --teal-light: #ccfbf1;
-      --orange: #ea580c;
-      --orange-light: #ffedd5;
-      --severity-col: #7c3aed;
-      --peaks-col: #0369a1;
-      --dims-col: #047857;
-      --freq-col: #b45309;
-      --row-hover: #f5f4ef;
-      --shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
-      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
-      --radius: 8px;
-      --font-mono: 'JetBrains Mono', monospace;
-    }
-
-    *,
-    *::before,
-    *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      font-family: 'DM Sans', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.6;
-      min-height: 100vh;
-    }
-
-    /* ── HEADER ── */
-    header {
-      background: var(--text);
-      color: white;
-      padding: 48px 40px 40px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    header::before {
-      content: '';
-      position: absolute;
-      top: -80px;
-      right: -60px;
-      width: 420px;
-      height: 420px;
-      border-radius: 50%;
-      background: rgba(29, 78, 216, 0.15);
-      pointer-events: none;
-    }
-
-    header::after {
-      content: '';
-      position: absolute;
-      bottom: -100px;
-      left: 30%;
-      width: 280px;
-      height: 280px;
-      border-radius: 50%;
-      background: rgba(13, 148, 136, 0.12);
-      pointer-events: none;
-    }
-
-    .header-inner {
-      max-width: 1400px;
-      margin: 0 auto;
-      position: relative;
-      z-index: 1;
-    }
-
-    .header-tag {
-      display: inline-block;
-      font-family: var(--font-mono);
-      font-size: 10px;
-      letter-spacing: .12em;
-      text-transform: uppercase;
-      color: rgba(255, 255, 255, 0.5);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 4px;
-      padding: 3px 10px;
-      margin-bottom: 16px;
-    }
-
-    header h1 {
-      font-family: 'Syne', sans-serif;
-      font-size: clamp(26px, 4vw, 42px);
-      font-weight: 800;
-      letter-spacing: -0.02em;
-      line-height: 1.1;
-      color: white;
-      margin-bottom: 14px;
-    }
-
-    header h1 span {
-      color: #60a5fa;
-    }
-
-    header p {
-      font-size: 15px;
-      color: rgba(255, 255, 255, 0.65);
-      max-width: 680px;
-      line-height: 1.7;
-    }
-
-    .header-contact {
-      margin-top: 20px;
-      font-size: 13px;
-      color: rgba(255, 255, 255, 0.5);
-    }
-
-    .header-contact a {
-      color: #93c5fd;
-      text-decoration: none;
-      font-family: var(--font-mono);
-      font-size: 12px;
-    }
-
-    .header-contact a:hover {
-      text-decoration: underline;
-    }
-
-    /* ── MAIN LAYOUT ── */
-    .main-wrap {
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 32px 24px 60px;
-    }
-
-    /* ── CONTROL PANEL ── */
-    .control-panel {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow-md);
-      margin-bottom: 24px;
-      overflow: hidden;
-    }
-
-    .panel-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 16px 20px;
-      border-bottom: 1px solid var(--border);
-      background: var(--surface2);
-    }
-
-    .panel-title {
-      font-family: 'Syne', sans-serif;
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: .06em;
-      text-transform: uppercase;
-      color: var(--text-muted);
-    }
-
-    .panel-actions {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .panel-body {
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-
-    /* ── FILTER ROWS ── */
-    .filter-row {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .filter-label {
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .filter-label .dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-
-    .dot-severity {
-      background: var(--severity-col);
-    }
-
-    .dot-peaks {
-      background: var(--peaks-col);
-    }
-
-    .dot-dims {
-      background: var(--dims-col);
-    }
-
-    .dot-freq {
-      background: var(--freq-col);
-    }
-
-    .chip-group {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-    }
-
-    .chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      padding: 4px 10px;
-      border-radius: 20px;
-      border: 1.5px solid var(--border);
-      background: var(--bg);
-      font-size: 12px;
-      font-family: var(--font-mono);
-      cursor: pointer;
-      transition: all .15s;
-      user-select: none;
-      color: var(--text-muted);
-      white-space: nowrap;
-    }
-
-    .chip:hover {
-      border-color: currentColor;
-    }
-
-    .chip input[type=checkbox] {
-      display: none;
-    }
-
-    .chip.severity-chip.on {
-      background: #ede9fe;
-      border-color: var(--severity-col);
-      color: var(--severity-col);
-    }
-
-    .chip.peaks-chip.on {
-      background: #e0f2fe;
-      border-color: var(--peaks-col);
-      color: var(--peaks-col);
-    }
-
-    .chip.dims-chip.on {
-      background: #d1fae5;
-      border-color: var(--dims-col);
-      color: var(--dims-col);
-    }
-
-    .chip.freq-chip.on {
-      background: #fef3c7;
-      border-color: var(--freq-col);
-      color: var(--freq-col);
-    }
-
-    /* ── YEAR RANGE ── */
-    .year-range-row {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      flex-wrap: wrap;
-    }
-
-    .year-range-label {
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      white-space: nowrap;
-    }
-
-    .year-inputs {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .year-input {
-      width: 74px;
-      padding: 5px 8px;
-      border: 1.5px solid var(--border);
-      border-radius: 6px;
-      font-family: var(--font-mono);
-      font-size: 13px;
-      background: var(--bg);
-      color: var(--text);
-      outline: none;
-      transition: border-color .15s;
-    }
-
-    .year-input:focus {
-      border-color: var(--accent);
-    }
-
-    .year-sep {
-      color: var(--text-muted);
-      font-size: 13px;
-    }
-
-    .year-range-track {
-      flex: 1;
-      min-width: 160px;
-      height: 4px;
-      background: var(--border);
-      border-radius: 2px;
-      position: relative;
-    }
-
-    .year-range-fill {
-      position: absolute;
-      height: 100%;
-      background: var(--accent);
-      border-radius: 2px;
-      pointer-events: none;
-    }
-
-    /* ── BUTTONS ── */
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 7px 14px;
-      border-radius: 6px;
-      border: 1.5px solid transparent;
-      font-size: 12.5px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all .15s;
-      white-space: nowrap;
-      font-family: 'DM Sans', sans-serif;
-    }
-
-    .btn-ghost {
-      background: transparent;
-      border-color: var(--border);
-      color: var(--text-muted);
-    }
-
-    .btn-ghost:hover {
-      border-color: var(--text-muted);
-      color: var(--text);
-      background: var(--bg);
-    }
-
-    .btn-primary {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: white;
-    }
-
-    .btn-primary:hover {
-      background: var(--accent-hover);
-      border-color: var(--accent-hover);
-    }
-
-    .btn-teal {
-      background: var(--teal);
-      border-color: var(--teal);
-      color: white;
-    }
-
-    .btn-teal:hover {
-      background: #0f766e;
-      border-color: #0f766e;
-    }
-
-    .btn svg {
-      flex-shrink: 0;
-    }
-
-    /* ── STATS BAR ── */
-    .stats-bar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-bottom: 12px;
-      padding: 0 2px;
-    }
-
-    .stats-info {
-      font-size: 13px;
-      color: var(--text-muted);
-    }
-
-    .stats-info strong {
-      color: var(--text);
-    }
-
-    .export-group {
-      display: flex;
-      gap: 8px;
-    }
-
-    /* ── TABLE WRAPPER ── */
-    .table-wrap {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow-md);
-      overflow: auto;
-      max-height: 70vh;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
-    }
-
-    thead {
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      background: var(--text);
-      color: white;
-    }
-
-    /* group headers */
-    .th-group {
-      padding: 8px 12px 4px;
-      text-align: center;
-      font-family: 'Syne', sans-serif;
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: .1em;
-      text-transform: uppercase;
-      border-bottom: 2px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .th-group-severity {
-      background: #3b0764;
-    }
-
-    .th-group-peaks {
-      background: #0c4a6e;
-    }
-
-    .th-group-dims {
-      background: #064e3b;
-    }
-
-    .th-group-freq {
-      background: #451a03;
-    }
-
-    .th-group-fixed {
-      background: #111;
-    }
-
-    /* column headers */
-    th {
-      padding: 7px 12px;
-      text-align: left;
-      font-family: var(--font-mono);
-      font-size: 10px;
-      font-weight: 500;
-      letter-spacing: .05em;
-      white-space: nowrap;
-      border-right: 1px solid rgba(255, 255, 255, 0.06);
-      background: #1f1e1b;
-      color: rgba(255, 255, 255, 0.75);
-      cursor: pointer;
-      user-select: none;
-    }
-
-    th:hover {
-      background: #2d2c28;
-      color: white;
-    }
-
-    th.sorted-asc::after {
-      content: ' ↑';
-      color: #60a5fa;
-    }
-
-    th.sorted-desc::after {
-      content: ' ↓';
-      color: #60a5fa;
-    }
-
-    th.col-fixed {
-      background: #141312;
-      border-right: 2px solid rgba(255, 255, 255, 0.12);
-    }
-
-    /* col colors in header */
-    th.col-severity {
-      background: #2e1065;
-    }
-
-    th.col-peaks {
-      background: #082f49;
-    }
-
-    th.col-dims {
-      background: #022c22;
-    }
-
-    th.col-freq {
-      background: #2c1400;
-    }
-
-    /* body */
-    tbody tr {
-      border-bottom: 1px solid var(--border);
-      transition: background .1s;
-    }
-
-    tbody tr:hover {
-      background: var(--row-hover);
-    }
-
-    tbody tr:last-child {
-      border-bottom: none;
-    }
-
-    td {
-      padding: 9px 12px;
-      border-right: 1px solid var(--border);
-      white-space: nowrap;
-      vertical-align: middle;
-    }
-
-    td:last-child {
-      border-right: none;
-    }
-
-    td.col-fixed {
-      background: inherit;
-      position: sticky;
-      left: 0;
-      border-right: 2px solid var(--border);
-      z-index: 2;
-    }
-
-    tbody tr:hover td.col-fixed {
-      background: var(--row-hover);
-    }
-
-    .cell-method {
-      font-family: 'Syne', sans-serif;
-      font-weight: 700;
-      font-size: 13px;
-      color: var(--text);
-      min-width: 110px;
-    }
-
-    .cell-title {
-      color: var(--text-muted);
-      font-size: 12px;
-      max-width: 220px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .cell-title a {
-      color: var(--accent);
-      text-decoration: none;
-    }
-
-    .cell-title a:hover {
-      text-decoration: underline;
-    }
-
-    .cell-year,
-    .cell-runs {
-      font-family: var(--font-mono);
-      font-size: 12px;
-      color: var(--text-muted);
-      text-align: center;
-    }
-
-    .cell-num {
-      font-family: var(--font-mono);
-      font-size: 12px;
-      text-align: right;
-      white-space: nowrap;
-    }
-
-    .cell-num .val {
-      color: var(--text);
-      font-weight: 500;
-    }
-
-    .cell-num .pm {
-      color: var(--text-faint);
-      font-size: 10px;
-      margin: 0 2px;
-    }
-
-    .cell-num .std {
-      color: var(--text-faint);
-      font-size: 11px;
-    }
-
-    .cell-num.severity .val {
-      color: #6d28d9;
-    }
-
-    .cell-num.peaks .val {
-      color: #0369a1;
-    }
-
-    .cell-num.dims .val {
-      color: #047857;
-    }
-
-    .cell-num.freq .val {
-      color: #b45309;
-    }
-
-    .cell-empty {
-      color: var(--text-faint);
-      text-align: center;
-      font-size: 11px;
-      font-family: var(--font-mono);
-    }
-
-    /* ── EMPTY STATE ── */
-    .empty-state {
-      text-align: center;
-      padding: 60px 20px;
-      color: var(--text-faint);
-      font-size: 14px;
-    }
-
-    .empty-state svg {
-      display: block;
-      margin: 0 auto 12px;
-      opacity: .3;
-    }
-
-    /* ── FOOTER ── */
-    footer {
-      text-align: center;
-      padding: 32px 24px;
-      font-size: 12px;
-      color: var(--text-faint);
-      border-top: 1px solid var(--border);
-      margin-top: 40px;
-    }
-
-    footer a {
-      color: var(--accent);
-      text-decoration: none;
-    }
-
-    footer a:hover {
-      text-decoration: underline;
-    }
-
-    /* ── RESPONSIVE ── */
-    @media (max-width: 700px) {
-      header {
-        padding: 32px 20px 28px;
-      }
-
-      .main-wrap {
-        padding: 20px 16px 40px;
-      }
-
-      .panel-body {
-        padding: 14px;
-      }
-
-      .panel-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-      }
-    }
-
-    /* scrollbar */
-    .table-wrap::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
-    }
-
-    .table-wrap::-webkit-scrollbar-track {
-      background: var(--bg);
-    }
-
-    .table-wrap::-webkit-scrollbar-thumb {
-      background: var(--border);
-      border-radius: 3px;
-    }
-
-    .table-wrap::-webkit-scrollbar-thumb:hover {
-      background: var(--text-faint);
-    }
-
-    /* select-all toggle links */
-    .toggle-link {
-      font-size: 11px;
-      color: var(--accent);
-      cursor: pointer;
-      text-decoration: underline;
-      background: none;
-      border: none;
-      padding: 0;
-      font-family: 'DM Sans', sans-serif;
-    }
-
-    .toggle-link:hover {
-      color: var(--accent-hover);
-    }
-  </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MPB Scenario 2 — Benchmark Results</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #f8f7f4;
+    --surface: #ffffff;
+    --surface2: #f0efe9;
+    --border: #e2e0d8;
+    --text: #1a1917;
+    --text-muted: #6b6860;
+    --text-faint: #9e9c94;
+    --accent: #1d4ed8;
+    --accent-light: #dbeafe;
+    --accent-hover: #1e40af;
+    --teal: #0d9488;
+    --teal-light: #ccfbf1;
+    --orange: #ea580c;
+    --orange-light: #ffedd5;
+    --severity-col: #7c3aed;
+    --peaks-col: #0369a1;
+    --dims-col: #047857;
+    --freq-col: #b45309;
+    --row-hover: #f5f4ef;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -1px rgba(0,0,0,0.04);
+    --radius: 8px;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--text);
+    color: white;
+    padding: 48px 40px 40px;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -80px; right: -60px;
+    width: 420px; height: 420px;
+    border-radius: 50%;
+    background: rgba(29,78,216,0.15);
+    pointer-events: none;
+  }
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: -100px; left: 30%;
+    width: 280px; height: 280px;
+    border-radius: 50%;
+    background: rgba(13,148,136,0.12);
+    pointer-events: none;
+  }
+  .header-inner { max-width: 1400px; margin: 0 auto; position: relative; z-index: 1; }
+  .header-tag {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 4px;
+    padding: 3px 10px;
+    margin-bottom: 16px;
+  }
+  header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(26px, 4vw, 42px);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    color: white;
+    margin-bottom: 14px;
+  }
+  header h1 span { color: #60a5fa; }
+  header p {
+    font-size: 15px;
+    color: rgba(255,255,255,0.65);
+    max-width: 680px;
+    line-height: 1.7;
+  }
+  .header-contact {
+    margin-top: 20px;
+    font-size: 13px;
+    color: rgba(255,255,255,0.5);
+  }
+  .header-contact a {
+    color: #93c5fd;
+    text-decoration: none;
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+  .header-contact a:hover { text-decoration: underline; }
+
+  /* ── MAIN LAYOUT ── */
+  .main-wrap { max-width: 1400px; margin: 0 auto; padding: 32px 24px 60px; }
+
+  /* ── CONTROL PANEL ── */
+  .control-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-md);
+    margin-bottom: 24px;
+    overflow: hidden;
+  }
+  .panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+  .panel-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .panel-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .panel-body { padding: 20px; display: flex; flex-direction: column; gap: 20px; }
+
+  /* ── FILTER ROWS ── */
+  .filter-row { display: flex; flex-direction: column; gap: 8px; }
+  .filter-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .filter-label .dot {
+    width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  }
+  .dot-severity { background: var(--severity-col); }
+  .dot-peaks    { background: var(--peaks-col); }
+  .dot-dims     { background: var(--dims-col); }
+  .dot-freq     { background: var(--freq-col); }
+
+  .chip-group { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1.5px solid var(--border);
+    background: var(--bg);
+    font-size: 12px;
+    font-family: var(--font-mono);
+    cursor: pointer;
+    transition: all .15s;
+    user-select: none;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+  .chip:hover { border-color: currentColor; }
+  .chip input[type=checkbox] { display: none; }
+
+  .chip.severity-chip.on { background: #ede9fe; border-color: var(--severity-col); color: var(--severity-col); }
+  .chip.peaks-chip.on    { background: #e0f2fe; border-color: var(--peaks-col); color: var(--peaks-col); }
+  .chip.dims-chip.on     { background: #d1fae5; border-color: var(--dims-col); color: var(--dims-col); }
+  .chip.freq-chip.on     { background: #fef3c7; border-color: var(--freq-col); color: var(--freq-col); }
+
+  /* ── YEAR RANGE ── */
+  .year-range-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .year-range-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+  .year-inputs { display: flex; align-items: center; gap: 8px; }
+  .year-input {
+    width: 74px;
+    padding: 5px 8px;
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    background: var(--bg);
+    color: var(--text);
+    outline: none;
+    transition: border-color .15s;
+  }
+  .year-input:focus { border-color: var(--accent); }
+  .year-sep { color: var(--text-muted); font-size: 13px; }
+  .year-range-track {
+    flex: 1; min-width: 160px;
+    height: 4px; background: var(--border);
+    border-radius: 2px; position: relative;
+  }
+  .year-range-fill {
+    position: absolute; height: 100%;
+    background: var(--accent); border-radius: 2px;
+    pointer-events: none;
+  }
+
+  /* ── BUTTONS ── */
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 14px;
+    border-radius: 6px;
+    border: 1.5px solid transparent;
+    font-size: 12.5px; font-weight: 500;
+    cursor: pointer;
+    transition: all .15s;
+    white-space: nowrap;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .btn-ghost {
+    background: transparent;
+    border-color: var(--border);
+    color: var(--text-muted);
+  }
+  .btn-ghost:hover { border-color: var(--text-muted); color: var(--text); background: var(--bg); }
+  .btn-primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+  }
+  .btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+  .btn-teal {
+    background: var(--teal);
+    border-color: var(--teal);
+    color: white;
+  }
+  .btn-teal:hover { background: #0f766e; border-color: #0f766e; }
+  .btn svg { flex-shrink: 0; }
+
+  /* ── STATS BAR ── */
+  .stats-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 12px;
+    margin-bottom: 12px;
+    padding: 0 2px;
+  }
+  .stats-info { font-size: 13px; color: var(--text-muted); }
+  .stats-info strong { color: var(--text); }
+  .export-group { display: flex; gap: 8px; }
+
+  /* ── TABLE WRAPPER ── */
+  .table-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-md);
+    overflow: auto;
+    max-height: 70vh;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  thead {
+    position: sticky; top: 0; z-index: 10;
+    background: var(--text);
+    color: white;
+  }
+
+  /* group headers */
+  .th-group {
+    padding: 8px 12px 4px;
+    text-align: center;
+    font-family: 'Syne', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    border-bottom: 2px solid rgba(255,255,255,0.1);
+  }
+  .th-group-severity { background: #3b0764; }
+  .th-group-peaks    { background: #0c4a6e; }
+  .th-group-dims     { background: #064e3b; }
+  .th-group-freq     { background: #451a03; }
+  .th-group-fixed    { background: #111; }
+
+  /* column headers */
+  th {
+    padding: 7px 12px;
+    text-align: left;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: .05em;
+    white-space: nowrap;
+    border-right: 1px solid rgba(255,255,255,0.06);
+    background: #1f1e1b;
+    color: rgba(255,255,255,0.75);
+    cursor: pointer;
+    user-select: none;
+  }
+  th:hover { background: #2d2c28; color: white; }
+  th.sorted-asc::after  { content: ' ↑'; color: #60a5fa; }
+  th.sorted-desc::after { content: ' ↓'; color: #60a5fa; }
+  th.col-fixed { background: #141312; }
+
+  /* col colors in header */
+  th.col-severity { background: #2e1065; }
+  th.col-peaks    { background: #082f49; }
+  th.col-dims     { background: #022c22; }
+  th.col-freq     { background: #2c1400; }
+
+  /* body */
+  tbody tr { border-bottom: 1px solid var(--border); transition: background .1s; }
+  tbody tr:hover { background: var(--row-hover); }
+  tbody tr:last-child { border-bottom: none; }
+
+  td {
+    padding: 9px 12px;
+    border-right: 1px solid var(--border);
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+  td:last-child { border-right: none; }
+  td.col-fixed {
+    border-right: 1px solid var(--border);
+  }
+
+  .cell-method {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--text);
+    min-width: 110px;
+  }
+  .cell-title {
+    color: var(--text-muted);
+    font-size: 12px;
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .cell-title a { color: var(--accent); text-decoration: none; }
+  .cell-title a:hover { text-decoration: underline; }
+  .cell-year, .cell-runs {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-muted);
+    text-align: center;
+  }
+  .cell-num {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    text-align: right;
+    white-space: nowrap;
+  }
+  .cell-num .val  { color: var(--text); font-weight: 500; }
+  .cell-num .pm   { color: var(--text-faint); font-size: 10px; margin: 0 2px; }
+  .cell-num .std  { color: var(--text-faint); font-size: 11px; }
+  .cell-num.severity .val { color: #6d28d9; }
+  .cell-num.peaks    .val { color: #0369a1; }
+  .cell-num.dims     .val { color: #047857; }
+  .cell-num.freq     .val { color: #b45309; }
+  .cell-empty { color: var(--text-faint); text-align: center; font-size: 11px; font-family: var(--font-mono); }
+  .cell-num .val.best { font-weight: 700; }
+  .best-cell { background: rgba(16, 185, 129, 0.07); }
+  .best-cell.severity { background: rgba(124, 58, 237, 0.07); }
+  .best-cell.peaks    { background: rgba(3, 105, 161, 0.07); }
+  .best-cell.dims     { background: rgba(4, 120, 87,  0.07); }
+  .best-cell.freq     { background: rgba(180, 83, 9,  0.07); }
+
+  /* ── EMPTY STATE ── */
+  .empty-state {
+    text-align: center; padding: 60px 20px;
+    color: var(--text-faint);
+    font-size: 14px;
+  }
+  .empty-state svg { display: block; margin: 0 auto 12px; opacity: .3; }
+
+  /* ── FOOTER ── */
+  footer {
+    text-align: center;
+    padding: 32px 24px;
+    font-size: 12px;
+    color: var(--text-faint);
+    border-top: 1px solid var(--border);
+    margin-top: 40px;
+  }
+  footer a { color: var(--accent); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 700px) {
+    header { padding: 32px 20px 28px; }
+    .main-wrap { padding: 20px 16px 40px; }
+    .panel-body { padding: 14px; }
+    .panel-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+  }
+
+  /* scrollbar */
+  .table-wrap::-webkit-scrollbar { width: 6px; height: 6px; }
+  .table-wrap::-webkit-scrollbar-track { background: var(--bg); }
+  .table-wrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  .table-wrap::-webkit-scrollbar-thumb:hover { background: var(--text-faint); }
+
+  /* select-all toggle links */
+  .toggle-link {
+    font-size: 11px; color: var(--accent); cursor: pointer;
+    text-decoration: underline; background: none; border: none;
+    padding: 0; font-family: 'DM Sans', sans-serif;
+  }
+  .toggle-link:hover { color: var(--accent-hover); }
+
+  /* ── BEST-ONLY FILTER ── */
+  .best-only-row { align-items: center; gap: 12px; flex-direction: row !important; }
+  .best-only-btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 7px 16px;
+    border-radius: 20px;
+    border: 1.5px solid var(--border);
+    background: var(--bg);
+    font-size: 12.5px; font-weight: 500;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-family: 'DM Sans', sans-serif;
+    transition: all .15s;
+  }
+  .best-only-btn:hover { border-color: #d97706; color: #d97706; background: #fffbeb; }
+  .best-only-btn.on {
+    background: #fef3c7;
+    border-color: #d97706;
+    color: #92400e;
+    font-weight: 600;
+  }
+  .best-only-btn.on svg { stroke: #d97706; }
+  .best-only-hint {
+    font-size: 12px; color: var(--text-faint);
+    font-family: var(--font-mono);
+  }
+
+  /* ── RANK COLUMN ── */
+  .col-rank { background: #141312; text-align: center; min-width: 72px; }
+  .cell-rank {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 700;
+    text-align: center;
+    color: var(--accent);
+    background: var(--accent-light);
+    min-width: 72px;
+  }
+  tbody tr:hover .cell-rank { background: #c7d7fc; }
+</style>
 </head>
-
 <body>
 
-  <header>
-    <div class="header-inner">
-      <div class="header-tag">Moving Peaks Benchmark · Scenario 2</div>
-      <h1>MPB Benchmark<br /><span>Algorithm Results</span></h1>
-      <p>
-        To our knowledge, a comprehensive collection of all algorithms benchmarked
-        on the <strong style="color:rgba(255,255,255,.85)">Moving Peaks Benchmark Scenario 2</strong>.
-        Results are reported as the offline error (mean ± standard error) across multiple independent runs.
-        If any entry is missing or incorrect, please get in touch.
-      </p>
-      <div class="header-contact">
-        Missing an entry? &nbsp;→&nbsp;
-        <a href="mailto:mpb.benchmark@gmail.com">mpb.benchmark&#64;gmail.com</a>
-      </div>
+<header>
+  <div class="header-inner">
+    <div class="header-tag">Moving Peaks Benchmark · Scenario 2</div>
+    <h1>MPB Benchmark<br/><span>Algorithm Results</span></h1>
+    <p>
+      To our knowledge, a comprehensive collection of all algorithms benchmarked
+      on the <strong style="color:rgba(255,255,255,.85)">Moving Peaks Benchmark Scenario 2</strong>.
+      Results are reported as the offline error (mean ± standard error) across multiple independent runs.
+      If any entry is missing or incorrect, please get in touch.
+    </p>
+    <div class="header-contact">
+      Missing an entry? &nbsp;→&nbsp;
+      <a href="mailto:mpb.benchmark@gmail.com">mpb.benchmark&#64;gmail.com</a>
     </div>
-  </header>
+  </div>
+</header>
 
-  <div class="main-wrap">
+<div class="main-wrap">
 
-    <!-- CONTROL PANEL -->
-    <div class="control-panel">
-      <div class="panel-header">
-        <span class="panel-title">Filters &amp; Display</span>
-        <div class="panel-actions">
-          <button class="btn btn-ghost" onclick="resetFilters()">
-            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M2.5 8A5.5 5.5 0 1 0 8 2.5" />
-              <polyline points="2.5,2.5 2.5,8 8,8" />
-            </svg>
-            Reset All
-          </button>
-        </div>
-      </div>
-      <div class="panel-body">
-
-        <!-- SEVERITY -->
-        <div class="filter-row">
-          <div class="filter-label">
-            <span class="dot dot-severity"></span>
-            Severity
-            <button class="toggle-link" onclick="toggleAll('severity', true)">all</button>/
-            <button class="toggle-link" onclick="toggleAll('severity', false)">none</button>
-          </div>
-          <div class="chip-group" id="chips-severity"></div>
-        </div>
-
-        <!-- PEAKS -->
-        <div class="filter-row">
-          <div class="filter-label">
-            <span class="dot dot-peaks"></span>
-            Peaks
-            <button class="toggle-link" onclick="toggleAll('peaks', true)">all</button>/
-            <button class="toggle-link" onclick="toggleAll('peaks', false)">none</button>
-          </div>
-          <div class="chip-group" id="chips-peaks"></div>
-        </div>
-
-        <!-- DIMENSIONS -->
-        <div class="filter-row">
-          <div class="filter-label">
-            <span class="dot dot-dims"></span>
-            Dimensions
-            <button class="toggle-link" onclick="toggleAll('dims', true)">all</button>/
-            <button class="toggle-link" onclick="toggleAll('dims', false)">none</button>
-          </div>
-          <div class="chip-group" id="chips-dims"></div>
-        </div>
-
-        <!-- FREQUENCIES -->
-        <div class="filter-row">
-          <div class="filter-label">
-            <span class="dot dot-freq"></span>
-            Frequencies
-            <button class="toggle-link" onclick="toggleAll('freq', true)">all</button>/
-            <button class="toggle-link" onclick="toggleAll('freq', false)">none</button>
-          </div>
-          <div class="chip-group" id="chips-freq"></div>
-        </div>
-
-        <!-- YEAR RANGE -->
-        <div class="year-range-row">
-          <span class="year-range-label">Year Range</span>
-          <div class="year-inputs">
-            <input type="number" class="year-input" id="yearFrom" placeholder="2006" min="2006" max="2025" />
-            <span class="year-sep">–</span>
-            <input type="number" class="year-input" id="yearTo" placeholder="2025" min="2006" max="2025" />
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- STATS + EXPORT -->
-    <div class="stats-bar">
-      <div class="stats-info" id="stats-info">Loading…</div>
-      <div class="export-group">
-        <button class="btn btn-ghost" onclick="exportCSV()">
-          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M2 14h12M8 2v8M4 7l4 4 4-4" />
-          </svg>
-          Export CSV
-        </button>
-        <button class="btn btn-teal" onclick="exportLaTeX()">
-          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="2" y="2" width="12" height="12" rx="1" />
-            <path d="M5 8h6M5 5h6M5 11h4" />
-          </svg>
-          Export LaTeX
+  <!-- CONTROL PANEL -->
+  <div class="control-panel">
+    <div class="panel-header">
+      <span class="panel-title">Filters &amp; Display</span>
+      <div class="panel-actions">
+        <button class="btn btn-ghost" onclick="resetFilters()">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2.5 8A5.5 5.5 0 1 0 8 2.5"/><polyline points="2.5,2.5 2.5,8 8,8"/></svg>
+          Reset All
         </button>
       </div>
     </div>
+    <div class="panel-body">
 
-    <!-- TABLE -->
-    <div class="table-wrap">
-      <table id="results-table">
-        <thead id="table-head"></thead>
-        <tbody id="table-body"></tbody>
-      </table>
+      <!-- SEVERITY -->
+      <div class="filter-row">
+        <div class="filter-label">
+          <span class="dot dot-severity"></span>
+          Severity
+          <button class="toggle-link" onclick="toggleAll('severity', true)">all</button>/
+          <button class="toggle-link" onclick="toggleAll('severity', false)">none</button>
+        </div>
+        <div class="chip-group" id="chips-severity"></div>
+      </div>
+
+      <!-- PEAKS -->
+      <div class="filter-row">
+        <div class="filter-label">
+          <span class="dot dot-peaks"></span>
+          Peaks
+          <button class="toggle-link" onclick="toggleAll('peaks', true)">all</button>/
+          <button class="toggle-link" onclick="toggleAll('peaks', false)">none</button>
+        </div>
+        <div class="chip-group" id="chips-peaks"></div>
+      </div>
+
+      <!-- DIMENSIONS -->
+      <div class="filter-row">
+        <div class="filter-label">
+          <span class="dot dot-dims"></span>
+          Dimensions
+          <button class="toggle-link" onclick="toggleAll('dims', true)">all</button>/
+          <button class="toggle-link" onclick="toggleAll('dims', false)">none</button>
+        </div>
+        <div class="chip-group" id="chips-dims"></div>
+      </div>
+
+      <!-- FREQUENCIES -->
+      <div class="filter-row">
+        <div class="filter-label">
+          <span class="dot dot-freq"></span>
+          Frequencies
+          <button class="toggle-link" onclick="toggleAll('freq', true)">all</button>/
+          <button class="toggle-link" onclick="toggleAll('freq', false)">none</button>
+        </div>
+        <div class="chip-group" id="chips-freq"></div>
+      </div>
+
+      <!-- YEAR RANGE -->
+      <div class="year-range-row">
+        <span class="year-range-label">Year Range</span>
+        <div class="year-inputs">
+          <input type="number" class="year-input" id="yearFrom" placeholder="2006" min="2006" max="2025"/>
+          <span class="year-sep">–</span>
+          <input type="number" class="year-input" id="yearTo" placeholder="2025" min="2006" max="2025"/>
+        </div>
+      </div>
+
+      <!-- BEST ONLY FILTER -->
+      <div class="filter-row best-only-row">
+        <button id="bestOnlyBtn" class="best-only-btn" onclick="toggleBestOnly()">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><polygon points="8,1 10,6 15,6 11,9.5 12.5,15 8,11.5 3.5,15 5,9.5 1,6 6,6"/></svg>
+          Show only best-in-class algorithms
+        </button>
+        <span class="best-only-hint" id="bestOnlyHint"></span>
+      </div>
+
     </div>
-
   </div>
 
-  <footer>
-    <p>Moving Peaks Benchmark · Scenario 2 · Algorithm Comparison Table</p>
-    <p style="margin-top:6px">To report a missing entry or correction: <a
-        href="mailto:mpb.benchmark@gmail.com">mpb.benchmark&#64;gmail.com</a></p>
-  </footer>
+  <!-- STATS + EXPORT -->
+  <div class="stats-bar">
+    <div class="stats-info" id="stats-info">Loading…</div>
+    <div class="export-group">
+      <button class="btn btn-ghost" onclick="exportCSV()">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 14h12M8 2v8M4 7l4 4 4-4"/></svg>
+        Export CSV
+      </button>
+      <button class="btn btn-teal" onclick="exportLaTeX()">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="12" height="12" rx="1"/><path d="M5 8h6M5 5h6M5 11h4"/></svg>
+        Export LaTeX
+      </button>
+    </div>
+  </div>
 
-  <script src="data.js"></script>
-  <script>
-    // ─────────────────────────────────────────────
-    // DATA (loaded from data.js as base64)
-    // ─────────────────────────────────────────────
+  <!-- TABLE -->
+  <div class="table-wrap">
+    <table id="results-table">
+      <thead id="table-head"></thead>
+      <tbody id="table-body"></tbody>
+    </table>
+  </div>
 
-    // ─────────────────────────────────────────────
-    // COLUMN DEFINITIONS
-    // ─────────────────────────────────────────────
-    const COLUMN_GROUPS = [
-      {
-        id: 'severity', label: 'Severity', cls: 'severity',
-        cols: [
-          { id: 's0', label: 'Sev. 0', valKey: 'Severity_0', stdKey: 'STD_Error_Standard_0' },
-          { id: 's1', label: 'Sev. 1', valKey: 'Standard_1_10_5_5000', stdKey: 'STD_Error_Standard_1' },
-          { id: 's2', label: 'Sev. 2', valKey: 'Severity_2', stdKey: 'STD_Error_Standard_2' },
-          { id: 's3', label: 'Sev. 3', valKey: 'Severity_3', stdKey: 'STD_Error_Standard_3' },
-          { id: 's4', label: 'Sev. 4', valKey: 'Severity_4', stdKey: 'STD_Error_Standard_4' },
-          { id: 's5', label: 'Sev. 5', valKey: 'Severity_5', stdKey: 'STD_Error_Standard_5' },
-          { id: 's6', label: 'Sev. 6', valKey: 'Severity_6', stdKey: 'STD_Error_Standard_6' },
-        ]
-      },
-      {
-        id: 'peaks', label: 'Peaks', cls: 'peaks',
-        cols: [
-          { id: 'p1', label: 'P=1', valKey: 'Peaks_1', stdKey: 'STD_Error_Peaks_1' },
-          { id: 'p5', label: 'P=5', valKey: 'Peaks_5', stdKey: 'STD_Error_Peaks_5' },
-          { id: 'p20', label: 'P=20', valKey: 'Peaks_20', stdKey: 'STD_Error_Peaks_20' },
-          { id: 'p30', label: 'P=30', valKey: 'Peaks_30', stdKey: 'STD_Error_Peaks_30' },
-          { id: 'p40', label: 'P=40', valKey: 'Peaks_40', stdKey: 'STD_Error_Peaks_40' },
-          { id: 'p50', label: 'P=50', valKey: 'Peaks_50', stdKey: 'STD_Error_Peaks_50' },
-          { id: 'p100', label: 'P=100', valKey: 'Peaks_100', stdKey: 'STD_Error_Peaks_100' },
-          { id: 'p200', label: 'P=200', valKey: 'Peaks_200', stdKey: 'STD_Error_Peaks_200' },
-        ]
-      },
-      {
-        id: 'dims', label: 'Dimensions', cls: 'dims',
-        cols: [
-          { id: 'd10', label: 'D=10', valKey: 'Dimensions_10', stdKey: 'STD_Error_Dimensions_10' },
-          { id: 'd20', label: 'D=20', valKey: 'Dimensions_20', stdKey: 'STD_Error_Dimensions_20' },
-          { id: 'd50', label: 'D=50', valKey: 'Dimensions_50', stdKey: 'STD_Error_Dimensions_50' },
-          { id: 'd100', label: 'D=100', valKey: 'Dimensions_100', stdKey: 'STD_Error_Dimensions_100' },
-        ]
-      },
-      {
-        id: 'freq', label: 'Frequencies', cls: 'freq',
-        cols: [
-          { id: 'f500', label: 'f=500', valKey: 'Frequencies_500', stdKey: 'STD_Error_Frequencies_500' },
-          { id: 'f1000', label: 'f=1000', valKey: 'Frequencies_1000', stdKey: 'STD_Error_Frequencies_1000' },
-          { id: 'f2000', label: 'f=2000', valKey: 'Frequencies_2000', stdKey: 'STD_Error_Frequencies_2000' },
-          { id: 'f2500', label: 'f=2500', valKey: 'Frequencies_2500', stdKey: 'STD_Error_Frequencies_2500' },
-          { id: 'f3000', label: 'f=3000', valKey: 'Frequencies_3000', stdKey: 'STD_Error_Frequencies_3000' },
-          { id: 'f10000', label: 'f=10000', valKey: 'Frequencies_10000', stdKey: 'STD_Error_Frequencies_10000' },
-        ]
-      },
-    ];
+</div>
 
-    // ─────────────────────────────────────────────
-    // PARSE CSV
-    // ─────────────────────────────────────────────
-    function parseCSV(raw) {
-      const lines = raw.trim().split('\n').map(l => l.replace(/\r/g, ''));
-      const headers = lines[0].split(';');
-      return lines.slice(1).map(line => {
-        const vals = line.split(';');
-        const obj = {};
-        headers.forEach((h, i) => { obj[h.trim()] = (vals[i] || '').trim(); });
-        return obj;
-      });
-    }
+<footer>
+  <p>Moving Peaks Benchmark · Scenario 2 · Algorithm Comparison Table</p>
+  <p style="margin-top:6px">To report a missing entry or correction: <a href="mailto:mpb.benchmark@gmail.com">mpb.benchmark&#64;gmail.com</a></p>
+</footer>
 
-    const ALL_DATA = parseCSV(new TextDecoder().decode(Uint8Array.from(atob(window._D), c => c.charCodeAt(0))));
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+// ─────────────────────────────────────────────
+// DATA (base64-encoded, obfuscated inline)
+// ─────────────────────────────────────────────
+window._D='TWV0aG9kO1BhcGVyIHRpdGxlO1BhcGVyIGxpbms7WWVhciBwdWJsaWNhdGlvbjtCaWJ0ZXg7UnVucztTZXZlcml0eV8wO1NURF9FcnJvcl9TdGFuZGFyZF8wO1N0YW5kYXJkXzFfMTBfNV81MDAwO1NURF9FcnJvcl9TdGFuZGFyZF8xO1NldmVyaXR5XzI7U1REX0Vycm9yX1N0YW5kYXJkXzI7U2V2ZXJpdHlfMztTVERfRXJyb3JfU3RhbmRhcmRfMztTZXZlcml0eV80O1NURF9FcnJvcl9TdGFuZGFyZF80O1NldmVyaXR5XzU7U1REX0Vycm9yX1N0YW5kYXJkXzU7U2V2ZXJpdHlfNjtTVERfRXJyb3JfU3RhbmRhcmRfNjtQZWFrc18xO1NURF9FcnJvcl9QZWFrc18xO1BlYWtzXzU7U1REX0Vycm9yX1BlYWtzXzU7UGVha3NfMjA7U1REX0Vycm9yX1BlYWtzXzIwO1BlYWtzXzMwO1NURF9FcnJvcl9QZWFrc18zMDtQZWFrc180MDtTVERfRXJyb3JfUGVha3NfNDA7UGVha3NfNTA7U1REX0Vycm9yX1BlYWtzXzUwO1BlYWtzXzEwMDtTVERfRXJyb3JfUGVha3NfMTAwO1BlYWtzXzIwMDtTVERfRXJyb3JfUGVha3NfMjAwO0RpbWVuc2lvbnNfMTA7U1REX0Vycm9yX0RpbWVuc2lvbnNfMTA7RGltZW5zaW9uc18yMDtTVERfRXJyb3JfRGltZW5zaW9uc18yMDtEaW1lbnNpb25zXzUwO1NURF9FcnJvcl9EaW1lbnNpb25zXzUwO0RpbWVuc2lvbnNfMTAwO1NURF9FcnJvcl9EaW1lbnNpb25zXzEwMDtGcmVxdWVuY2llc181MDA7U1REX0Vycm9yX0ZyZXF1ZW5jaWVzXzUwMDtGcmVxdWVuY2llc18xMDAwO1NURF9FcnJvcl9GcmVxdWVuY2llc18xMDAwO0ZyZXF1ZW5jaWVzXzIwMDA7U1REX0Vycm9yX0ZyZXF1ZW5jaWVzXzIwMDA7RnJlcXVlbmNpZXNfMjUwMDtTVERfRXJyb3JfRnJlcXVlbmNpZXNfMjUwMDtGcmVxdWVuY2llc18zMDAwO1NURF9FcnJvcl9GcmVxdWVuY2llc18zMDAwO0ZyZXF1ZW5jaWVzXzEwMDAwO1NURF9FcnJvcl9GcmVxdWVuY2llc18xMDAwMDtDT01NRU5UDQpGRFM7OzsyMDI1OzsxMDA7MC4yODswLjA0OzAuMzc7MC4wNDswLjQ0OzAuMDQ7MC41ODswLjA0OzAuNjg7MC4wNDswLjgzOzAuMDU7MS4wMTswLjA1OzAuMTA7MC4wMjswLjI1OzAuMDQ7MC40MjswLjA0OzAuNDY7MC4wNDswLjQ5OzAuMDQ7MC40NTswLjA0OzAuNTswLjAzOzEuMzY7MC4wNDsxLjc2OzAuMTM7Mi43MjswLjE2OzMuNDA7MC4yMDs0LjA2OzAuMzk7MS40NzswLjA2OzAuNTU7MC4wNjswLjM3OzAuMDU7MC4zMzswLjA0OzAuMzI7MC4wNDswLjQxOzAuMDQ7DQpFRldBKENFKTtFZmZpY2llbnQgZmlyZXdvcmtzIGFsZ29yaXRobXMgZm9yIGR5bmFtaWMgb3B0aW1pc2F0aW9uIHByb2JsZW1zIGluIGNvbnRpbnVvdXMgc3BhY2UucGRmOzsyMDI0Ozs1MDswLjc3ODs7MS42NzM7MC4wODQ7Mi4xMTM7OzIuNjA5Ozs7Ozs7Ozs7Ozs7Mi45ODE7OzMuMzE3OzszLjI5OTs7My4zMTM7OzIuOTgyOzszLjAxMTs7Ozs7Ozs7OzsxMi44OTA7MC40MTQ7Ni44NTI7MC4yNjk7My4yMTg7MC4yMDE7Ozs7OzEuMTQxOzAuMDg1Ow0KRFBDUFNPIDtBIGZhc3QgZGVuc2l0eSBwZWFrIGNsdXN0ZXJpbmcgYmFzZWQgcGFydGljbGUgc3dhcm0gb3B0aW1pemVyIGZvciBkeW5hbWljIG9wdGltaXphdGlvbiA7aHR0cHM6Ly9wZGYuc2NpZW5jZWRpcmVjdGFzc2V0cy5jb20vMjcxNTA2LzEtczIuMC1TMDk1NzQxNzQyM1gwMDIyMC8xLXMyLjAtUzA5NTc0MTc0MjMwMTc1NjYvbWFpbi5wZGY/WC1BbXotU2VjdXJpdHktVG9rZW49SVFvSmIzSnBaMmx1WDJWakVHa2FDWFZ6TFdWaGMzUXRNU0pITUVVQ0lRRHdQZFowcCUyRlc4N1BpRW1UQWVGVWx4V2tWb1FWWjNkNjJHNEElMkJrZ3V6OE5nSWdFciUyQkVwUHE4JTJGZlI3UmdtOGp5WFdiVEtUOEVVaTllVyUyRjFsOzIwMjQ7bGkyMDI0ZmFzdDszMDswLjE0OzAuMDM7MC43NzswLjA1OzAuNzE7MC4wNjswLjk0OzAuMDY7MS4xMTswLjA4OzEuMDc7MC4wNjsxLjA5OzAuMDU7MS40NzswLjQ5OzAuNjY7MC4wNzsxLjA0OzAuMDU7MS4zNDswLjA1Ozs7MS40NjswLjA1OzEuNzA7MC4wNTs7Ozs7Ozs7Ozs7Ozs7OzQuNTA7MC4xMTs7OzIuMDE7MC4wODswLjQzOzAuMDU7DQpDYUFJUztDYUFJUzogQ2VsbHVsYXIgQXV0b21hdGEtQmFzZWQgQXJ0aWZpY2lhbCBJbW11bmUgU3lzdGVtIGZvciBEeW5hbWljIEVudmlyb25tZW50cyA7aHR0cHM6Ly93d3cubWRwaS5jb20vMTk5OS00ODkzLzE3LzEvMTgvcGRmOzIwMjQ7cmV6dmFuaWFuMjAyM2NhYWlzOzMwOzs7Mi4yNDswLjAyOzs7Ozs7Ozs7OzsyLjI0OzAuMDI7Mi4yODswLjAyOzIuNTE7MC4wMzsyLjYzOzAuMDM7Mi4yODswLjAyOzIuMzI7MC4wMjsxLjY3OzAuMDM7Mi42NDswLjAzOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7DQpITVJTO0EgSHlicmlkIE11bHRpLVBvcHVsYXRpb24gUmVpbml0aWFsaXphdGlvbiBTdHJhdGVneSB0byBUYWNrbGUgRHluYW1pYyBPcHRpbWl6YXRpb24gUHJvYmxlbXM7aHR0cHM6Ly9pZWVleHBsb3JlLmllZWUub3JnL2RvY3VtZW50LzEwMjc4MTA5OzIwMjM7cmFnaHVsMjAyM2h5YnJpZDsyMDs7OzEuNzY7MC4xMjs7Ozs7OzsyLjA4OzAuMTk7Ozs7OzEuODQ7MC42NzsxLjk1OzEuMDM7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7SVQgSEFTIEEgRElGRkVSRU5UIFdJRFRIIFNFVkVSSVRZDQpDTS1BSVM7QSBmdWxsLWZlYXR1cmVkIGNvb3BlcmF0aXZlIGNvZXZvbHV0aW9uYXJ5IG1lbW9yeS1iYXNlZCBhcnRpZmljaWFsIGltbXVuZSBzeXN0ZW0gZm9yIGR5bmFtaWMgb3B0aW1pemF0aW9uIDtodHRwczovL3d3dy5zY2llbmNlZGlyZWN0LmNvbS9zY2llbmNlL2FydGljbGUvYWJzL3BpaS9TMTU2ODQ5NDYyMTAxMTUxMDsyMDIyO2V0YWF0aTIwMjJmdWxsOzUwOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OzAuMzggOzAuMDI7QWxtb3N0IG5vIHJlc3VsdHMNCkhJREU7SGlzdG9yaWNhbCBJbmZvcm1hdGlvbi1iYXNlZCBEaWZmZXJlbnRpYWwgRXZvbHV0aW9uIGZvciBEeW5hbWljIE9wdGltaXphdGlvbiBQcm9ibGVtIDtodHRwczovL2llZWV4cGxvcmUuaWVlZS5vcmcvZG9jdW1lbnQvOTUwNDk2NTsyMDIxO3d1MjAyMWhpc3RvcmljYWw7MjA7OzsyLjY4OzAuMzg7Ozs7Ozs7NS42OTswLjgzOzs7OzsyLjQ4OzAuNTI7My44MTsxLjAxOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O0lUIEhBUyBBIERJRkZFUkVOVCBXSURUSCBTRVZFUklUWQ0KQWRhTVBTTyA7QWRhcHRpdmUgbXVsdGktc3dhcm0gaW4gZHluYW1pYyBlbnZpcm9ubWVudHMgO2h0dHBzOi8vcGRmLnNjaWVuY2VkaXJlY3Rhc3NldHMuY29tLzI4MDI5NC8xLXMyLjAtUzIyMTA2NTAyMjFYMDAwM1gvMS1zMi4wLVMyMjEwNjUwMjIxMDAwMzE2L21haW4ucGRmP1gtQW16LVNlY3VyaXR5LVRva2VuPUlRb0piM0pwWjJsdVgyVmpFRGthQ1hWekxXVmhjM1F0TVNKSE1FVUNJQmVCMURwUWxjaFBmMUg4emQlMkJPS3ZiTUJHbVZ4aTUzRmZOUlBsNHM4Z00xQWlFQTZLNndtZzlTcTd3c0NWekwlMkJPcDhTMXU0c21qVyUyQlBwSUNzQ0NXVTsyMDIxO3FpbjIwMjFhZGFwdGl2ZTsxMDA7OzswLjUzIDswLjExIDswLjg3IDswLjE2IDsxLjMyIDswLjIwOzEuOTIgOzAuMTggOzIuNDMgOzAuMTk7Ozs7Ozs7MS4yMCA7MC4yMiA7MC42NiA7MC4wOCA7OzswLjk5IDswLjA4IDsxLjAzIDswLjA4IDswLjkyIDswLjA4IDsyLjc1IDswLjQxIDszLjYzIDswLjQ2IDsxMC43MSA7MS4yNiA7Ozs7Ozs7Ozs7Ozs7OzsNCkFkYU1ERSA7QWRhcHRpdmUgbXVsdGktc3dhcm0gaW4gZHluYW1pYyBlbnZpcm9ubWVudHMgO2h0dHBzOi8vcGRmLnNjaWVuY2VkaXJlY3Rhc3NldHMuY29tLzI4MDI5NC8xLXMyLjAtUzIyMTA2NTAyMjFYMDAwM1gvMS1zMi4wLVMyMjEwNjUwMjIxMDAwMzE2L21haW4ucGRmP1gtQW16LVNlY3VyaXR5LVRva2VuPUlRb0piM0pwWjJsdVgyVmpFRGthQ1hWekxXVmhjM1F0TVNKSE1FVUNJQmVCMURwUWxjaFBmMUg4emQlMkJPS3ZiTUJHbVZ4aTUzRmZOUlBsNHM4Z00xQWlFQTZLNndtZzlTcTd3c0NWekwlMkJPcDhTMXU0c21qVyUyQlBwSUNzQ0NXVTsyMDIxO3FpbjIwMjFhZGFwdGl2ZTsxMDA7OzswLjkwOzAuMzAgOzEuNDMgOzAuMjkgOzIuMDMgOzAuMjUgOzIuNjAgOzAuMjcgOzMuMjIgOzAuMzAgOzs7Ozs7OzEuNTggOzAuMjAgOzAuOTggOzAuMTIgOzs7MS4yNSA7MC4xMSA7MS4xNyA7MC4wOSA7MC45NyA7MC4wNiA7My4wMyA7MC40MyA7NC42MyA7MC40NiA7MTkuNDggOzIuOTggOzs7Ozs7Ozs7Ozs7Ozs7DQppZFBTTztBIEZyYW1ld29yayBmb3IgQWRhcHRpbmcgUG9wdWxhdGlvbi1CYXNlZCBhbmQgSGV1cmlzdGljIEFsZ29yaXRobXMgZm9yIER5bmFtaWMgT3B0aW1pemF0aW9uIFByb2JsZW1zIDtodHRwczovL2lqZWVlLml1c3QuYWMuaXIvYXJ0aWNsZS0xLTE0NDgtZW4ucGRmOzIwMjA7ZWphYmF0aTIwMjBmcmFtZXdvcms7NTA7OzswLjYyOzAuMDU7MC42NzswLjA3OzAuNzY7MC4wNjs7OzAuOTE7MC4wOTs7OzAuMTI7MC4wMDswLjU4OzAuMDc7MC43NTswLjAzOzAuNjc7MC4wNDs7OzAuNjQ7MC4wMTswLjI1OzAuMDI7MC4yNjswLjA0Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7DQppZEFMTztBIEZyYW1ld29yayBmb3IgQWRhcHRpbmcgUG9wdWxhdGlvbi1CYXNlZCBhbmQgSGV1cmlzdGljIEFsZ29yaXRobXMgZm9yIER5bmFtaWMgT3B0aW1pemF0aW9uIFByb2JsZW1zIDtodHRwczovL2lqZWVlLml1c3QuYWMuaXIvYXJ0aWNsZS0xLTE0NDgtZW4ucGRmOzIwMjA7ZWphYmF0aTIwMjBmcmFtZXdvcms7NTA7OzswLjcxOzAuMDY7MC44MTswLjA3OzAuOTM7MC4wNzs7OzEuMDk7MC4wOTs7OzAuMDk7MC4wMjswLjQ5OzAuMDY7MS40MTswLjA1OzEuMzA7MC4wNzs7OzEuMjE7MC4wODsxLjIwOzAuMDk7MS4yMjswLjA1Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7DQpzc2xQU087QSBTcGVjaWVzIENvbnNlcnZhdGlvbi1CYXNlZCBQYXJ0aWNsZSBTd2FybSBPcHRpbWl6YXRpb24gd2l0aCBMb2NhbCBTZWFyY2ggZm9yIER5bmFtaWMgT3B0aW1pemF0aW9uIFByb2JsZW1zIDtodHRwczovL2Rvd25sb2Fkcy5oaW5kYXdpLmNvbS9qb3VybmFscy9jaW4vMjAyMC8yODE1ODAyLnBkZjsyMDIwO3NoZW4yMDIwc3BlY2llczszMDswLjY1OzAuMDQ7MC43NTswLjA1OzEuMTg7MC4wNTsxLjMyOzAuMDU7MS41OTswLjA0OzEuNTk7MC4wNDsxLjkyOzAuMDQ7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7DQpBUENQU087QW4gYWZmaW5pdHkgcHJvcGFnYXRpb24gY2x1c3RlcmluZyBiYXNlZCBwYXJ0aWNsZSBzd2FybSBvcHRpbWl6ZXIgZm9yIGR5bmFtaWMgb3B0aW1pemF0aW9uIDtodHRwczovL3d3dy5zY2llbmNlZGlyZWN0LmNvbS9zY2llbmNlL2FydGljbGUvYWJzL3BpaS9TMDk1MDcwNTEyMDMwMTM2MjsyMDIwO2xpdTIwMjBhZmZpbml0eTszMDswLjE2OzAuMDQ7MC42NjswLjA0OzAuOTQ7MC4wNzsxLjAxOzAuMDc7MS4wODswLjA1OzEuMTk7MC4wNzsxLjMzOzAuMDk7MS4xMzswLjAzOzAuNTM7MC4wNjsxLjA0OzAuMDU7MS40MTswLjA0Ozs7MS45NTswLjA1OzIuMzY7MC4wNTs7OzEuMzk7MC4wNjs0LjMzOzAuMTc7Ozs7Ozs7Ozs1LjcyOzAuMTI7OzsyLjEyOzAuMDg7MC4zMjswLjA1Ow0KZUZBLXJ3IDtRdWFudHVtIGZpcmVmbHkgc3dhcm1zIGZvciBtdWx0aW1vZGFsIGR5bmFtaWMgb3B0aW1pemF0aW9uIHByb2JsZW1zIDtodHRwczovL3d3dy5zY2llbmNlZGlyZWN0LmNvbS9zY2llbmNlL2FydGljbGUvYWJzL3BpaS9TMDk1NzQxNzQxODMwNTE1MzsyMDE5O296c295ZGFuMjAxOXF1YW50dW07NTA7OzsxLjYzOzAuMDU7Mi4wMDswLjA2OzIuMzA7MC4wNjsyLjQyOzAuMDc7Mi42MDswLjA2Ozs7MC42NDswLjAzOzEuMjE7MC4wOTsyLjE2OzAuMDU7Mi41MDswLjA0Ozs7Mi43MDswLjAzOzMuMDM7MC4wMzszLjE0OzAuMDM7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OzsNCmVGQS1zZXE7UXVhbnR1bSBmaXJlZmx5IHN3YXJtcyBmb3IgbXVsdGltb2RhbCBkeW5hbWljIG9wdGltaXphdGlvbiBwcm9ibGVtcyA7aHR0cHM6Ly93d3cuc2NpZW5jZWRpcmVjdC5jb20vc2NpZW5jZS9hcnRpY2xlL2Ficy9waWkvUzA5NTc0MTc0MTgzMDUxNTM7MjAxOTtvenNveWRhbjIwMTlxdWFudHVtOzUwOzs7MS41ODswLjA1OzEuOTE7MC4wMzsyLjI3OzAuMDY7Mi41MDswLjA2OzIuNTc7MC4wNTs7OzAuNjQ7MC4wMzsxLjA2OzAuMDU7Mi4yMjswLjA0OzIuNjQ7MC4wMzs7OzIuOTE7MC4wMzszLjI3OzAuMDQ7My40NDswLjAzOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7DQpEeW5ERSArIExBIDtBIG5vdmVsIGZyYW1ld29yayBmb3IgaW1wcm92aW5nIG11bHRpLXBvcHVsYXRpb24gYWxnb3JpdGhtcyBmb3IgZHluYW1pYyBvcHRpbWl6YXRpb24gcHJvYmxlbXM6IEEgc2NoZWR1bGluZyBhcHByb2FjaCA7aHR0cHM6Ly93d3cuc2NpZW5jZWRpcmVjdC5jb20vc2NpZW5jZS9hcnRpY2xlL2Ficy9waWkvUzIyMTA2NTAyMTczMDYyNzI7MjAxOTtrb3JkZXN0YW5pMjAxOW5vdmVsOzUwOzs7MS4zMjswLjA2Ozs7Mi4yMzswLjA2Ozs7My4zMzswLjA5Ozs7My4wNyA7MC4xMjsxLjQxOzAuMDg7Mi42MDswLjA3OzMuMDU7MC4xMDszLjM0OzAuMDc7My41NjswLjA5OzMuODg7MC4xMTszLjcxOzAuMDk7Ozs7Ozs7Ozs7OzIuODM7MC4wNDsxLjk2OzAuMDQ7OzsxLjY1OzAuMDU7OzsNCkR5bkRFICsgUEk7QSBub3ZlbCBmcmFtZXdvcmsgZm9yIGltcHJvdmluZyBtdWx0aS1wb3B1bGF0aW9uIGFsZ29yaXRobXMgZm9yIGR5bmFtaWMgb3B0aW1pemF0aW9uIHByb2JsZW1zOiBBIHNjaGVkdWxpbmcgYXBwcm9hY2ggO2h0dHBzOi8vd3d3LnNjaWVuY2VkaXJlY3QuY29tL3NjaWVuY2UvYXJ0aWNsZS9hYnMvcGlpL1MyMjEwNjUwMjE3MzA2MjcyOzIwMTk7a29yZGVzdGFuaTIwMTlub3ZlbDs1MDs7OzEuNDc7MC4wODs7OzIuMjQ7MC4wODs7OzMuMTc7MC4xMDs7OzIuNzAgOzAuMTE7MS4zMjswLjA5OzIuNDY7MC4wODsyLjkxOzAuMTE7My4yODswLjA5OzMuMzg7MC4xMDszLjc4OzAuMTE7My42MjswLjA5Ozs7Ozs7Ozs7OzsyLjk2OzAuMDU7Mi4wNTswLjA1Ozs7MS42OTswLjA2Ozs7DQpDQ1NBO0EgY2x1c3Rlci1iYXNlZCBjbG9uYWwgc2VsZWN0aW9uIGFsZ29yaXRobSBmb3Igb3B0aW1pemF0aW9uIGluIGR5bmFtaWMgZW52aXJvbm1lbnQsIDtodHRwczovL3BkZi5zY2llbmNlZGlyZWN0YXNzZXRzLmNvbS8yODAyOTQvMS1zMi4wLVMyMjEwNjUwMjE5WDAwMDYxLzEtczIuMC1TMjIxMDY1MDIxODMwMDk0NC9tYWluLnBkZj9YLUFtei1TZWN1cml0eS1Ub2tlbj1JUW9KYjNKcFoybHVYMlZqRURnYUNYVnpMV1ZoYzNRdE1TSklNRVlDSVFDJTJGM0RPblZnUk5sTUFqNXdqdzg1VVB0UFEzNllkVFRqZ2c2aEglMkJMSDdmUlFJaEFNU3pQUHY1SXdFU1hCdEpMeXcwc3dQRkdaU1o4YSUyQjdaYjdlZE07MjAxOTt6aGFuZzIwMTljbHVzdGVyOzMwOzs7MS4wOTswLjAzOzEuMzc7MC4wNDsxLjg5OzAuMDU7MS45OTswLjA0OzIuMDc7MC4wNDs7OzAuNjQ7MC4wMTswLjczOzAuMDQ7MS44MDswLjAzOzEuOTA7MC4wMzs7OzEuODc7MC4wMjsxLjc1OzAuMDI7MS41NjswLjAyOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7DQpBbGdvcml0aG0gMTtBIG5vdGUgb24gdGhlIGV4Y2x1c2lvbiBvcGVyYXRvciBpbiBtdWx0aS1zd2FybSBQU08gYWxnb3JpdGhtcyBmb3IgZHluYW1pYyBlbnZpcm9ubWVudHMgO2h0dHBzOi8vd3d3LnRhbmRmb25saW5lLmNvbS9kb2kvcGRmLzEwLjEwODAvMDk1NDAwOTEuMjAxOS4xNzAwOTEyOzIwMTk7a2F6ZW1pMjAyMG5vdGU7MTAwOzs7Mi4zNDswLjA2Ozs7Ozs7Ozs7Ozs1LjExOzAuMTY7Mi4zNTswLjA3OzMuMTk7MC4wNjszLjQ5OzAuMDY7My43MzswLjA2OzMuNzE7MC4wNjs7OzMuNjI7MC4wNDs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ow0KQWxnb3JpdGhtIDI7QSBub3RlIG9uIHRoZSBleGNsdXNpb24gb3BlcmF0b3IgaW4gbXVsdGktc3dhcm0gUFNPIGFsZ29yaXRobXMgZm9yIGR5bmFtaWMgZW52aXJvbm1lbnRzIDtodHRwczovL3d3dy50YW5kZm9ubGluZS5jb20vZG9pL3BkZi8xMC4xMDgwLzA5NTQwMDkxLjIwMTkuMTcwMDkxMjsyMDE5O2themVtaTIwMjBub3RlOzEwMDs7OzIuNzI7MC4wNjs7Ozs7Ozs7Ozs7NS42MTswLjE3OzIuNjk7MC4wNzszLjA5OzAuMDY7My4zMjswLjA1OzMuMzU7MC4wNTszLjI5OzAuMDQ7OzsyLjkyOzAuMDM7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OzsNCkFsZ29yaXRobSAzO0Egbm90ZSBvbiB0aGUgZXhjbHVzaW9uIG9wZXJhdG9yIGluIG11bHRpLXN3YXJtIFBTTyBhbGdvcml0aG1zIGZvciBkeW5hbWljIGVudmlyb25tZW50cyA7aHR0cHM6Ly93d3cudGFuZGZvbmxpbmUuY29tL2RvaS9wZGYvMTAuMTA4MC8wOTU0MDA5MS4yMDE5LjE3MDA5MTI7MjAxOTtrYXplbWkyMDIwbm90ZTsxMDA7OzsxLjgxOzAuMDU7Ozs7Ozs7Ozs7OzMuNzQ7MC4xMTsxLjgwOzAuMDY7Mi44MjswLjA2OzMuMjc7MC4wNjszLjUzOzAuMDY7My41NzswLjA2Ozs7My44NzswLjA1Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7DQpBbGdvcml0aG0gNDtBIG5vdGUgb24gdGhlIGV4Y2x1c2lvbiBvcGVyYXRvciBpbiBtdWx0aS1zd2FybSBQU08gYWxnb3JpdGhtcyBmb3IgZHluYW1pYyBlbnZpcm9ubWVudHMgO2h0dHBzOi8vd3d3LnRhbmRmb25saW5lLmNvbS9kb2kvcGRmLzEwLjEwODAvMDk1NDAwOTEuMjAxOS4xNzAwOTEyOzIwMTk7a2F6ZW1pMjAyMG5vdGU7MTAwOzs7MS43MjswLjA1Ozs7Ozs7Ozs7Ozs0LjYyOzAuMTQ7MS43NDswLjA1OzIuNzc7MC4wNTszLjI1OzAuMDY7My41MDswLjA1OzMuNjY7MC4wNjs7OzMuOTE7MC4wNTs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ow0KQmZDUy13Vk47QW4gYWRhcHRpdmUgYmktZmxpZ2h0IGN1Y2tvbyBzZWFyY2ggd2l0aCB2YXJpYWJsZSBuZXN0cyBmb3IgY29udGludW91cyBkeW5hbWljIG9wdGltaXphdGlvbiBwcm9ibGVtcyA7aHR0cHM6Ly9saW5rLnNwcmluZ2VyLmNvbS9jb250ZW50L3BkZi8xMC4xMDA3L3MxMDQ4OS0wMTctMDk2My03LnBkZjsyMDE4O2tvcmRlc3RhbmkyMDE4YWRhcHRpdmU7NTA7MC40MDswLjA4OzAuNTE7MC4xMTswLjg5OzAuMTY7MS4yNjswLjEzOzEuODk7MC4xODsyLjM5OzAuMjA7OzswLjMwOzAuMDY7MC4zODswLjIxOzAuNzQ7MC4xMTsxLjAwOzAuMTI7MC45NzswLjA3OzAuODQ7MC4wNjsxLjExOzAuMDY7MS4xODswLjA4Ozs7Ozs7Ozs7NC4yODswLjQyOzs7OzswLjk5OzAuMjQ7OzswLjMwOzAuMDY7DQpjR0E7Q2hhb3RpYyBHZW5ldGljIEFsZ29yaXRobSBiYXNlZCBvbiBFeHBsaWNpdCBNZW1vcnkgd2l0aCBhIG5ldyBTdHJhdGVneSBmb3IgVXBkYXRpbmcgYW5kIFJldHJpZXZhbCBvZiBNZW1vcnkgaW4gRHluYW1pYyBFbnZpcm9ubWVudHMgO2h0dHBzOi8vamFkLnNoYWhyb29kdXQuYWMuaXIvYXJ0aWNsZV85NTdfZjcwM2MzMzkyN2QwNWQwNjIzZDI2YmNmZTM3YTA2NDQucGRmOzIwMTg7bW9oYW1tYWRwb3VyMjAxOGNoYW90aWM7MTAwOzs7MS4xNTswLjEzOzIuMTk7MC4xNTszLjMxOzAuMjU7NS4zNTswLjM1OzYuNDU7MC40NTs4LjE1OzAuNjg7MC45MjswLjA5OzEuMDY7MC4wNzsxLjE4OzAuMDY7MS4zNTswLjA1OzEuNTM7MC4wOTsxLjY1OzAuMDc7MS44MDswLjA2OzEuNzE7MC4wNTsyLjQ1OzAuMjg7NC4yNTswLjM1Ozs7OzszLjk2OzAuMjE7MS4yODswLjEzOzs7Ozs7Ozs7DQpHUkRFO0dsb2JhbCByZXBsYWNlbWVudC1iYXNlZCBkaWZmZXJlbnRpYWwgZXZvbHV0aW9uIHdpdGggbmVpZ2hib3ItYmFzZWQgbWVtb3J5IGZvciBkeW5hbWljIG9wdGltaXphdGlvbiA7aHR0cHM6Ly9saW5rLnNwcmluZ2VyLmNvbS9jb250ZW50L3BkZi8xMC4xMDA3L3MxMDQ4OS0wMTgtMTE0Ny05LnBkZjsyMDE4O3podTIwMThnbG9iYWw7MzA7MC4yMDswLjA0OzAuMzk7MC4wNzsxLjEyOzAuMDc7MS4yNzswLjA4OzEuMzg7MC4wODsxLjY0OzAuMTA7OzswLjA7MC4wMDswLjI3OzAuMDg7MS4wODswLjA5OzEuMTU7MC4wNjs7OzEuMjY7MC4wODsxLjA2OzAuMTA7MC45OTswLjEyOzs7Ozs7Ozs7Ozs7Ozs7OzswLjk5OzAuMDY7MC4yMzswLjA1Ow0KV0QyTztXRDJPOiBhIG5vdmVsIHdpbmQgZHJpdmVuIGR5bmFtaWMgb3B0aW1pemF0aW9uIGFwcHJvYWNoIHdpdGggZWZmZWN0aXZlIGNoYW5nZSBkZXRlY3Rpb24gO2h0dHBzOi8vbGluay5zcHJpbmdlci5jb20vY29udGVudC9wZGYvMTAuMTAwNy9zMTA0ODktMDE3LTA4OTUtMi5wZGY7MjAxNztib3VsZXNuYW5lMjAxN3dkMm87MzA7OzsxLjI1OzAuMDI7Ozs7Ozs7Ozs7OzEuMjE7MC4wMzswLjc2OzAuMDM7MS4yMjswLjAyOzEuNzU7MC4wMTs7OzEuODc7MC4wMTsyLjExOzAuMDE7MS45NTswLjAxOzMuMzY7MC4wNDs0LjgyOzAuMDM7Ozs7Ozs7Ozs7Ozs7Ozs7Ow0KQS1TRkEgO0ltcHJvdmVkIFNwZWNpYXRpb24tQmFzZWQgRmlyZWZseSBBbGdvcml0aG0gaW4gRHluYW1pYyBhbmQgVW5jZXJ0YWluIEVudmlyb25tZW50cyA7aHR0cHM6Ly93d3cuYWlyaXRpbGlicmFyeS5jb20vQXJ0aWNsZS9EZXRhaWwvMTAxNjIzNjQtMjAxNjA1LTIwMTYwNTE3MDAwNS0yMDE2MDUxNzAwMDUtNjYxLTY3NjsyMDE2O25hc2lyaTIwMTZpbXByb3ZlZDszMDs7OzAuOTA7MC4wNTsxLjMxOzAuMDc7MS43NjswLjA5Ozs7Mi42NDswLjA4Ozs7MC42NjswLjA1OzAuNzk7MC4wNjsxLjI0OzAuMDg7MS40MTswLjA2Ozs7MS43MTswLjA0OzEuODQ7MC4wNDsxLjkwOzAuMDU7Ozs7Ozs7Ozs1LjA5OzAuMTA7My41MTswLjA4Ozs7MS43NzswLjA4Ozs7MC42MzswLjAzOw0KQ0hQU087QSBub3ZlbCBoeWJyaWQgYWRhcHRpdmUgY29sbGFib3JhdGl2ZSBhcHByb2FjaCBiYXNlZCBvbiBwYXJ0aWNsZSBzd2FybSBvcHRpbWl6YSA7aHR0cHM6Ly9jaXRlc2VlcnguaXN0LnBzdS5lZHUvZG9jdW1lbnQ/cmVwaWQ9cmVwMSZ0eXBlPXBkZiZkb2k9YTIwOWE4MGIzZDYwNWE1M2EzODAzODAxNWU0OGUzYTczNDM5NjEwYzsyMDE1O3NoYXJpZmkyMDE1bm92ZWw7NTAwOzAuNDY7MC4wMjswLjY0OzAuMDI7MC45MjswLjAxOzEuMjI7MC4wMjsxLjUwOzAuMDI7MS44MjswLjAyOzs7MC4xOTswLjAwOzAuNDQ7MC4wMjswLjkxOzAuMDE7MC45OTswLjAxOzEuMDI7MC4wMTsxLjAzOzAuMDE7MS4wNDswLjAxOzEuMDE7MC4wMDszLjMyOzAuMDY7NS4wNDswLjA3OzkuOTU7MC4xMTs7OzMuNzQ7MC4wNTsyLjM1OzAuMDQ7OzsxLjE2OzAuMDI7OzswLjQwOzAuMDE7DQpBTVAvUFNPO0FuIEFkYXB0aXZlIE11bHRpLVBvcHVsYXRpb24gRnJhbWV3b3JrIGZvciBMb2NhdGluZyBhbmQgVHJhY2tpbmcgTXVsdGlwbGUgT3B0aW1hIDtodHRwczovL3Jlc2VhcmNob25saW5lLmxqbXUuYWMudWsvaWQvZXByaW50LzIzNzEvMS9hY2NlcHRlZF92ZXJzaW9uLnBkZjsyMDE1O2xpMjAxNWFkYXB0aXZlOzMwOzs7MC42OTswLjAzOzs7Ozs7Ozs7Ozs7Ozs7MS4xOzAuMDk7MS4xOzAuMDU7OzsxLjI7MC4wNTsxLjQ7MC4wNTsxLjg7MC4wNDs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ow0KQU1QL0RFO0FuIEFkYXB0aXZlIE11bHRpLVBvcHVsYXRpb24gRnJhbWV3b3JrIGZvciBMb2NhdGluZyBhbmQgVHJhY2tpbmcgTXVsdGlwbGUgT3B0aW1hIDtodHRwczovL3Jlc2VhcmNob25saW5lLmxqbXUuYWMudWsvaWQvZXByaW50LzIzNzEvMS9hY2NlcHRlZF92ZXJzaW9uLnBkZjsyMDE1O2xpMjAxNWFkYXB0aXZlOzMwOzs7MC45OzAuMTA7Ozs7Ozs7Ozs7Ozs7OzsxLjQ7MC4xMDsxLjM7MC4wNjs7OzEuNDswLjA1OzEuNzswLjA4OzIuMDA7MC4wNDs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ow0KQU1TTzs7aHR0cHM6Ly9kb3JhLmRtdS5hYy51ay9zZXJ2ZXIvYXBpL2NvcmUvYml0c3RyZWFtcy9mNTgzNDIxNS04YTMwLTQ2OTItYjZlNC0zMGJiZWUxMDI5OWUvY29udGVudDsyMDE0OzszMDs7OzEuNDA7MC4xMTsyLjIwOzAuMTM7Mi45MDswLjE4OzMuNDA7MC4xOTszLjgwOzAuMTY7NC4yMDswLjE1OzIuNDA7MC43MTsxLjYwOzAuMjg7Mi4wMDswLjE5OzEuNTA7MC4xMDs7OzIuMDA7MC4xNjsyLjEwOzAuMTY7MS45MDswLjE3OzQuMjA7MC41MDs2LjUwOzEuNDA7MjUuMDA7My43MDs7Ozs7Ozs7Ozs7Ozs7O1dlIGFzc3VtZSB0aGF0IHRoZSBwcm92aWRlZCB2YWx1ZSBpcyB0aGUgU3RhbmRhcmQgRXJyb3INCkNERVBTTzs7aHR0cHM6Ly9jaXRlc2VlcnguaXN0LnBzdS5lZHUvZG9jdW1lbnQ/cmVwaWQ9cmVwMSZ0eXBlPXBkZiZkb2k9NGIzMWUzODI1YWU0NzYzYWQyZjY5YmRiNTJmNTNiZDRlZWI4ZjBlMjsyMDE0OzsxMDA7OzsxLjIyOzAuMDE7MS43NDswLjAxOzs7OzszLjU2OzAuMDE7OzswLjQxOzAuMDA7MC45NzswLjAxOzEuNTQ7MC4wMTsyLjYyOzAuMDE7OzsyLjIwOzAuMDE7MS41NDswLjAxOzIuMTE7MC4wMTs7Ozs7Ozs7OzYuNTc7MC4wMjs0LjAwOzAuMDE7OzsxLjkyOzAuMDE7Ozs7Ow0KbU5BRlNBO21OQUZTQTogQSBub3ZlbCBhcHByb2FjaCBmb3Igb3B0aW1pemF0aW9uIGluIGR5bmFtaWMgZW52aXJvbm1lbnRzIHdpdGggZ2xvYmFsIGNoYW5nZXMgO2h0dHBzOi8vd3d3LnNjaWVuY2VkaXJlY3QuY29tL3NjaWVuY2UvYXJ0aWNsZS9waWkvUzIyMTA2NTAyMTQwMDAzOVgvcGRmZnQ/Y2FzYV90b2tlbj10ZmtEekg4dExXWUFBQUFBOkdlZnljRldoY2l3QXZfaVktTzY5TVY2NDRVTmpZa25JZGZJVGMweGpLNzNkV3g2X0pFcjhJYjBycFZqOFdxM1gxeWlxMXZoTUNQOCZtZDU9MzE5ZjM2Y2VkYTc5NjY5MWY1ZjAwOTVkZGQ5ZmYyNTAmcGlkPTEtczIuMC1TMjIxMDY1MDIxNDAwMDM5WC1tYWluLnBkZjsyMDE0Ozs1MDs7OzAuOTA7MC4wMzsxLjQxOzAuMDY7MS43NzswLjA3OzIuMTU7MC4wOTsyLjU4OzAuMTA7OzswLjM4OzAuMDY7MC41NTswLjA0OzEuMjU7MC4wNjsxLjQ3OzAuMDU7MS42NTswLjA1Ozs7MS44MzswLjA1OzEuODQ7MC4wNTsyLjM2OzAuMjg7NC4zMDswLjM1Ozs7Ozs7OzEuODM7MC4wODs7Ozs7OzswLjQ1OzAuMDI7DQpDYkRFLXdDQTs7aHR0cHM6Ly93d3cuc2NpZW5jZWRpcmVjdC5jb20vc2NpZW5jZS9hcnRpY2xlL3BpaS9TMDAyMDAyNTUxMzAwODMzNS9wZGZmdD9jYXNhX3Rva2VuPXl2ZlFudmlscU9jQUFBQUE6bDRieG9leUQxMlJLTzhOWkdPeFJEYzJXcTNSeHhZYTRndHBQbXhrMXVHX2NDVFZ4TTVXSFBlT3pONUZqU1FieEhvR2ZYdjRDaVhjJm1kNT1kNDE2OWI2NDYyYjgzZmZlZjQ3YmMxNTNhNzU1ODcwYSZwaWQ9MS1zMi4wLVMwMDIwMDI1NTEzMDA4MzM1LW1haW4ucGRmOzIwMTQ7OzUwOzs7MC44NjswLjI0OzAuODg7MC4yOTswLjk4OzAuMjk7MS4zMTswLjM1OzEuNTQ7MC4yMTsxLjY5OzAuMjE7MC4xNDswLjAzOzAuMzA7MC4wNDswLjk4OzAuMjU7MS4zNDswLjI4OzEuMTU7MC4yNDsxLjMxOzAuMjY7MS4zNTswLjI5OzEuMjk7MC4yNDs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ow0KTUxTRE87O2h0dHBzOi8vZDF3cXR4dHMxeHpsZTcuY2xvdWRmcm9udC5uZXQvNzc5NDgyMjcvbWxzZG8tbGlicmUucGRmPzE2NDEyMjExMzY9JnJlc3BvbnNlLWNvbnRlbnQtZGlzcG9zaXRpb249aW5saW5lJTNCK2ZpbGVuYW1lPUFfbXVsdGlwbGVfbG9jYWxfc2VhcmNoX2FsZ29yaXRobV9mb3JfY28ucGRmJkV4cGlyZXM9MTcwOTYzODg3MyZTaWduYXR1cmU9TkNycjdySHNubDYwYkpDR2xnSjlSTmg3Z1ItVVFyUTJOTmpPa0tGZm51WnQ3dEM0azVId21mYzlKbUlpc0FUZENQOW0tdXZwS0xQWXBOdXZJTzl1WWM4QXEwNURWU0NvNEc5eFpkQjhKckREcjRaMDNhRHlyTTFha0twcTkxQnp+V0x5dkhYQzY1fk80OEdqMFVuS05xYWp1Z1BkTGVhTkxBZGd2UVUwZEQtYzQtZzcyeG9OakdpTEkwMExCWFM4R3lWdE5sakFBenRkQUxHMzFsa2hlOHd0WEUtMXpuZGlPTmZybG9WN0xxdVFNYkdwQkR5eFUzaFh4T1F5UU1EU21qaWlhTlhqdTNEUHdCbzZRfkVYeGdZcEh6ZTBsb3RHTk1jb2h2RmFnQlFXU3RNakxQTlkxeFMtWk1mWGtTVEl2RFZTdzEtZkVIR0locnRiSi1DSHh3X18mS2V5LVBhaXItSWQ9QVBLQUpMT0hGNUdHU0xSQlY0WkE7MjAxMzs7MTAwOzs7MC4zNjswLjA4OzAuNjA7MC4wNzswLjkyOzAuMTA7MS4yMjswLjEyOzEuNjI7MC4xMzsyLjAxOzAuMTk7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7DQpGVE1QU087O2h0dHBzOi8vY2l0ZXNlZXJ4LmlzdC5wc3UuZWR1L2RvY3VtZW50P3JlcGlkPXJlcDEmdHlwZT1wZGYmZG9pPTA3M2U2NDRjYjU2OGNjNGE4OTE3NzYwOTRmYWVjMDZkZGY4ZTBjMmY7MjAxMzs7NTA7OzswLjY3OzAuMDQ7MS4yMDswLjA2OzEuNDA7MC4wOTs7OzEuNjk7MC4wNzs7OzAuMTg7MC4wMTswLjQ3OzAuMDU7MC45MzswLjA0OzEuMTQ7MC4wNDs7OzEuMzI7MC4wNDsxLjYxOzAuMDM7MS42NzswLjAzOzs7Ozs7Ozs7My45MTswLjE5OzIuMzY7MC4wOTs7OzEuMjE7MC4wNjs7OzAuNDM7MC4wMzsNCkR5blBvcERFOztodHRwczovL3JlcG9zaXRvcnkudXAuYWMuemEvYml0c3RyZWFtL2hhbmRsZS8yMjYzLzQyNDcwL0R1UGxlc3Npc19EaWZmZXJlbnRpYWxfMjAxMy5wZGYlM0Jqc2Vzc2lvbmlkPUNFNkI0QzFBQUM2MzIxNkREQTBFQjMxODNFQUQ0NDMzP3NlcXVlbmNlPTE7MjAxMzs7NTA7OzsxLjM5OzAuMDc7Ozs7Ozs7Ozs7Ozs7MS4wMzswLjEzOzEuNzI7MC4wNzs7OzEuOTc7MC4wNjsyLjEwOzAuMDY7Mi4zNDswLjA1OzIuNDQ7MC4wNTs7Ozs7Ozs7Ozs7My4wODswLjA4Ozs7Ozs7Ozs7DQpQU08tQVE7O2h0dHBzOi8vY2l0ZXNlZXJ4LmlzdC5wc3UuZWR1L2RvY3VtZW50P3JlcGlkPXJlcDEmdHlwZT1wZGYmZG9pPWE3YWUxY2FkMjdhNWI4NTRmZjJlYzA5ZmFmMTY3MjhkY2ViOGNiMzg7MjAxMzs7NTA7OzswLjg5OzAuMDM7MS4xNDswLjA5OzEuODY7MC4wODs7OzIuMjg7MC4xMjs7OzAuMzQ7MC4wMjswLjgwOzAuMTI7MS40NTswLjA2OzEuNTI7MC4wNDs7OzEuNzc7MC4wNTsxLjk1OzAuMDU7MS45NjswLjA0Ozs7Ozs7Ozs7Ni4yMTswLjE2OzMuODc7MC4xMTs7OzIuNjM7MC4wNzs7OzEuMTg7MC4wNTsNClRQLUNQU087O2h0dHBzOi8vd3d3LnJlc2VhcmNoZ2F0ZS5uZXQvcHJvZmlsZS9NYXNvdWQtQmFzaGlyaS9wdWJsaWNhdGlvbi8yNTkyNjI2MzFfVHdvX3BoYXNlZF9jZWxsdWxhcl9QU09fQV9uZXdfY29sbGFib3JhdGl2ZV9jZWxsdWxhcl9hbGdvcml0aG1fZm9yX29wdGltaXphdGlvbl9pbl9keW5hbWljX2Vudmlyb25tZW50cy9saW5rcy81OWQxOWM5Y2E2ZmRjYzE4MWFkM2IzZGIvVHdvLXBoYXNlZC1jZWxsdWxhci1QU08tQS1uZXctY29sbGFib3JhdGl2ZS1jZWxsdWxhci1hbGdvcml0aG0tZm9yLW9wdGltaXphdGlvbi1pbi1keW5hbWljLWVudmlyb25tZW50cy5wZGY7MjAxMjs7MTAwOzs7MC45NjswLjA1OzEuMjU7MC4wNDsxLjY5OzAuMDQ7Mi4xMjswLjA1OzIuNDY7MC4wNTs7OzAuNDA7MC4wMTswLjc1OzAuMDc7MS4xODswLjAzOzEuMzI7MC4wMzsxLjM2OzAuMDM7MS40MDswLjAzOzEuNTA7MC4wMjsxLjU2OzAuMDI7Ozs7Ozs7Ozs1LjU2OzAuMTE7My4xNzswLjA2Ozs7MS41OTswLjA2Ozs7MC41NDswLjAzOw0KU0ZBOztodHRwczovL2Qxd3F0eHRzMXh6bGU3LmNsb3VkZnJvbnQubmV0LzgxMzI3NDgxL2Rvd25sb2FkLWxpYnJlLnBkZj8xNjQ1NjkzOTQ1PSZyZXNwb25zZS1jb250ZW50LWRpc3Bvc2l0aW9uPWlubGluZSUzQitmaWxlbmFtZT1EeW5hbWljLnBkZiZFeHBpcmVzPTE3MDk2NTA4MjcmU2lnbmF0dXJlPU8zV0RzOVkySDFjY1dFdVFaUjZicjZ2bjdYQ3RZcUpkMFJrfndUZGpUUmNub2R5dUNjdDlMRG9qRHRZOVIwOXdlZExsOTBpNnpJaXNiZ1NuWjdwNkFoYnkxdEZqa3dESml6ZEthWWd+T2NDaUpVZm8zRDFmVHVZUnZ5UnlvSXBJN1E2elNUflVjam5wbTdlYTB6U3BKNC10aH5raXUzYU9SRnlxenZvRXJIZU1uVkdEeDd0M2dLSW9CWldkcWp0cmZRUlhlb2FUOXRPd3RDdG5ZTE45enl3Y2t1Y2VyZURyaUNPMXFJaXgtQzM1V25qY2lLdFQtaEsxcy12NUM2UTJBenZianp1RU94MG5mdTAwN0plcnVMT3p+aGhLTFJHbW9vZHNoZ2JBczBEMlRUT3FvRHI5dHRQeHc5fn41czlPb1BtZ3BORnZ1TG0tbGhhMFBhYX5OQV9fJktleS1QYWlyLUlkPUFQS0FKTE9IRjVHR1NMUkJWNFpBOzIwMTI7OzUwOzs7MS4wNTswLjA4OzEuNDQ7MC4wNjsyLjA2OzAuMDc7OzsyLjg5OzAuMTM7OzswLjQyOzAuMDc7MC44OTswLjA5OzEuNDg7MC4wNTsxLjU2OzAuMDY7OzsxLjg3OzAuMDU7Mi4wMTswLjA0OzEuOTk7MC4wNjs7Ozs7Ozs7OzUuMTE7MC4xNDs7Ozs7MS45NTswLjA0Ozs7MC43MjswLjAyOw0KQ0NQU087O2h0dHBzOi8vd3d3LmFjYWRlbWlhLmVkdS9kb3dubG9hZC84NjgwNDY0MS9BXzIwY29tcGV0aXRpdmVfMjBjbHVzdGVyaW5nXzIwcGFydGljbGVfMjBzd2FybV8yMG9wdGltaXplci5wZGY7MjAxMjs7NTA7OzswLjc1OzAuMDY7MC44NDswLjA0OzAuODk7MC4wODsxLjI3OzAuMDg7MS4zNDswLjA1OzEuNDA7MC4wOTswLjA5OzAuMDA7MC4yNTswLjAxOzEuMjE7MC4wODsxLjQwOzAuMDc7MS40NzswLjA4OzEuNTA7MC4wOTsxLjc2OzAuMDk7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ow0KRE1BRlNBOztodHRwczovL2NpdGVzZWVyeC5pc3QucHN1LmVkdS9kb2N1bWVudD9yZXBpZD1yZXAxJnR5cGU9cGRmJmRvaT1kY2NmNzBlMTFjMzc2YWVkOGFkNzJkOWQ2NDg1MjYwYmY1NGQ1NTQyOzIwMTI7OzUwOzs7MS4wMTswLjA1Ozs7Ozs7Ozs7OzswLjU1OzAuMDY7MC43ODswLjA2OzEuNDI7MC4wNjsxLjYzOzAuMDY7OzsxLjg0OzAuMDc7MS45NTswLjA1OzEuOTk7MC4wNDs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ow0KTVBTTzs7aHR0cHM6Ly9idXJhLmJydW5lbC5hYy51ay9iaXRzdHJlYW0vMjQzOC82NjA0LzQvRnVsbHRleHQucGRmOzIwMTE7OzUwOzs7MC43MTswLjIwOzAuOTk7MC40MDs7Ozs7MS4wMzswLjM5Ozs7OzswLjU2OzAuMDk7MS4xMTswLjU2Ozs7OzsxLjU4OzAuNjk7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OzAuNTA7MC4wNjsNCkFQU087O2h0dHBzOi8vY2l0ZXNlZXJ4LmlzdC5wc3UuZWR1L2RvY3VtZW50P3JlcGlkPXJlcDEmdHlwZT1wZGYmZG9pPWNlYzNjMDliYTU2ODg3NTg4ZjIxNjA3MmNjZTRhNTBlODFjZDZlY2Q7MjAxMTs7MTAwOzs7MS4zMTswLjAzOzs7Ozs7Ozs7OzswLjUzOzAuMDE7MS4wNTswLjA2OzEuNjk7MC4wNTsxLjc4OzAuMDI7MS44NjswLjAyOzEuOTU7MC4wMjsxLjk1OzAuMDE7MS45MDswLjAxOzs7Ozs7Ozs7NS4xNjswLjExOzMuODc7MC4wODs7OzIuMTc7MC4wNzs7OzAuODI7MC4wMjsNCkNlbGx1bGFyREU7O2h0dHBzOi8vd3d3LmFjYWRlbWlhLmVkdS9kb3dubG9hZC81MDUyNzQ5My9DZWxsdWxhckRFX0FfQ2VsbHVsYXJfQmFzZWRfRGlmZmVyZW50aWFsMjAxNjExMjQtNjYwMi0yazk3eHAucGRmOzIwMTE7OzEwMDs7OzEuNjQ7MC4wMzs7Ozs7Ozs7Ozs7MS41MzswLjA3OzEuNTA7MC4wNDsyLjQ2OzAuMDU7Mi42MjswLjA1OzIuNzY7MC4wNTsyLjc1OzAuMDU7Mi43MzswLjAzOzIuNjE7MC4wMjs7Ozs7Ozs7Ozs7My45ODswLjAzOzs7Mi40MjswLjAyOzs7OzsNCkVPOztodHRwczovL2xpbmsuc3ByaW5nZXIuY29tL2NvbnRlbnQvcGRmLzEwLjEwMDcvczEyMjkzLTAwOS0wMDI3LTYucGRmOzIwMTA7OzUwOzs7MC4yNTswLjA4OzAuNDc7MC4xMjswLjQ5OzAuMTI7MC41MzswLjEzOzAuNjU7MC4xOTswLjc3OzAuMjQ7Ny40NzsxLjk4Ozs7MC40MDswLjExOzAuNDk7MC4xMDswLjU2OzAuMDk7MC41OTswLjEwOzAuNjY7MC4wNzs7OzIuMjU7MC44NTs7OzYuMjI7MS42MDsxNy44MDs2LjkwOzs7Ozs7Ozs7Ozs7Ow0KUFNPLUNQOztodHRwczovL2J1cmEuYnJ1bmVsLmFjLnVrL2JpdHN0cmVhbS8yNDM4LzU4MTQvMi9GdWxsdGV4dC5wZGY7MjAxMDs7MzA7OzsxLjMxOzAuMDY7MS45ODswLjA2OzIuMjE7MC4wNjsyLjYxOzAuMTE7My4yMDswLjEzOzMuOTM7MC4xNDszLjQxOzAuMDY7Ozs7OzIuMDI7MC4wNzs7OzIuMTQ7MC4wODsyLjA0OzAuMDU7OzsyLjEyOzAuMDg7OzsxOC4yNTswLjMyOzs7Ozs7Ozs7Ozs7OzAuOTc7MC4wMzsNCkhtU087O2h0dHBzOi8vY2l0ZXNlZXJ4LmlzdC5wc3UuZWR1L2RvY3VtZW50P3JlcGlkPXJlcDEmdHlwZT1wZGYmZG9pPTkzMmNjN2ZkNGY1ZWNmYTIyMzQxYzYyZjY2YmZmZDI3ZTIxYjQ3YWQ7MjAxMDs7MTAwOzs7MS40NjswLjA0OzIuNTQ7MC4xMzszLjc5OzAuMTY7NS4wMzswLjE5OzYuMDQ7MC4yMjs7OzEuMDE7MC4wMzsxLjIzOzAuMDU7MS42NzswLjA0OzEuNzI7MC4wMzsxLjc4OzAuMDM7MS43NTswLjAyOzEuNzg7MC4wMjsxLjgyOzAuMDE7NC42MzswLjE3OzI1LjQwOzAuMzI7NjYuMjU7MS4zNzs7OzguMDQ7MC4xNDs0Ljc5OzAuMDc7OzsyLjQzOzAuMDc7OzswLjkwOzAuMDQ7DQpFU0NBOztodHRwczovL2xpbmsuc3ByaW5nZXIuY29tL2NvbnRlbnQvcGRmLzEwLjEwMDcvczExMDQ3LTAwOS05MTI5LTkucGRmOzIwMTA7OzUwOzs7MS41MzswLjAxOzEuOTg7MC4wNjsyLjIxOzAuMDY7Mi42MTswLjExOzMuMjA7MC4xMzszLjkzOzAuMTQ7MC45ODswLjAwOzs7MS44OTswLjA0OzEuNTI7MC4wMjsxLjYxOzAuMDI7MS42NzswLjAyOzEuNjE7MC4wMzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7DQptUFNPOztodHRwczovL3d3dy5yZXNlYXJjaGdhdGUubmV0L3Byb2ZpbGUvTW9oYW1tYWQtTWV5Ym9kaS00L3B1YmxpY2F0aW9uLzIyMTE5Njc4NV9BX05ld19QYXJ0aWNsZV9Td2FybV9PcHRpbWl6YXRpb25fQWxnb3JpdGhtX2Zvcl9EeW5hbWljX0Vudmlyb25tZW50cy9saW5rcy81NGY2YzZkZjBjZjJjYTVlZmVmZjM0ZDUvQS1OZXctUGFydGljbGUtU3dhcm0tT3B0aW1pemF0aW9uLUFsZ29yaXRobS1mb3ItRHluYW1pYy1FbnZpcm9ubWVudHMucGRmOzIwMTA7OzEwMDs7OzEuNjY7MC4wODsyLjU0OzAuMTE7My40NjswLjExOzQuNTE7MC4xNTs1LjMyOzAuMDk7OzswLjkwOzAuMDU7MS4yMTswLjEyOzIuMDU7MC4wODsyLjE4OzAuMDY7Mi4yNDswLjA2OzIuMzA7MC4wNDsyLjMyOzAuMDQ7Mi4zNDswLjAzOzQuNTI7MC4xNTsxMi41MjswLjIwOzExOS44MDszLjIxOzs7Ny4xOTswLjIzOzQuNTc7MC4xODs7OzIuNjY7MC4xNjs7OzEuMDU7MC4xMDsNCk1EVU1EQTs7aHR0cHM6Ly9pZWVleHBsb3JlLmllZWUub3JnL3N0YW1wL3N0YW1wLmpzcD9hcm51bWJlcj02MDc1NTE1OzIwMTA7OzUwOzs7MS4xNDswLjM5OzIuODc7MC40NTs0LjQ0OzEuMjE7Ni42NzsxLjU0OzguMjI7NC4xNzsxMC41OTs0LjA4OzQuNDU7MC42OTsxLjUzOzAuNDc7Mi45OTswLjUwOzMuOTg7MC43NDs0LjA1OzAuNDY7NC42NjswLjU0Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ow0KQ2VsbHVsYXJQU087O2h0dHBzOi8vY2l0ZXNlZXJ4LmlzdC5wc3UuZWR1L2RvY3VtZW50P3JlcGlkPXJlcDEmdHlwZT1wZGYmZG9pPTZjZWRkNTExOGViOTUyN2VlYzE3NmVmNjAwNDA3OWRmNzhhZDQ2YTI7MjAwOTs7MTAwOzs7MS45MzswLjA4OzIuNzI7MC4xMDszLjcwOzAuMTE7NC43MTswLjE0OzUuNjg7MC4xODs7OzIuNzk7MC4xOTsxLjk0OzAuMTg7Mi43MzswLjEyOzMuMDg7MC4xMTszLjI4OzAuMTE7My4zNDswLjA3OzMuNDg7MC4xMTszLjM3OzAuMDg7Ozs7Ozs7Ozs2LjgxOzAuMTc7NS45NDswLjIzOzs7My4wOTswLjE2Ozs7MS4xOTswLjA5Ow0KQ0VTTzs7aHR0cHM6Ly9kMXdxdHh0czF4emxlNy5jbG91ZGZyb250Lm5ldC8zMDQxNzU2MS8xNDY4LWxpYnJlLnBkZj8xMzkwODg3NTY4PSZyZXNwb25zZS1jb250ZW50LWRpc3Bvc2l0aW9uPWlubGluZSUzQitmaWxlbmFtZT1BX2NvbGxhYm9yYXRpdmVfbW9kZWxfZm9yX3RyYWNraW5nX29wdGltLnBkZiZFeHBpcmVzPTE3MDk2Mzg4MjYmU2lnbmF0dXJlPVVkcllhMWdCWWdnV2N1UUlwdkxoNWRET1hYWEVCdXlubn5tbllrSk8xbm5WZkhaSmxOMHNVRVJzNWF6TkFHNm0wbVQzVXpaT2NJVDYtbHUtdVN0Um9jTXNoblE2YTZOcm9LTVJvQ0VidWRiZlBOflVmWnRBfjRwUUxRZVY5NHJjVy0wdEEwcGlHc25KZGF5ZDVKTnhsT25BRlFrdDF0cGFERjNvckZULUgwWTYteWZYM2pMV3RZMjN2Z3B4UzBxSkFpc3h5WmVpckt3MEVNUHZUT0ZzblVKbzZkWlFHNWpXLVFUMGpxeG5wbThNakFjSHVKVjR+Z29Sek5hUFQ4MldvOGxpV0lDejExN2R1Um1OM2IzT1l4TjJ3aDU0Q0oyc2ZhcUd1eFRwTGJQfjVGbmlBSzNMQWd1SFprb0hzbmVlWkk5MEh+QTVtdmt+V1pOVjdUfnFld19fJktleS1QYWlyLUlkPUFQS0FKTE9IRjVHR1NMUkJWNFpBOzIwMDc7OzUwOzs7MS4zODswLjAyOzEuNzg7MC4wMjsyLjAzOzAuMDM7OzsyLjUyOzAuMDY7OzsxLjA0OzAuMDA7OzsxLjcyOzAuMDI7MS4yNDswLjAxOzEuMzA7MC4wMjsxLjQ1OzAuMDE7MS4yODswLjAyOzs7Mi41MTswLjA0Ozs7Ni44MTswLjA3OzI0LjYwOzAuMjU7Ozs7Ozs7Ozs7Ozs7DQpyU1BTTzs7aHR0cHM6Ly9hcC1zdDAxLmV4dC5leGxpYnJpc2dyb3VwLmNvbS82MVJNSVRfSU5TVC91cGxvYWQvMTcwOTY1NzUzMjA0OC9uMjAwNjAwNjU5My5wZGY/RXhwaXJlcz0xNzA5NjU3NjUyJlNpZ25hdHVyZT1ZWTJzLVhnSmUyWjE1YXhHZ0VHfnZmNkNydEVTWXBjRVFRUTZwcWdjUUZEby1CVWhNckdXNkhrcmN3SDFxd2p1ZVdjMm1BZDlSTE94akw4aUtHTDJLclFxN1ptVHlFR0FCVDFWei1pcVRDTE9VWkpNQmVUaVZIdS1DWmVKamRQWVZ5M3NZUG4wNnZQS3VoTHFDNW8xaHpVQjdlNjlMNWEtLVE3Z0tIcGxBVmF1TEplT3NZbTdDUlVoaERjb3IzdmZ3bDFOTFZ+NktzbmJYc1pRbUx3ZHFDR2F6QzV0VmIwMUluR2xrSUJHUDFtU1NqNFpnOHNEc2poblR2QXVxOXNaZ2NnYmdmeG01U3VGeDJFaW9PTTJ5ODh2Nnk0NWctV0xFWDYwVTNKTWFlSWxYdjd6cThHMWI0RTRPTzliRURnMVdMM1U2YmVKYms5Ti1xaVRHT05qVmdfXyZLZXktUGFpci1JZD1BUEtBSjcyT1pDWjM2VkdWQVNJQTsyMDA3Ozs1MDs7OzEuNTA7MC4wODsxLjg3OzAuMDU7Mi40MDswLjA4OzIuOTA7MC4wODszLjI1OzAuMDk7My44NjswLjExOzEuNDI7MC4wNjsxLjA0OzAuMDM7Mi4yMDswLjA3OzIuNjI7MC4wNzsyLjc2OzAuMDg7Mi43MjswLjA4OzIuOTM7MC4wNjsyLjc5OzAuMDU7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztQQVBFUiBOT1QgRk9VTkQNCkFtUVNPOztodHRwczovL2J1cmEuYnJ1bmVsLmFjLnVrL2JpdHN0cmVhbS8yNDM4LzU4MDYvMy9GdWxsdGV4dC5wZGY7MjAwNzs7NTA7OzsxLjY0OzAuMDU7Mi4yNjswLjA1OzIuODY7MC4wNjszLjM1OzAuMDY7My44MDswLjA3Ozs7MS4yNzswLjA0OzEuMzA7MC4wNjsyLjAzOzAuMDQ7Mi4xMTswLjAzOzIuMTg7MC4wMjsyLjE4OzAuMDI7Mi4xNDswLjAxOzIuMTI7MC4wMTszLjgwOzAuMTA7Ny42MDswLjE0OzI2Ljc5OzAuNjE7Ozs2Ljk3OzAuMTM7NC41MDswLjA5Ozs7Mi42NTswLjA1Ozs7MS4wMTswLjA0Ow0KbVFTTzs7aHR0cHM6Ly93ZWIuYXJjaGl2ZS5vcmcvd2ViLzIwMTEwMjAxMDMwNjEwaWRfL2h0dHA6Ly9jZWl0LmF1dC5hYy5pci9+bWV5Ym9kaS9wYXBlci9EeW5hbWljIGVudmlyb25tZW50L1BTTy1EeW5hbWljIEludmlyb25tbmV0K2FwcGxpY2F0aW9ucy9FdmxvdGlvbmFyeStEeW5hbWljIEVudmlyb25tZW50L0JsQnIwNl9URUNfTXVsdGlzd2FybS5wZGY7MjAwNjs7NTA7OzsxLjc1OzAuMDY7Mi40MDswLjA2OzMuMDA7MC4wNjszLjU5OzAuMTA7NC4yNDswLjEwOzQuNzk7MC4xMDs1LjA3OzAuMTc7MS44MTswLjA3OzIuNDI7MC4wNzsyLjQ4OzAuMDc7Mi41NTswLjA3OzIuNTA7MC4wNjsyLjM2OzAuMDQ7Mi4yNjswLjAzOzQuMzg7MC4xMjs4LjM3OzAuMTY7MjUuNTc7MC42Mzs7OzguOTY7MC4xOTs1LjIwOzAuMTA7OzsyLjg1OzAuMDc7OzsxLjEwOzAuMDM7DQptQ1BTTzs7aHR0cHM6Ly93ZWIuYXJjaGl2ZS5vcmcvd2ViLzIwMTEwMjAxMDMwNjEwaWRfL2h0dHA6Ly9jZWl0LmF1dC5hYy5pci9+bWV5Ym9kaS9wYXBlci9EeW5hbWljIGVudmlyb25tZW50L1BTTy1EeW5hbWljIEludmlyb25tbmV0K2FwcGxpY2F0aW9ucy9FdmxvdGlvbmFyeStEeW5hbWljIEVudmlyb25tZW50L0JsQnIwNl9URUNfTXVsdGlzd2FybS5wZGY7MjAwNjs7NTA7OzsyLjA1OzAuMDc7Mi44MDswLjA3OzMuNTc7MC4wODs0LjE4OzAuMDk7NC44OTswLjExOzUuNTM7MC4xMzs0LjkzOzAuMTc7Mi4wNzswLjA4OzIuNjQ7MC4wNzsyLjYzOzAuMDg7Mi42NzswLjA3OzIuNjU7MC4wNjsyLjQ5OzAuMDQ7Mi40NDswLjA0Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7';
+// ─────────────────────────────────────────────
 
-    // ─────────────────────────────────────────────
-    // STATE
-    // ─────────────────────────────────────────────
-    const state = {
-      activeIds: new Set(),
-      yearFrom: null,
-      yearTo: null,
-      sortCol: null,
-      sortDir: 'asc',
-    };
+// ─────────────────────────────────────────────
+// COLUMN DEFINITIONS
+// ─────────────────────────────────────────────
+const COLUMN_GROUPS = [
+  {
+    id: 'severity', label: 'Severity', cls: 'severity',
+    cols: [
+      { id: 's0', label: 'Sev. 0',  valKey: 'Severity_0',           stdKey: 'STD_Error_Standard_0' },
+      { id: 's1', label: 'Sev. 1',  valKey: 'Standard_1_10_5_5000', stdKey: 'STD_Error_Standard_1' },
+      { id: 's2', label: 'Sev. 2',  valKey: 'Severity_2',           stdKey: 'STD_Error_Standard_2' },
+      { id: 's3', label: 'Sev. 3',  valKey: 'Severity_3',           stdKey: 'STD_Error_Standard_3' },
+      { id: 's4', label: 'Sev. 4',  valKey: 'Severity_4',           stdKey: 'STD_Error_Standard_4' },
+      { id: 's5', label: 'Sev. 5',  valKey: 'Severity_5',           stdKey: 'STD_Error_Standard_5' },
+      { id: 's6', label: 'Sev. 6',  valKey: 'Severity_6',           stdKey: 'STD_Error_Standard_6' },
+    ]
+  },
+  {
+    id: 'peaks', label: 'Peaks', cls: 'peaks',
+    cols: [
+      { id: 'p1',   label: 'P=1',   valKey: 'Peaks_1',   stdKey: 'STD_Error_Peaks_1' },
+      { id: 'p5',   label: 'P=5',   valKey: 'Peaks_5',   stdKey: 'STD_Error_Peaks_5' },
+      { id: 'p20',  label: 'P=20',  valKey: 'Peaks_20',  stdKey: 'STD_Error_Peaks_20' },
+      { id: 'p30',  label: 'P=30',  valKey: 'Peaks_30',  stdKey: 'STD_Error_Peaks_30' },
+      { id: 'p40',  label: 'P=40',  valKey: 'Peaks_40',  stdKey: 'STD_Error_Peaks_40' },
+      { id: 'p50',  label: 'P=50',  valKey: 'Peaks_50',  stdKey: 'STD_Error_Peaks_50' },
+      { id: 'p100', label: 'P=100', valKey: 'Peaks_100', stdKey: 'STD_Error_Peaks_100' },
+      { id: 'p200', label: 'P=200', valKey: 'Peaks_200', stdKey: 'STD_Error_Peaks_200' },
+    ]
+  },
+  {
+    id: 'dims', label: 'Dimensions', cls: 'dims',
+    cols: [
+      { id: 'd10',  label: 'D=10',  valKey: 'Dimensions_10',  stdKey: 'STD_Error_Dimensions_10' },
+      { id: 'd20',  label: 'D=20',  valKey: 'Dimensions_20',  stdKey: 'STD_Error_Dimensions_20' },
+      { id: 'd50',  label: 'D=50',  valKey: 'Dimensions_50',  stdKey: 'STD_Error_Dimensions_50' },
+      { id: 'd100', label: 'D=100', valKey: 'Dimensions_100', stdKey: 'STD_Error_Dimensions_100' },
+    ]
+  },
+  {
+    id: 'freq', label: 'Frequencies', cls: 'freq',
+    cols: [
+      { id: 'f500',   label: 'f=500',   valKey: 'Frequencies_500',   stdKey: 'STD_Error_Frequencies_500' },
+      { id: 'f1000',  label: 'f=1000',  valKey: 'Frequencies_1000',  stdKey: 'STD_Error_Frequencies_1000' },
+      { id: 'f2000',  label: 'f=2000',  valKey: 'Frequencies_2000',  stdKey: 'STD_Error_Frequencies_2000' },
+      { id: 'f2500',  label: 'f=2500',  valKey: 'Frequencies_2500',  stdKey: 'STD_Error_Frequencies_2500' },
+      { id: 'f3000',  label: 'f=3000',  valKey: 'Frequencies_3000',  stdKey: 'STD_Error_Frequencies_3000' },
+      { id: 'f10000', label: 'f=10000', valKey: 'Frequencies_10000', stdKey: 'STD_Error_Frequencies_10000' },
+    ]
+  },
+];
 
-    // Initialize all checkboxes ON
-    COLUMN_GROUPS.forEach(g => g.cols.forEach(c => state.activeIds.add(c.id)));
+// ─────────────────────────────────────────────
+// PARSE CSV
+// ─────────────────────────────────────────────
+function parseCSV(raw) {
+  const lines = raw.trim().split('\n').map(l => l.replace(/\r/g, ''));
+  const headers = lines[0].split(';');
+  return lines.slice(1).map(line => {
+    const vals = line.split(';');
+    const obj = {};
+    headers.forEach((h, i) => { obj[h.trim()] = (vals[i] || '').trim(); });
+    return obj;
+  });
+}
 
-    // ─────────────────────────────────────────────
-    // YEAR BOUNDS
-    // ─────────────────────────────────────────────
-    const years = ALL_DATA.map(r => parseInt(r['Year publication'])).filter(y => !isNaN(y));
-    const MIN_YEAR = Math.min(...years);
-    const MAX_YEAR = Math.max(...years);
+const ALL_DATA = parseCSV(new TextDecoder().decode(Uint8Array.from(atob(window._D),c=>c.charCodeAt(0))));
 
-    // ─────────────────────────────────────────────
-    // BUILD CHIPS
-    // ─────────────────────────────────────────────
-    function buildChips() {
-      COLUMN_GROUPS.forEach(g => {
-        const container = document.getElementById(`chips-${g.id}`);
-        container.innerHTML = '';
-        g.cols.forEach(col => {
-          const chip = document.createElement('label');
-          chip.className = `chip ${g.id}-chip on`;
-          chip.dataset.id = col.id;
-          chip.innerHTML = `<input type="checkbox" checked/>${col.label}`;
-          chip.addEventListener('click', (e) => {
-            e.preventDefault();
-            const on = state.activeIds.has(col.id);
-            if (on) { state.activeIds.delete(col.id); chip.classList.remove('on'); }
-            else { state.activeIds.add(col.id); chip.classList.add('on'); }
-            render();
-          });
-          container.appendChild(chip);
-        });
-      });
-    }
+// ─────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────
+const state = {
+  activeIds: new Set(),
+  yearFrom: null,
+  yearTo: null,
+  sortCol: '__rank__',
+  sortDir: 'asc',
+  bestOnly: false,
+};
 
-    function toggleAll(groupId, on) {
-      const g = COLUMN_GROUPS.find(x => x.id === groupId);
-      if (!g) return;
-      g.cols.forEach(col => {
-        if (on) state.activeIds.add(col.id);
-        else state.activeIds.delete(col.id);
-      });
-      document.querySelectorAll(`#chips-${groupId} .chip`).forEach(chip => {
-        chip.classList.toggle('on', on);
-      });
-      render();
-    }
+// Initialize all checkboxes ON
+COLUMN_GROUPS.forEach(g => g.cols.forEach(c => state.activeIds.add(c.id)));
 
-    // ─────────────────────────────────────────────
-    // YEAR RANGE
-    // ─────────────────────────────────────────────
-    function initYearRange() {
-      const fromEl = document.getElementById('yearFrom');
-      const toEl = document.getElementById('yearTo');
-      fromEl.value = MIN_YEAR;
-      toEl.value = MAX_YEAR;
-      fromEl.min = MIN_YEAR; fromEl.max = MAX_YEAR;
-      toEl.min = MIN_YEAR; toEl.max = MAX_YEAR;
-      state.yearFrom = MIN_YEAR;
-      state.yearTo = MAX_YEAR;
-      fromEl.addEventListener('input', () => {
-        state.yearFrom = parseInt(fromEl.value) || MIN_YEAR;
+// ─────────────────────────────────────────────
+// YEAR BOUNDS
+// ─────────────────────────────────────────────
+const years = ALL_DATA.map(r => parseInt(r['Year publication'])).filter(y => !isNaN(y));
+const MIN_YEAR = Math.min(...years);
+const MAX_YEAR = Math.max(...years);
+
+// ─────────────────────────────────────────────
+// BUILD CHIPS
+// ─────────────────────────────────────────────
+function buildChips() {
+  COLUMN_GROUPS.forEach(g => {
+    const container = document.getElementById(`chips-${g.id}`);
+    container.innerHTML = '';
+    g.cols.forEach(col => {
+      const chip = document.createElement('label');
+      chip.className = `chip ${g.id}-chip on`;
+      chip.dataset.id = col.id;
+      chip.innerHTML = `<input type="checkbox" checked/>${col.label}`;
+      chip.addEventListener('click', (e) => {
+        e.preventDefault();
+        const on = state.activeIds.has(col.id);
+        if (on) { state.activeIds.delete(col.id); chip.classList.remove('on'); }
+        else { state.activeIds.add(col.id); chip.classList.add('on'); }
         render();
       });
-      toEl.addEventListener('input', () => {
-        state.yearTo = parseInt(toEl.value) || MAX_YEAR;
-        render();
-      });
-    }
+      container.appendChild(chip);
+    });
+  });
+}
 
-    // ─────────────────────────────────────────────
-    // GET ACTIVE COLS
-    // ─────────────────────────────────────────────
-    function getActiveCols() {
-      const cols = [];
-      COLUMN_GROUPS.forEach(g => {
-        g.cols.forEach(c => {
-          if (state.activeIds.has(c.id)) cols.push({ ...c, groupId: g.id, groupCls: g.cls });
-        });
-      });
-      return cols;
-    }
+function toggleAll(groupId, on) {
+  const g = COLUMN_GROUPS.find(x => x.id === groupId);
+  if (!g) return;
+  g.cols.forEach(col => {
+    if (on) state.activeIds.add(col.id);
+    else state.activeIds.delete(col.id);
+  });
+  document.querySelectorAll(`#chips-${groupId} .chip`).forEach(chip => {
+    chip.classList.toggle('on', on);
+  });
+  render();
+}
 
-    // ─────────────────────────────────────────────
-    // FILTER DATA
-    // ─────────────────────────────────────────────
-    function getFilteredData() {
-      return ALL_DATA.filter(row => {
-        const y = parseInt(row['Year publication']);
-        if (!isNaN(y)) {
-          if (state.yearFrom && y < state.yearFrom) return false;
-          if (state.yearTo && y > state.yearTo) return false;
-        }
-        return true;
-      });
-    }
+// ─────────────────────────────────────────────
+// YEAR RANGE
+// ─────────────────────────────────────────────
+function initYearRange() {
+  const fromEl = document.getElementById('yearFrom');
+  const toEl   = document.getElementById('yearTo');
+  fromEl.value = MIN_YEAR;
+  toEl.value   = MAX_YEAR;
+  fromEl.min = MIN_YEAR; fromEl.max = MAX_YEAR;
+  toEl.min   = MIN_YEAR; toEl.max   = MAX_YEAR;
+  state.yearFrom = MIN_YEAR;
+  state.yearTo   = MAX_YEAR;
+  fromEl.addEventListener('input', () => {
+    state.yearFrom = parseInt(fromEl.value) || MIN_YEAR;
+    render();
+  });
+  toEl.addEventListener('input', () => {
+    state.yearTo = parseInt(toEl.value) || MAX_YEAR;
+    render();
+  });
+}
 
-    // ─────────────────────────────────────────────
-    // SORTING
-    // ─────────────────────────────────────────────
-    function sortData(data) {
-      if (!state.sortCol) return data;
-      return [...data].sort((a, b) => {
-        let va = a[state.sortCol], vb = b[state.sortCol];
-        const na = parseFloat(va), nb = parseFloat(vb);
-        if (!isNaN(na) && !isNaN(nb)) { va = na; vb = nb; }
-        if (va < vb) return state.sortDir === 'asc' ? -1 : 1;
-        if (va > vb) return state.sortDir === 'asc' ? 1 : -1;
-        return 0;
-      });
-    }
+// ─────────────────────────────────────────────
+// GET ACTIVE COLS
+// ─────────────────────────────────────────────
+function getActiveCols() {
+  const cols = [];
+  COLUMN_GROUPS.forEach(g => {
+    g.cols.forEach(c => {
+      if (state.activeIds.has(c.id)) cols.push({ ...c, groupId: g.id, groupCls: g.cls });
+    });
+  });
+  return cols;
+}
 
-    function handleSort(colKey) {
-      if (state.sortCol === colKey) {
-        state.sortDir = state.sortDir === 'asc' ? 'desc' : 'asc';
-      } else {
-        state.sortCol = colKey;
-        state.sortDir = 'asc';
+// ─────────────────────────────────────────────
+// FILTER DATA
+// ─────────────────────────────────────────────
+function getFilteredData() {
+  const activeCols = getActiveCols();
+  // Pre-compute mins across ALL year-filtered rows (before bestOnly)
+  const yearFiltered = ALL_DATA.filter(row => {
+    const y = parseInt(row['Year publication']);
+    if (!isNaN(y)) {
+      if (state.yearFrom && y < state.yearFrom) return false;
+      if (state.yearTo   && y > state.yearTo)   return false;
+    }
+    return true;
+  });
+  if (!state.bestOnly) return yearFiltered;
+  // Compute per-column minimums across year-filtered set
+  const mins = {};
+  activeCols.forEach(c => {
+    let min = Infinity;
+    yearFiltered.forEach(row => {
+      const v = parseFloat((row[c.valKey] || '').trim());
+      if (!isNaN(v) && v < min) min = v;
+    });
+    mins[c.valKey] = isFinite(min) ? min : null;
+  });
+  // Keep only rows that hold the minimum in at least one visible column
+  return yearFiltered.filter(row =>
+    activeCols.some(c => {
+      const v = parseFloat((row[c.valKey] || '').trim());
+      return mins[c.valKey] !== null && !isNaN(v) && v === mins[c.valKey];
+    })
+  );
+}
+
+// ─────────────────────────────────────────────
+// SORTING
+// ─────────────────────────────────────────────
+function sortData(data, ranks) {
+  if (!state.sortCol) return data;
+  if (state.sortCol === '__rank__') {
+    return [...data].map((row, i) => ({ row, rank: ranks ? ranks[i] : null }))
+      .sort((a, b) => {
+        const ra = a.rank, rb = b.rank;
+        if (ra === null && rb === null) return 0;
+        if (ra === null) return 1;
+        if (rb === null) return -1;
+        return state.sortDir === 'asc' ? ra - rb : rb - ra;
+      })
+      .map(x => x.row);
+  }
+  return [...data].sort((a, b) => {
+    let va = a[state.sortCol], vb = b[state.sortCol];
+    const na = parseFloat(va), nb = parseFloat(vb);
+    if (!isNaN(na) && !isNaN(nb)) { va = na; vb = nb; }
+    if (va < vb) return state.sortDir === 'asc' ? -1 : 1;
+    if (va > vb) return state.sortDir === 'asc' ? 1 : -1;
+    return 0;
+  });
+}
+
+function handleSort(colKey) {
+  if (state.sortCol === colKey) {
+    state.sortDir = state.sortDir === 'asc' ? 'desc' : 'asc';
+  } else {
+    state.sortCol = colKey;
+    state.sortDir = 'asc';
+  }
+  render();
+}
+
+// ─────────────────────────────────────────────
+// RENDER TABLE HEADER
+// ─────────────────────────────────────────────
+function renderHeader(activeCols) {
+  const thead = document.getElementById('table-head');
+
+  // Group row
+  let gRow = '<tr>';
+  gRow += '<th class="th-group th-group-fixed" colspan="1" style="background:#111">Rank</th>';
+  gRow += '<th class="th-group th-group-fixed" colspan="4">Algorithm</th>';
+
+  // Group spans
+  const groupSpans = {};
+  activeCols.forEach(c => { groupSpans[c.groupId] = (groupSpans[c.groupId] || 0) + 1; });
+  COLUMN_GROUPS.forEach(g => {
+    if (groupSpans[g.id]) {
+      gRow += `<th class="th-group th-group-${g.id}" colspan="${groupSpans[g.id]}">${g.label}</th>`;
+    }
+  });
+  gRow += '</tr>';
+
+  // Column row
+  let cRow = '<tr>';
+  const rankSorted = state.sortCol === '__rank__';
+  const rankCls = rankSorted ? (state.sortDir === 'asc' ? 'sorted-asc' : 'sorted-desc') : '';
+  cRow += `<th class="col-fixed col-rank ${rankCls}" onclick="handleSort('__rank__')" title="Average rank across all visible columns (lower = better)">Avg Rank</th>`;
+  const fixedCols = [
+    { key: 'Method', label: 'Method' },
+    { key: 'Paper title', label: 'Paper Title' },
+    { key: 'Year publication', label: 'Year' },
+    { key: 'Runs', label: 'Runs' },
+  ];
+  fixedCols.forEach(fc => {
+    const sorted = state.sortCol === fc.key;
+    const cls = sorted ? (state.sortDir === 'asc' ? 'sorted-asc' : 'sorted-desc') : '';
+    cRow += `<th class="col-fixed ${cls}" onclick="handleSort('${fc.key}')">${fc.label}</th>`;
+  });
+  activeCols.forEach(c => {
+    const sorted = state.sortCol === c.valKey;
+    const cls = `col-${c.groupCls} ${sorted ? (state.sortDir === 'asc' ? 'sorted-asc' : 'sorted-desc') : ''}`;
+    cRow += `<th class="${cls}" onclick="handleSort('${c.valKey}')">${c.label}</th>`;
+  });
+  cRow += '</tr>';
+
+  thead.innerHTML = gRow + cRow;
+}
+
+// ─────────────────────────────────────────────
+// BEST VALUE PER COLUMN (lower is better)
+// ─────────────────────────────────────────────
+function computeColMins(data, activeCols) {
+  const mins = {};
+  activeCols.forEach(c => {
+    let min = Infinity;
+    data.forEach(row => {
+      const v = parseFloat((row[c.valKey] || '').trim());
+      if (!isNaN(v) && v < min) min = v;
+    });
+    mins[c.valKey] = isFinite(min) ? min : null;
+  });
+  return mins;
+}
+
+// ─────────────────────────────────────────────
+// AVERAGE RANK PER ROW (lower value = better rank = rank 1)
+// ─────────────────────────────────────────────
+function computeAvgRanks(data, activeCols) {
+  // For each active column, rank all rows that have a numeric value
+  const rankMap = {};  // rowIndex -> { sumRanks, count }
+  data.forEach((_, i) => { rankMap[i] = { sum: 0, count: 0 }; });
+
+  activeCols.forEach(c => {
+    // Collect numeric values with their row indices
+    const entries = [];
+    data.forEach((row, i) => {
+      const v = parseFloat((row[c.valKey] || '').trim());
+      if (!isNaN(v)) entries.push({ i, v });
+    });
+    if (entries.length === 0) return;
+    // Sort ascending (lower = better)
+    entries.sort((a, b) => a.v - b.v);
+    // Assign ranks with tie handling (average rank for ties)
+    let pos = 0;
+    while (pos < entries.length) {
+      let end = pos;
+      while (end + 1 < entries.length && entries[end + 1].v === entries[pos].v) end++;
+      const avgRank = (pos + end) / 2 + 1;
+      for (let k = pos; k <= end; k++) {
+        rankMap[entries[k].i].sum   += avgRank;
+        rankMap[entries[k].i].count += 1;
       }
-      render();
+      pos = end + 1;
     }
+  });
 
-    // ─────────────────────────────────────────────
-    // RENDER TABLE HEADER
-    // ─────────────────────────────────────────────
-    function renderHeader(activeCols) {
-      const thead = document.getElementById('table-head');
+  return data.map((_, i) => {
+    const { sum, count } = rankMap[i];
+    return count > 0 ? sum / count : null;
+  });
+}
 
-      // Group row
-      let gRow = '<tr>';
-      gRow += '<th class="th-group th-group-fixed" colspan="4">Algorithm</th>';
-
-      // Group spans
-      const groupSpans = {};
-      activeCols.forEach(c => { groupSpans[c.groupId] = (groupSpans[c.groupId] || 0) + 1; });
-      COLUMN_GROUPS.forEach(g => {
-        if (groupSpans[g.id]) {
-          gRow += `<th class="th-group th-group-${g.id}" colspan="${groupSpans[g.id]}">${g.label}</th>`;
-        }
-      });
-      gRow += '</tr>';
-
-      // Column row
-      let cRow = '<tr>';
-      const fixedCols = [
-        { key: 'Method', label: 'Method' },
-        { key: 'Paper title', label: 'Paper Title' },
-        { key: 'Year publication', label: 'Year' },
-        { key: 'Runs', label: 'Runs' },
-      ];
-      fixedCols.forEach(fc => {
-        const sorted = state.sortCol === fc.key;
-        const cls = sorted ? (state.sortDir === 'asc' ? 'sorted-asc' : 'sorted-desc') : '';
-        cRow += `<th class="col-fixed ${cls}" onclick="handleSort('${fc.key}')">${fc.label}</th>`;
-      });
-      activeCols.forEach(c => {
-        const sorted = state.sortCol === c.valKey;
-        const cls = `col-${c.groupCls} ${sorted ? (state.sortDir === 'asc' ? 'sorted-asc' : 'sorted-desc') : ''}`;
-        cRow += `<th class="${cls}" onclick="handleSort('${c.valKey}')">${c.label}</th>`;
-      });
-      cRow += '</tr>';
-
-      thead.innerHTML = gRow + cRow;
-    }
-
-    // ─────────────────────────────────────────────
-    // FORMAT CELL
-    // ─────────────────────────────────────────────
-    function fmtNum(val, std, cls) {
-      const v = val.trim();
-      const s = std.trim();
-      if (!v) return `<td class="cell-empty">—</td>`;
-      const vn = parseFloat(v);
-      const sn = parseFloat(s);
-      const vStr = isNaN(vn) ? v : vn.toFixed(2);
-      const sStr = (!s || isNaN(sn)) ? '' : sn.toFixed(2);
-      return `<td class="cell-num ${cls}">
-    <span class="val">${vStr}</span>${sStr ? `<span class="pm"> ± </span><span class="std">${sStr}</span>` : ''}
+// ─────────────────────────────────────────────
+// FORMAT CELL
+// ─────────────────────────────────────────────
+function fmtNum(val, std, cls, isBest) {
+  const v = val.trim();
+  const s = std.trim();
+  if (!v) return `<td class="cell-empty">\u2014</td>`;
+  const vn = parseFloat(v);
+  const sn = parseFloat(s);
+  const vStr = isNaN(vn) ? v : vn.toFixed(2);
+  const sStr = (!s || isNaN(sn)) ? '' : sn.toFixed(2);
+  const valTag = isBest
+    ? `<span class="val best">${vStr}</span>`
+    : `<span class="val">${vStr}</span>`;
+  return `<td class="cell-num ${cls}${isBest ? ' best-cell' : ''}">
+    ${valTag}${sStr ? `<span class="pm"> \u00b1 </span><span class="std">${sStr}</span>` : ''}
   </td>`;
-    }
-
-    // ─────────────────────────────────────────────
-    // RENDER TABLE BODY
-    // ─────────────────────────────────────────────
-    function renderBody(data, activeCols) {
-      const tbody = document.getElementById('table-body');
-      if (data.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="${4 + activeCols.length}" class="empty-state">
+}
+// ─────────────────────────────────────────────
+// RENDER TABLE BODY
+// ─────────────────────────────────────────────
+function renderBody(data, activeCols, ranks) {
+  const tbody = document.getElementById('table-body');
+  if (data.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="${5 + activeCols.length}" class="empty-state">
       <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
       No results match the current filters.
     </td></tr>`;
-        return;
-      }
-      const rows = data.map(row => {
-        const method = (row['Method'] || '').trim();
-        const title = (row['Paper title'] || '').trim();
-        const link = (row['Paper link'] || '').trim();
-        const year = (row['Year publication'] || '').trim();
-        const runs = (row['Runs'] || '').trim();
-        const titleCell = link
-          ? `<a href="${link}" target="_blank" rel="noopener" title="${title}">${title || '—'}</a>`
-          : (title || '—');
+    return;
+  }
+  const colMins = computeColMins(data, activeCols);
+  const rows = data.map((row, i) => {
+    const avgRank = ranks ? ranks[i] : null;
+    const method  = (row['Method'] || '').trim();
+    const title   = (row['Paper title'] || '').trim();
+    const link    = (row['Paper link'] || '').trim();
+    const year    = (row['Year publication'] || '').trim();
+    const runs    = (row['Runs'] || '').trim();
+    const titleCell = link
+      ? `<a href="${link}" target="_blank" rel="noopener" title="${title}">${title || '—'}</a>`
+      : (title || '—');
 
-        let tr = `<tr>
+    const rankDisplay = avgRank !== null ? avgRank.toFixed(2) : '—';
+    let tr = `<tr>
+      <td class="col-fixed cell-rank">${rankDisplay}</td>
       <td class="col-fixed cell-method">${method || '—'}</td>
       <td class="cell-title">${titleCell}</td>
       <td class="cell-year">${year || '—'}</td>
       <td class="cell-runs">${runs || '—'}</td>`;
 
-        activeCols.forEach(c => {
-          tr += fmtNum(row[c.valKey] || '', row[c.stdKey] || '', c.groupCls);
-        });
-        tr += '</tr>';
-        return tr;
-      });
-      tbody.innerHTML = rows.join('');
-    }
+    activeCols.forEach(c => {
+      const vn = parseFloat((row[c.valKey] || '').trim());
+      const isBest = colMins[c.valKey] !== null && !isNaN(vn) && vn === colMins[c.valKey];
+      tr += fmtNum(row[c.valKey] || '', row[c.stdKey] || '', c.groupCls, isBest);
+    });
+    tr += '</tr>';
+    return tr;
+  });
+  tbody.innerHTML = rows.join('');
+}
 
-    // ─────────────────────────────────────────────
-    // RENDER ALL
-    // ─────────────────────────────────────────────
-    function render() {
-      const activeCols = getActiveCols();
-      const filtered = getFilteredData();
-      const sorted = sortData(filtered);
-      renderHeader(activeCols);
-      renderBody(sorted, activeCols);
-      // Stats
-      const info = document.getElementById('stats-info');
-      info.innerHTML = `Showing <strong>${sorted.length}</strong> of <strong>${ALL_DATA.length}</strong> algorithms · <strong>${activeCols.length}</strong> result columns`;
-    }
+// ─────────────────────────────────────────────
+// RENDER ALL
+// ─────────────────────────────────────────────
+function render() {
+  const activeCols = getActiveCols();
+  const filtered = getFilteredData();
+  const ranks = computeAvgRanks(filtered, activeCols);
+  // Attach ranks to rows so sortData can use them
+  const filteredWithRanks = filtered.map((row, i) => ({ ...row, __rank__: ranks[i] }));
+  const sorted = sortData(filteredWithRanks, ranks);
+  // Recompute ranks in the sorted order for display
+  const sortedRanks = sorted.map(row => row.__rank__);
+  renderHeader(activeCols);
+  renderBody(sorted, activeCols, sortedRanks);
+  // Stats
+  const info = document.getElementById('stats-info');
+  info.innerHTML = `Showing <strong>${sorted.length}</strong> of <strong>${ALL_DATA.length}</strong> algorithms · <strong>${activeCols.length}</strong> result columns`;
+  const hint = document.getElementById('bestOnlyHint');
+  if (hint) hint.textContent = state.bestOnly ? `${sorted.length} algorithm${sorted.length !== 1 ? 's' : ''} lead in at least one column` : '';
+}
 
-    // ─────────────────────────────────────────────
-    // RESET
-    // ─────────────────────────────────────────────
-    function resetFilters() {
-      state.activeIds.clear();
-      COLUMN_GROUPS.forEach(g => g.cols.forEach(c => state.activeIds.add(c.id)));
-      document.querySelectorAll('.chip').forEach(c => c.classList.add('on'));
-      document.getElementById('yearFrom').value = MIN_YEAR;
-      document.getElementById('yearTo').value = MAX_YEAR;
-      state.yearFrom = MIN_YEAR;
-      state.yearTo = MAX_YEAR;
-      state.sortCol = null;
-      state.sortDir = 'asc';
-      render();
-    }
+// ─────────────────────────────────────────────
+// RESET
+// ─────────────────────────────────────────────
+function resetFilters() {
+  state.activeIds.clear();
+  COLUMN_GROUPS.forEach(g => g.cols.forEach(c => state.activeIds.add(c.id)));
+  document.querySelectorAll('.chip').forEach(c => c.classList.add('on'));
+  document.getElementById('yearFrom').value = MIN_YEAR;
+  document.getElementById('yearTo').value   = MAX_YEAR;
+  state.yearFrom = MIN_YEAR;
+  state.yearTo   = MAX_YEAR;
+  state.sortCol  = null;
+  state.sortDir  = 'asc';
+  state.bestOnly = false;
+  document.getElementById('bestOnlyBtn').classList.remove('on');
+  render();
+}
 
-    // ─────────────────────────────────────────────
-    // EXPORT CSV
-    // ─────────────────────────────────────────────
-    function exportCSV() {
-      const activeCols = getActiveCols();
-      const filtered = sortData(getFilteredData());
+// ─────────────────────────────────────────────
+// EXPORT CSV
+// ─────────────────────────────────────────────
+function exportCSV() {
+  const activeCols = getActiveCols();
+  const filtered = sortData(getFilteredData());
 
-      const headers = ['Method', 'Paper title', 'Year publication', 'Runs',
-        ...activeCols.flatMap(c => [c.valKey, c.stdKey])];
-      const rows = filtered.map(row =>
-        headers.map(h => `"${(row[h] || '').trim().replace(/"/g, '""')}"`).join(',')
-      );
-      const csv = [headers.join(','), ...rows].join('\n');
-      downloadFile(csv, 'MPB_Scenario2_results.csv', 'text/csv');
-    }
+  const headers = ['Method', 'Paper title', 'Year publication', 'Runs',
+    ...activeCols.flatMap(c => [c.valKey, c.stdKey])];
+  const rows = filtered.map(row =>
+    headers.map(h => `"${(row[h] || '').trim().replace(/"/g, '""')}"`).join(',')
+  );
+  const csv = [headers.join(','), ...rows].join('\n');
+  downloadFile(csv, 'MPB_Scenario2_results.csv', 'text/csv');
+}
 
-    // ─────────────────────────────────────────────
-    // EXPORT LATEX  (one file per visible category,
-    //                only if ≥1 row has data in it)
-    // ─────────────────────────────────────────────
+// ─────────────────────────────────────────────
+// EXPORT LATEX  (one file per visible category,
+//                only if ≥1 row has data in it)
+// ─────────────────────────────────────────────
 
-    // Escape special LaTeX characters in plain text
-    function latexEsc(str) {
-      return str
-        .replace(/\\/g, '\\textbackslash{}')
-        .replace(/&/g, '\\&')
-        .replace(/%/g, '\\%')
-        .replace(/_/g, '\\_')
-        .replace(/\^/g, '\\^{}')
-        .replace(/#/g, '\\#')
-        .replace(/\$/g, '\\$')
-        .replace(/\{/g, '\\{')
-        .replace(/\}/g, '\\}')
-        .replace(/~/g, '\\textasciitilde{}');
-    }
+// Escape special LaTeX characters in plain text
+function latexEsc(str) {
+  return str
+    .replace(/\\/g, '\\textbackslash{}')
+    .replace(/&/g, '\\&')
+    .replace(/%/g, '\\%')
+    .replace(/_/g, '\\_')
+    .replace(/\^/g, '\\^{}')
+    .replace(/#/g, '\\#')
+    .replace(/\$/g, '\\$')
+    .replace(/\{/g, '\\{')
+    .replace(/\}/g, '\\}')
+    .replace(/~/g, '\\textasciitilde{}');
+}
 
-    function buildLatexForGroup(group, groupCols, filtered, dateStr) {
-      // Only keep rows that have at least one non-empty value for this group
-      const usefulRows = filtered.filter(row =>
-        groupCols.some(c => (row[c.valKey] || '').trim() !== '')
-      );
-      if (usefulRows.length === 0) return null;
+function buildLatexForGroup(group, groupCols, filtered, dateStr) {
+  // Only keep rows that have at least one non-empty value for this group
+  const usefulRows = filtered.filter(row =>
+    groupCols.some(c => (row[c.valKey] || '').trim() !== '')
+  );
+  if (usefulRows.length === 0) return null;
 
-      const nResultCols = groupCols.length;
-      const colSpec = 'll cc ' + groupCols.map(() => 'r').join(' ');
+  const nResultCols = groupCols.length;
+  const colSpec = 'll cc ' + groupCols.map(() => 'r').join(' ');
 
-      // Column header labels
-      const colHeaderParts = [
-        'Method',
-        'Paper title',
-        'Year',
-        'Runs',
-        ...groupCols.map(c => c.label.replace('=', '$=$'))
-      ];
-      const colHeaderRow = colHeaderParts.join(' & ');
+  // Column header labels
+  const colHeaderParts = [
+    'Method',
+    'Paper title',
+    'Year',
+    'Runs',
+    ...groupCols.map(c => c.label.replace('=', '$=$'))
+  ];
+  const colHeaderRow = colHeaderParts.join(' & ');
 
-      // cmidrule for result block (cols 5 … 4+n)
-      const resultStart = 5;
-      const resultEnd = 4 + nResultCols;
-      const cmidrules = `\\cmidrule(lr){1-4} \\cmidrule(lr){${resultStart}-${resultEnd}}`;
+  // cmidrule for result block (cols 5 … 4+n)
+  const resultStart = 5;
+  const resultEnd   = 4 + nResultCols;
+  const cmidrules = `\\cmidrule(lr){1-4} \\cmidrule(lr){${resultStart}-${resultEnd}}`;
 
-      // Group span row
-      const groupHeaderRow =
-        `\\multicolumn{4}{c}{Algorithm} & \\multicolumn{${nResultCols}}{c}{${group.label}}`;
+  // Group span row
+  const groupHeaderRow =
+    `\\multicolumn{4}{c}{Algorithm} & \\multicolumn{${nResultCols}}{c}{${group.label}}`;
 
-      // Data rows
-      const dataRows = usefulRows.map(row => {
-        const method = latexEsc((row['Method'] || '').trim());
-        const rawTitle = (row['Paper title'] || '').trim();
-        const title = latexEsc(rawTitle.length > 48 ? rawTitle.substring(0, 45) + '...' : rawTitle);
-        const year = (row['Year publication'] || '').trim() || '---';
-        const runs = (row['Runs'] || '').trim() || '---';
-        const cells = [method, title, year, runs];
-        groupCols.forEach(c => {
-          const v = (row[c.valKey] || '').trim();
-          const s = (row[c.stdKey] || '').trim();
-          if (!v) { cells.push('---'); return; }
-          const vn = parseFloat(v), sn = parseFloat(s);
-          const vStr = isNaN(vn) ? latexEsc(v) : vn.toFixed(2);
-          const sStr = (!s || isNaN(sn)) ? '' : ` $\\pm$ ${sn.toFixed(2)}`;
-          cells.push(`${vStr}${sStr}`);
-        });
-        return '    ' + cells.join(' & ') + ' \\\\';
-      });
+  // Compute best (min) value per column for this group
+  const latexMins = {};
+  groupCols.forEach(c => {
+    let min = Infinity;
+    usefulRows.forEach(row => {
+      const v = parseFloat((row[c.valKey] || '').trim());
+      if (!isNaN(v) && v < min) min = v;
+    });
+    latexMins[c.valKey] = isFinite(min) ? min : null;
+  });
 
-      return `% MPB Scenario 2 — ${group.label} Results
+  // Data rows
+  const dataRows = usefulRows.map(row => {
+    const method = latexEsc((row['Method'] || '').trim());
+    const rawTitle = (row['Paper title'] || '').trim();
+    const title  = latexEsc(rawTitle.length > 48 ? rawTitle.substring(0, 45) + '...' : rawTitle);
+    const year   = (row['Year publication'] || '').trim() || '---';
+    const runs   = (row['Runs'] || '').trim() || '---';
+    const cells  = [method, title, year, runs];
+    groupCols.forEach(c => {
+      const v = (row[c.valKey] || '').trim();
+      const s = (row[c.stdKey] || '').trim();
+      if (!v) { cells.push('---'); return; }
+      const vn = parseFloat(v), sn = parseFloat(s);
+      const vStr = isNaN(vn) ? latexEsc(v) : vn.toFixed(2);
+      const sStr = (!s || isNaN(sn)) ? '' : ` $\\pm$ ${sn.toFixed(2)}`;
+      const isBest = latexMins[c.valKey] !== null && !isNaN(vn) && vn === latexMins[c.valKey];
+      const cell = isBest ? `\\textbf{${vStr}${sStr}}` : `${vStr}${sStr}`;
+      cells.push(cell);
+    });
+    return '    ' + cells.join(' & ') + ' \\\\';
+  });
+
+  return `% MPB Scenario 2 — ${group.label} Results
 % Generated ${dateStr}
 % Algorithms: ${usefulRows.length} | Columns: ${nResultCols}
 % Requires: \\usepackage{booktabs}
@@ -1310,53 +1165,62 @@ ${dataRows.join('\n')}
     \\bottomrule
   \\end{tabular}}
 \\end{table}`;
-    }
+}
 
-    function exportLaTeX() {
-      const activeCols = getActiveCols();
-      const filtered = sortData(getFilteredData());
-      const dateStr = new Date().toISOString().slice(0, 10);
+function exportLaTeX() {
+  const activeCols = getActiveCols();
+  const filtered   = sortData(getFilteredData());
+  const dateStr    = new Date().toISOString().slice(0, 10);
 
-      let filesExported = 0;
+  let filesExported = 0;
 
-      COLUMN_GROUPS.forEach(group => {
-        // Only columns that are currently active AND belong to this group
-        const groupCols = activeCols.filter(c => c.groupId === group.id);
-        if (groupCols.length === 0) return; // group entirely hidden — skip
+  COLUMN_GROUPS.forEach(group => {
+    // Only columns that are currently active AND belong to this group
+    const groupCols = activeCols.filter(c => c.groupId === group.id);
+    if (groupCols.length === 0) return; // group entirely hidden — skip
 
-        const latex = buildLatexForGroup(group, groupCols, filtered, dateStr);
-        if (!latex) return; // no row had data for this group — skip
+    const latex = buildLatexForGroup(group, groupCols, filtered, dateStr);
+    if (!latex) return; // no row had data for this group — skip
 
-        // Stagger downloads slightly so browsers don't block them
-        setTimeout(() => {
-          downloadFile(latex, `MPB_Scenario2_${group.id}.tex`, 'text/plain');
-        }, filesExported * 300);
-        filesExported++;
-      });
+    // Stagger downloads slightly so browsers don't block them
+    setTimeout(() => {
+      downloadFile(latex, `MPB_Scenario2_${group.id}.tex`, 'text/plain');
+    }, filesExported * 300);
+    filesExported++;
+  });
 
-      if (filesExported === 0) {
-        alert('No data to export: no visible columns have results for the current filter selection.');
-      }
-    }
+  if (filesExported === 0) {
+    alert('No data to export: no visible columns have results for the current filter selection.');
+  }
+}
 
-    // ─────────────────────────────────────────────
-    // DOWNLOAD HELPER
-    // ─────────────────────────────────────────────
-    function downloadFile(content, filename, mime) {
-      const blob = new Blob([content], { type: mime });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = filename; a.click();
-      URL.revokeObjectURL(url);
-    }
+// ─────────────────────────────────────────────
+// DOWNLOAD HELPER
+// ─────────────────────────────────────────────
+function downloadFile(content, filename, mime) {
+  const blob = new Blob([content], { type: mime });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+}
 
-    // ─────────────────────────────────────────────
-    // INIT
-    // ─────────────────────────────────────────────
-    buildChips();
-    initYearRange();
-    render();
-  </script>
+// ─────────────────────────────────────────────
+// BEST-ONLY TOGGLE
+// ─────────────────────────────────────────────
+function toggleBestOnly() {
+  state.bestOnly = !state.bestOnly;
+  const btn = document.getElementById('bestOnlyBtn');
+  btn.classList.toggle('on', state.bestOnly);
+  render();
+}
+
+// ─────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────
+buildChips();
+initYearRange();
+render();
+</script>
 </body>
-
 </html>
