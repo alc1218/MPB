@@ -1,1122 +1,790 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8" />
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-GH21V37ZSB"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag() { dataLayer.push(arguments); }
-    gtag('js', new Date());
-    gtag('config', 'G-GH21V37ZSB');
-  </script>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MPB Scenario 2 — Benchmark Results</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=JetBrains+Mono:wght@400;500&display=swap"
-    rel="stylesheet" />
-  <style>
-    :root {
-      --bg: #f8f7f4;
-      --surface: #ffffff;
-      --surface2: #f0efe9;
-      --border: #e2e0d8;
-      --text: #1a1917;
-      --text-muted: #6b6860;
-      --text-faint: #9e9c94;
-      --accent: #1d4ed8;
-      --accent-light: #dbeafe;
-      --accent-hover: #1e40af;
-      --teal: #0d9488;
-      --teal-light: #ccfbf1;
-      --orange: #ea580c;
-      --orange-light: #ffedd5;
-      --severity-col: #7c3aed;
-      --peaks-col: #0369a1;
-      --dims-col: #047857;
-      --freq-col: #b45309;
-      --row-hover: #f5f4ef;
-      --shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
-      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
-      --radius: 8px;
-      --font-mono: 'JetBrains Mono', monospace;
-    }
-
-    *,
-    *::before,
-    *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      font-family: 'DM Sans', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.6;
-      min-height: 100vh;
-    }
-
-    /* ── HEADER ── */
-    header {
-      background: var(--text);
-      color: white;
-      padding: 48px 40px 40px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    header::before {
-      content: '';
-      position: absolute;
-      top: -80px;
-      right: -60px;
-      width: 420px;
-      height: 420px;
-      border-radius: 50%;
-      background: rgba(29, 78, 216, 0.15);
-      pointer-events: none;
-    }
-
-    header::after {
-      content: '';
-      position: absolute;
-      bottom: -100px;
-      left: 30%;
-      width: 280px;
-      height: 280px;
-      border-radius: 50%;
-      background: rgba(13, 148, 136, 0.12);
-      pointer-events: none;
-    }
-
-    .header-inner {
-      max-width: 1400px;
-      margin: 0 auto;
-      position: relative;
-      z-index: 1;
-    }
-
-    .header-tag {
-      display: inline-block;
-      font-family: var(--font-mono);
-      font-size: 10px;
-      letter-spacing: .12em;
-      text-transform: uppercase;
-      color: rgba(255, 255, 255, 0.5);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 4px;
-      padding: 3px 10px;
-      margin-bottom: 16px;
-    }
-
-    header h1 {
-      font-family: 'Syne', sans-serif;
-      font-size: clamp(26px, 4vw, 42px);
-      font-weight: 800;
-      letter-spacing: -0.02em;
-      line-height: 1.1;
-      color: white;
-      margin-bottom: 14px;
-    }
-
-    header h1 span {
-      color: #60a5fa;
-    }
-
-    header p {
-      font-size: 15px;
-      color: rgba(255, 255, 255, 0.65);
-      max-width: 680px;
-      line-height: 1.7;
-    }
-
-    .header-contact {
-      margin-top: 20px;
-      font-size: 13px;
-      color: rgba(255, 255, 255, 0.5);
-    }
-
-    .header-contact a {
-      color: #93c5fd;
-      text-decoration: none;
-      font-family: var(--font-mono);
-      font-size: 12px;
-    }
-
-    .header-contact a:hover {
-      text-decoration: underline;
-    }
-
-    /* ── MAIN LAYOUT ── */
-    .main-wrap {
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 32px 24px 60px;
-    }
-
-    /* ── CONTROL PANEL ── */
-    .control-panel {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow-md);
-      margin-bottom: 24px;
-      overflow: hidden;
-    }
-
-    .panel-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 16px 20px;
-      border-bottom: 1px solid var(--border);
-      background: var(--surface2);
-    }
-
-    .panel-title {
-      font-family: 'Syne', sans-serif;
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: .06em;
-      text-transform: uppercase;
-      color: var(--text-muted);
-    }
-
-    .panel-actions {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .panel-body {
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-
-    /* ── FILTER ROWS ── */
-    .filter-row {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .filter-label {
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .filter-label .dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-
-    .dot-severity {
-      background: var(--severity-col);
-    }
-
-    .dot-peaks {
-      background: var(--peaks-col);
-    }
-
-    .dot-dims {
-      background: var(--dims-col);
-    }
-
-    .dot-freq {
-      background: var(--freq-col);
-    }
-
-    .chip-group {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-    }
-
-    .chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      padding: 4px 10px;
-      border-radius: 20px;
-      border: 1.5px solid var(--border);
-      background: var(--bg);
-      font-size: 12px;
-      font-family: var(--font-mono);
-      cursor: pointer;
-      transition: all .15s;
-      user-select: none;
-      color: var(--text-muted);
-      white-space: nowrap;
-    }
-
-    .chip:hover {
-      border-color: currentColor;
-    }
-
-    .chip input[type=checkbox] {
-      display: none;
-    }
-
-    .chip.severity-chip.on {
-      background: #ede9fe;
-      border-color: var(--severity-col);
-      color: var(--severity-col);
-    }
-
-    .chip.peaks-chip.on {
-      background: #e0f2fe;
-      border-color: var(--peaks-col);
-      color: var(--peaks-col);
-    }
-
-    .chip.dims-chip.on {
-      background: #d1fae5;
-      border-color: var(--dims-col);
-      color: var(--dims-col);
-    }
-
-    .chip.freq-chip.on {
-      background: #fef3c7;
-      border-color: var(--freq-col);
-      color: var(--freq-col);
-    }
-
-    /* ── YEAR RANGE ── */
-    .year-range-row {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      flex-wrap: wrap;
-    }
-
-    .year-range-label {
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      white-space: nowrap;
-    }
-
-    .year-inputs {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .year-input {
-      width: 74px;
-      padding: 5px 8px;
-      border: 1.5px solid var(--border);
-      border-radius: 6px;
-      font-family: var(--font-mono);
-      font-size: 13px;
-      background: var(--bg);
-      color: var(--text);
-      outline: none;
-      transition: border-color .15s;
-    }
-
-    .year-input:focus {
-      border-color: var(--accent);
-    }
-
-    .year-sep {
-      color: var(--text-muted);
-      font-size: 13px;
-    }
-
-    .year-range-track {
-      flex: 1;
-      min-width: 160px;
-      height: 4px;
-      background: var(--border);
-      border-radius: 2px;
-      position: relative;
-    }
-
-    .year-range-fill {
-      position: absolute;
-      height: 100%;
-      background: var(--accent);
-      border-radius: 2px;
-      pointer-events: none;
-    }
-
-    /* ── BUTTONS ── */
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 7px 14px;
-      border-radius: 6px;
-      border: 1.5px solid transparent;
-      font-size: 12.5px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all .15s;
-      white-space: nowrap;
-      font-family: 'DM Sans', sans-serif;
-    }
-
-    .btn-ghost {
-      background: transparent;
-      border-color: var(--border);
-      color: var(--text-muted);
-    }
-
-    .btn-ghost:hover {
-      border-color: var(--text-muted);
-      color: var(--text);
-      background: var(--bg);
-    }
-
-    .btn-primary {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: white;
-    }
-
-    .btn-primary:hover {
-      background: var(--accent-hover);
-      border-color: var(--accent-hover);
-    }
-
-    .btn-teal {
-      background: var(--teal);
-      border-color: var(--teal);
-      color: white;
-    }
-
-    .btn-teal:hover {
-      background: #0f766e;
-      border-color: #0f766e;
-    }
-
-    .btn svg {
-      flex-shrink: 0;
-    }
-
-    /* ── STATS BAR ── */
-    .stats-bar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-bottom: 12px;
-      padding: 0 2px;
-    }
-
-    .stats-info {
-      font-size: 13px;
-      color: var(--text-muted);
-    }
-
-    .stats-info strong {
-      color: var(--text);
-    }
-
-    .export-group {
-      display: flex;
-      gap: 8px;
-    }
-
-    /* ── TABLE WRAPPER ── */
-    .table-wrap {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow-md);
-      overflow: auto;
-      max-height: 70vh;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
-    }
-
-    thead {
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      background: var(--text);
-      color: white;
-    }
-
-    /* group headers */
-    .th-group {
-      padding: 8px 12px 4px;
-      text-align: center;
-      font-family: 'Syne', sans-serif;
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: .1em;
-      text-transform: uppercase;
-      border-bottom: 2px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .th-group-severity {
-      background: #3b0764;
-    }
-
-    .th-group-peaks {
-      background: #0c4a6e;
-    }
-
-    .th-group-dims {
-      background: #064e3b;
-    }
-
-    .th-group-freq {
-      background: #451a03;
-    }
-
-    .th-group-fixed {
-      background: #111;
-    }
-
-    /* column headers */
-    th {
-      padding: 7px 12px;
-      text-align: left;
-      font-family: var(--font-mono);
-      font-size: 10px;
-      font-weight: 500;
-      letter-spacing: .05em;
-      white-space: nowrap;
-      border-right: 1px solid rgba(255, 255, 255, 0.06);
-      background: #1f1e1b;
-      color: rgba(255, 255, 255, 0.75);
-      cursor: pointer;
-      user-select: none;
-    }
-
-    th:hover {
-      background: #2d2c28;
-      color: white;
-    }
-
-    th.sorted-asc::after {
-      content: ' ↑';
-      color: #60a5fa;
-    }
-
-    th.sorted-desc::after {
-      content: ' ↓';
-      color: #60a5fa;
-    }
-
-    th.col-fixed {
-      background: #141312;
-    }
-
-    /* col colors in header */
-    th.col-severity {
-      background: #2e1065;
-    }
-
-    th.col-peaks {
-      background: #082f49;
-    }
-
-    th.col-dims {
-      background: #022c22;
-    }
-
-    th.col-freq {
-      background: #2c1400;
-    }
-
-    /* body */
-    tbody tr {
-      border-bottom: 1px solid var(--border);
-      transition: background .1s;
-    }
-
-    tbody tr:hover {
-      background: var(--row-hover);
-    }
-
-    tbody tr:last-child {
-      border-bottom: none;
-    }
-
-    td {
-      padding: 9px 12px;
-      border-right: 1px solid var(--border);
-      white-space: nowrap;
-      vertical-align: middle;
-    }
-
-    td:last-child {
-      border-right: none;
-    }
-
-    td.col-fixed {
-      border-right: 1px solid var(--border);
-    }
-
-    .cell-method {
-      font-family: 'Syne', sans-serif;
-      font-weight: 700;
-      font-size: 13px;
-      color: var(--text);
-      min-width: 110px;
-    }
-
-    .cell-title {
-      color: var(--text-muted);
-      font-size: 12px;
-      max-width: 220px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .cell-title a {
-      color: var(--accent);
-      text-decoration: none;
-    }
-
-    .cell-title a:hover {
-      text-decoration: underline;
-    }
-
-    .cell-year,
-    .cell-runs {
-      font-family: var(--font-mono);
-      font-size: 12px;
-      color: var(--text-muted);
-      text-align: center;
-    }
-
-    .cell-num {
-      font-family: var(--font-mono);
-      font-size: 12px;
-      text-align: right;
-      white-space: nowrap;
-    }
-
-    .cell-num .val {
-      color: var(--text);
-      font-weight: 500;
-    }
-
-    .cell-num .pm {
-      color: var(--text-faint);
-      font-size: 10px;
-      margin: 0 2px;
-    }
-
-    .cell-num .std {
-      color: var(--text-faint);
-      font-size: 11px;
-    }
-
-    .cell-num.severity .val {
-      color: #6d28d9;
-    }
-
-    .cell-num.peaks .val {
-      color: #0369a1;
-    }
-
-    .cell-num.dims .val {
-      color: #047857;
-    }
-
-    .cell-num.freq .val {
-      color: #b45309;
-    }
-
-    .cell-empty {
-      color: var(--text-faint);
-      text-align: center;
-      font-size: 11px;
-      font-family: var(--font-mono);
-    }
-
-    .cell-num .val.best {
-      font-weight: 700;
-    }
-
-    .best-cell {
-      background: rgba(16, 185, 129, 0.07);
-    }
-
-    .best-cell.severity {
-      background: rgba(124, 58, 237, 0.07);
-    }
-
-    .best-cell.peaks {
-      background: rgba(3, 105, 161, 0.07);
-    }
-
-    .best-cell.dims {
-      background: rgba(4, 120, 87, 0.07);
-    }
-
-    .best-cell.freq {
-      background: rgba(180, 83, 9, 0.07);
-    }
-
-    /* ── EMPTY STATE ── */
-    .empty-state {
-      text-align: center;
-      padding: 60px 20px;
-      color: var(--text-faint);
-      font-size: 14px;
-    }
-
-    .empty-state svg {
-      display: block;
-      margin: 0 auto 12px;
-      opacity: .3;
-    }
-
-    /* ── FOOTER ── */
-    footer {
-      text-align: center;
-      padding: 32px 24px;
-      font-size: 12px;
-      color: var(--text-faint);
-      border-top: 1px solid var(--border);
-      margin-top: 40px;
-    }
-
-    footer a {
-      color: var(--accent);
-      text-decoration: none;
-    }
-
-    footer a:hover {
-      text-decoration: underline;
-    }
-
-    /* ── RESPONSIVE ── */
-    @media (max-width: 700px) {
-      header {
-        padding: 32px 20px 28px;
-      }
-
-      .main-wrap {
-        padding: 20px 16px 40px;
-      }
-
-      .panel-body {
-        padding: 14px;
-      }
-
-      .panel-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-      }
-    }
-
-    /* scrollbar */
-    .table-wrap::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
-    }
-
-    .table-wrap::-webkit-scrollbar-track {
-      background: var(--bg);
-    }
-
-    .table-wrap::-webkit-scrollbar-thumb {
-      background: var(--border);
-      border-radius: 3px;
-    }
-
-    .table-wrap::-webkit-scrollbar-thumb:hover {
-      background: var(--text-faint);
-    }
-
-    /* select-all toggle links */
-    .toggle-link {
-      font-size: 11px;
-      color: var(--accent);
-      cursor: pointer;
-      text-decoration: underline;
-      background: none;
-      border: none;
-      padding: 0;
-      font-family: 'DM Sans', sans-serif;
-    }
-
-    .toggle-link:hover {
-      color: var(--accent-hover);
-    }
-
-    /* ── BEST-ONLY FILTER ── */
-    .best-only-row {
-      align-items: center;
-      gap: 12px;
-      flex-direction: row !important;
-    }
-
-    .best-only-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      padding: 7px 16px;
-      border-radius: 20px;
-      border: 1.5px solid var(--border);
-      background: var(--bg);
-      font-size: 12.5px;
-      font-weight: 500;
-      cursor: pointer;
-      color: var(--text-muted);
-      font-family: 'DM Sans', sans-serif;
-      transition: all .15s;
-    }
-
-    .best-only-btn:hover {
-      border-color: #d97706;
-      color: #d97706;
-      background: #fffbeb;
-    }
-
-    .best-only-btn.on {
-      background: #fef3c7;
-      border-color: #d97706;
-      color: #92400e;
-      font-weight: 600;
-    }
-
-    .best-only-btn.on svg {
-      stroke: #d97706;
-    }
-
-    .best-only-hint {
-      font-size: 12px;
-      color: var(--text-faint);
-      font-family: var(--font-mono);
-    }
-
-    /* ── RANK COLUMN ── */
-    .col-rank {
-      background: #141312;
-      text-align: center;
-      min-width: 72px;
-    }
-
-    .cell-rank {
-      font-family: var(--font-mono);
-      font-size: 12px;
-      font-weight: 700;
-      text-align: center;
-      color: var(--accent);
-      background: var(--accent-light);
-      min-width: 72px;
-    }
-
-    tbody tr:hover .cell-rank {
-      background: #c7d7fc;
-    }
-  </style>
+<meta charset="UTF-8"/>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-GH21V37ZSB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-GH21V37ZSB');
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MPB Scenario 2 — Benchmark Results</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #f8f7f4;
+    --surface: #ffffff;
+    --surface2: #f0efe9;
+    --border: #e2e0d8;
+    --text: #1a1917;
+    --text-muted: #6b6860;
+    --text-faint: #9e9c94;
+    --accent: #1d4ed8;
+    --accent-light: #dbeafe;
+    --accent-hover: #1e40af;
+    --teal: #0d9488;
+    --teal-light: #ccfbf1;
+    --orange: #ea580c;
+    --orange-light: #ffedd5;
+    --severity-col: #7c3aed;
+    --peaks-col: #0369a1;
+    --dims-col: #047857;
+    --freq-col: #b45309;
+    --row-hover: #f5f4ef;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -1px rgba(0,0,0,0.04);
+    --radius: 8px;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--text);
+    color: white;
+    padding: 48px 40px 40px;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -80px; right: -60px;
+    width: 420px; height: 420px;
+    border-radius: 50%;
+    background: rgba(29,78,216,0.15);
+    pointer-events: none;
+  }
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: -100px; left: 30%;
+    width: 280px; height: 280px;
+    border-radius: 50%;
+    background: rgba(13,148,136,0.12);
+    pointer-events: none;
+  }
+  .header-inner { max-width: 1400px; margin: 0 auto; position: relative; z-index: 1; }
+  .header-tag {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 4px;
+    padding: 3px 10px;
+    margin-bottom: 16px;
+  }
+  header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(26px, 4vw, 42px);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    color: white;
+    margin-bottom: 14px;
+  }
+  header h1 span { color: #60a5fa; }
+  header p {
+    font-size: 15px;
+    color: rgba(255,255,255,0.65);
+    max-width: 680px;
+    line-height: 1.7;
+  }
+  .header-contact {
+    margin-top: 20px;
+    font-size: 13px;
+    color: rgba(255,255,255,0.5);
+  }
+  .header-contact a {
+    color: #93c5fd;
+    text-decoration: none;
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+  .header-contact a:hover { text-decoration: underline; }
+
+  /* ── MAIN LAYOUT ── */
+  .main-wrap { max-width: 1400px; margin: 0 auto; padding: 32px 24px 60px; }
+
+  /* ── CONTROL PANEL ── */
+  .control-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-md);
+    margin-bottom: 24px;
+    overflow: hidden;
+  }
+  .panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+  .panel-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .panel-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .panel-body { padding: 20px; display: flex; flex-direction: column; gap: 20px; }
+
+  /* ── FILTER ROWS ── */
+  .filter-row { display: flex; flex-direction: column; gap: 8px; }
+  .filter-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .filter-label .dot {
+    width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  }
+  .dot-severity { background: var(--severity-col); }
+  .dot-peaks    { background: var(--peaks-col); }
+  .dot-dims     { background: var(--dims-col); }
+  .dot-freq     { background: var(--freq-col); }
+
+  .chip-group { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip-group .cat-group-sep { width: 100%; height: 0; }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1.5px solid var(--border);
+    background: var(--bg);
+    font-size: 12px;
+    font-family: var(--font-mono);
+    cursor: pointer;
+    transition: all .15s;
+    user-select: none;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+  .chip:hover { border-color: currentColor; }
+  .chip input[type=checkbox] { display: none; }
+
+  .chip.severity-chip.on { background: #ede9fe; border-color: var(--severity-col); color: var(--severity-col); }
+  .chip.peaks-chip.on    { background: #e0f2fe; border-color: var(--peaks-col); color: var(--peaks-col); }
+  .chip.dims-chip.on     { background: #d1fae5; border-color: var(--dims-col); color: var(--dims-col); }
+  .chip.freq-chip.on     { background: #fef3c7; border-color: var(--freq-col); color: var(--freq-col); }
+
+  /* ── YEAR RANGE ── */
+  .year-range-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .year-range-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+  .year-inputs { display: flex; align-items: center; gap: 8px; }
+  .year-input {
+    width: 74px;
+    padding: 5px 8px;
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    background: var(--bg);
+    color: var(--text);
+    outline: none;
+    transition: border-color .15s;
+  }
+  .year-input:focus { border-color: var(--accent); }
+  .year-sep { color: var(--text-muted); font-size: 13px; }
+  .year-range-track {
+    flex: 1; min-width: 160px;
+    height: 4px; background: var(--border);
+    border-radius: 2px; position: relative;
+  }
+  .year-range-fill {
+    position: absolute; height: 100%;
+    background: var(--accent); border-radius: 2px;
+    pointer-events: none;
+  }
+
+  /* ── BUTTONS ── */
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 14px;
+    border-radius: 6px;
+    border: 1.5px solid transparent;
+    font-size: 12.5px; font-weight: 500;
+    cursor: pointer;
+    transition: all .15s;
+    white-space: nowrap;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .btn-ghost {
+    background: transparent;
+    border-color: var(--border);
+    color: var(--text-muted);
+  }
+  .btn-ghost:hover { border-color: var(--text-muted); color: var(--text); background: var(--bg); }
+  .btn-primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+  }
+  .btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+  .btn-teal {
+    background: var(--teal);
+    border-color: var(--teal);
+    color: white;
+  }
+  .btn-teal:hover { background: #0f766e; border-color: #0f766e; }
+  .btn svg { flex-shrink: 0; }
+
+  /* ── STATS BAR ── */
+  .stats-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 12px;
+    margin-bottom: 12px;
+    padding: 0 2px;
+  }
+  .stats-info { font-size: 13px; color: var(--text-muted); }
+  .stats-info strong { color: var(--text); }
+  .export-group { display: flex; gap: 8px; }
+
+  /* ── TABLE WRAPPER ── */
+  .table-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-md);
+    overflow: auto;
+    max-height: 70vh;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  thead {
+    position: sticky; top: 0; z-index: 10;
+    background: var(--text);
+    color: white;
+  }
+
+  /* group headers */
+  .th-group {
+    padding: 8px 12px 4px;
+    text-align: center;
+    font-family: 'Syne', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    border-bottom: 2px solid rgba(255,255,255,0.1);
+  }
+  .th-group-severity { background: #3b0764; }
+  .th-group-peaks    { background: #0c4a6e; }
+  .th-group-dims     { background: #064e3b; }
+  .th-group-freq     { background: #451a03; }
+  .th-group-fixed    { background: #111; }
+
+  /* column headers */
+  th {
+    padding: 7px 12px;
+    text-align: left;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: .05em;
+    white-space: nowrap;
+    border-right: 1px solid rgba(255,255,255,0.06);
+    background: #1f1e1b;
+    color: rgba(255,255,255,0.75);
+    cursor: pointer;
+    user-select: none;
+  }
+  th:hover { background: #2d2c28; color: white; }
+  th.sorted-asc::after  { content: ' ↑'; color: #60a5fa; }
+  th.sorted-desc::after { content: ' ↓'; color: #60a5fa; }
+  th.col-fixed { background: #141312; }
+
+  /* col colors in header */
+  th.col-severity { background: #2e1065; }
+  th.col-peaks    { background: #082f49; }
+  th.col-dims     { background: #022c22; }
+  th.col-freq     { background: #2c1400; }
+
+  /* body */
+  tbody tr { border-bottom: 1px solid var(--border); transition: background .1s; }
+  tbody tr:hover { background: var(--row-hover); }
+  tbody tr:last-child { border-bottom: none; }
+
+  td {
+    padding: 9px 12px;
+    border-right: 1px solid var(--border);
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+  td:last-child { border-right: none; }
+  td.col-fixed {
+    border-right: 1px solid var(--border);
+  }
+
+  .cell-method {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--text);
+    min-width: 110px;
+  }
+  .cell-title {
+    color: var(--text-muted);
+    font-size: 12px;
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .cell-title a { color: var(--accent); text-decoration: none; }
+  .cell-title a:hover { text-decoration: underline; }
+  .cell-year, .cell-runs {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-muted);
+    text-align: center;
+  }
+  .cell-num {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    text-align: right;
+    white-space: nowrap;
+  }
+  .cell-num .val  { color: var(--text); font-weight: 500; }
+  .cell-num .pm   { color: var(--text-faint); font-size: 10px; margin: 0 2px; }
+  .cell-num .std  { color: var(--text-faint); font-size: 11px; }
+  .cell-num.severity .val { color: #6d28d9; }
+  .cell-num.peaks    .val { color: #0369a1; }
+  .cell-num.dims     .val { color: #047857; }
+  .cell-num.freq     .val { color: #b45309; }
+  .cell-empty { color: var(--text-faint); text-align: center; font-size: 11px; font-family: var(--font-mono); }
+  .cell-num .val.best { font-weight: 700; }
+  .best-cell { background: rgba(16, 185, 129, 0.07); }
+  .best-cell.severity { background: rgba(124, 58, 237, 0.07); }
+  .best-cell.peaks    { background: rgba(3, 105, 161, 0.07); }
+  .best-cell.dims     { background: rgba(4, 120, 87,  0.07); }
+  .best-cell.freq     { background: rgba(180, 83, 9,  0.07); }
+
+  /* ── EMPTY STATE ── */
+  .empty-state {
+    text-align: center; padding: 60px 20px;
+    color: var(--text-faint);
+    font-size: 14px;
+  }
+  .empty-state svg { display: block; margin: 0 auto 12px; opacity: .3; }
+
+  /* ── FOOTER ── */
+  footer {
+    text-align: center;
+    padding: 32px 24px;
+    font-size: 12px;
+    color: var(--text-faint);
+    border-top: 1px solid var(--border);
+    margin-top: 40px;
+  }
+  footer a { color: var(--accent); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 700px) {
+    header { padding: 32px 20px 28px; }
+    .main-wrap { padding: 20px 16px 40px; }
+    .panel-body { padding: 14px; }
+    .panel-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+  }
+
+  /* scrollbar */
+  .table-wrap::-webkit-scrollbar { width: 6px; height: 6px; }
+  .table-wrap::-webkit-scrollbar-track { background: var(--bg); }
+  .table-wrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  .table-wrap::-webkit-scrollbar-thumb:hover { background: var(--text-faint); }
+
+  /* select-all toggle links */
+  .toggle-link {
+    font-size: 11px; color: var(--accent); cursor: pointer;
+    text-decoration: underline; background: none; border: none;
+    padding: 0; font-family: 'DM Sans', sans-serif;
+  }
+  .toggle-link:hover { color: var(--accent-hover); }
+
+  /* ── BEST-ONLY FILTER ── */
+  .best-only-row { align-items: center; gap: 12px; flex-direction: row !important; }
+  .best-only-btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 7px 16px;
+    border-radius: 20px;
+    border: 1.5px solid var(--border);
+    background: var(--bg);
+    font-size: 12.5px; font-weight: 500;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-family: 'DM Sans', sans-serif;
+    transition: all .15s;
+  }
+  .best-only-btn:hover { border-color: #d97706; color: #d97706; background: #fffbeb; }
+  .best-only-btn.on {
+    background: #fef3c7;
+    border-color: #d97706;
+    color: #92400e;
+    font-weight: 600;
+  }
+  .best-only-btn.on svg { stroke: #d97706; }
+  .best-only-hint {
+    font-size: 12px; color: var(--text-faint);
+    font-family: var(--font-mono);
+  }
+
+  /* ── CATEGORY ── */
+  .cat-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-family: var(--font-mono);
+    font-weight: 600;
+    letter-spacing: .04em;
+    white-space: nowrap;
+  }
+  .cat-SI      { background: #dbeafe; color: #1e40af; }
+  .cat-DE      { background: #fce7f3; color: #9d174d; }
+  .cat-EA      { background: #dcfce7; color: #14532d; }
+  .cat-DS      { background: #fef9c3; color: #713f12; }
+  /* Hybrid removed — algorithms show individual family badges */
+  .cat-Unknown { background: var(--surface2); color: var(--text-muted); }
+  .chip.cat-chip.on { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+
+  /* ── RANK COLUMN ── */
+  .col-rank { background: #141312; text-align: center; min-width: 72px; }
+  .cell-rank {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 700;
+    text-align: center;
+    color: var(--accent);
+    background: var(--accent-light);
+    min-width: 72px;
+  }
+  tbody tr:hover .cell-rank { background: #c7d7fc; }
+</style>
 </head>
-
 <body>
 
-  <header>
-    <div class="header-inner">
-      <div class="header-tag">Moving Peaks Benchmark · Scenario 2</div>
-      <h1>MPB Benchmark<br /><span>Algorithm Results</span></h1>
-      <p>
-        To our knowledge, a comprehensive collection of all algorithms benchmarked
-        on the <strong style="color:rgba(255,255,255,.85)">Moving Peaks Benchmark Scenario 2</strong>.
-        Results are reported as the offline error (mean ± standard error) across multiple independent runs.
-        If any entry is missing or incorrect, please get in touch.
-      </p>
-      <div class="header-contact">
-        Missing an entry? &nbsp;→&nbsp;
-        <a
-          href="/cdn-cgi/l/email-protection#82eff2e0ace0e7ece1eaefe3f0e9c2e5efe3ebeeace1edef">mpb.benchmark&#64;gmail.com</a>
-      </div>
+<header>
+  <div class="header-inner">
+    <div class="header-tag">Moving Peaks Benchmark · Scenario 2</div>
+    <h1>MPB Benchmark<br/><span>Algorithm Results</span></h1>
+    <p>
+      To our knowledge, a comprehensive collection of all algorithms benchmarked
+      on the <strong style="color:rgba(255,255,255,.85)">Moving Peaks Benchmark Scenario 2</strong>.
+      Results are reported as the offline error (mean ± standard error) across multiple independent runs.
+      If any entry is missing or incorrect, please get in touch.
+    </p>
+    <div class="header-contact">
+      Missing an entry? &nbsp;→&nbsp;
+      <a href="/cdn-cgi/l/email-protection#82eff2e0ace0e7ece1eaefe3f0e9c2e5efe3ebeeace1edef">mpb.benchmark&#64;gmail.com</a>
     </div>
-  </header>
+  </div>
+</header>
 
-  <div class="main-wrap">
+<div class="main-wrap">
 
-    <!-- CONTROL PANEL -->
-    <div class="control-panel">
-      <div class="panel-header">
-        <span class="panel-title">Filters &amp; Display</span>
-        <div class="panel-actions">
-          <button class="btn btn-ghost" onclick="resetFilters()">
-            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M2.5 8A5.5 5.5 0 1 0 8 2.5" />
-              <polyline points="2.5,2.5 2.5,8 8,8" />
-            </svg>
-            Reset All
-          </button>
-        </div>
-      </div>
-      <div class="panel-body">
-
-        <!-- SEVERITY -->
-        <div class="filter-row">
-          <div class="filter-label">
-            <span class="dot dot-severity"></span>
-            Severity
-            <button class="toggle-link" onclick="toggleAll('severity', true)">all</button>/
-            <button class="toggle-link" onclick="toggleAll('severity', false)">none</button>
-          </div>
-          <div class="chip-group" id="chips-severity"></div>
-        </div>
-
-        <!-- PEAKS -->
-        <div class="filter-row">
-          <div class="filter-label">
-            <span class="dot dot-peaks"></span>
-            Peaks
-            <button class="toggle-link" onclick="toggleAll('peaks', true)">all</button>/
-            <button class="toggle-link" onclick="toggleAll('peaks', false)">none</button>
-          </div>
-          <div class="chip-group" id="chips-peaks"></div>
-        </div>
-
-        <!-- DIMENSIONS -->
-        <div class="filter-row">
-          <div class="filter-label">
-            <span class="dot dot-dims"></span>
-            Dimensions
-            <button class="toggle-link" onclick="toggleAll('dims', true)">all</button>/
-            <button class="toggle-link" onclick="toggleAll('dims', false)">none</button>
-          </div>
-          <div class="chip-group" id="chips-dims"></div>
-        </div>
-
-        <!-- FREQUENCIES -->
-        <div class="filter-row">
-          <div class="filter-label">
-            <span class="dot dot-freq"></span>
-            Frequencies
-            <button class="toggle-link" onclick="toggleAll('freq', true)">all</button>/
-            <button class="toggle-link" onclick="toggleAll('freq', false)">none</button>
-          </div>
-          <div class="chip-group" id="chips-freq"></div>
-        </div>
-
-        <!-- YEAR RANGE -->
-        <div class="year-range-row">
-          <span class="year-range-label">Year Range</span>
-          <div class="year-inputs">
-            <input type="number" class="year-input" id="yearFrom" placeholder="2006" min="2006" max="2025" />
-            <span class="year-sep">–</span>
-            <input type="number" class="year-input" id="yearTo" placeholder="2025" min="2006" max="2025" />
-          </div>
-        </div>
-
-        <!-- BEST ONLY FILTER -->
-        <div class="filter-row best-only-row">
-          <button id="bestOnlyBtn" class="best-only-btn" onclick="toggleBestOnly()">
-            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
-              <polygon points="8,1 10,6 15,6 11,9.5 12.5,15 8,11.5 3.5,15 5,9.5 1,6 6,6" />
-            </svg>
-            Show only best-in-class algorithms
-          </button>
-          <span class="best-only-hint" id="bestOnlyHint"></span>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- STATS + EXPORT -->
-    <div class="stats-bar">
-      <div class="stats-info" id="stats-info">Loading…</div>
-      <div class="export-group">
-        <button class="btn btn-ghost" onclick="exportCSV()">
-          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M2 14h12M8 2v8M4 7l4 4 4-4" />
-          </svg>
-          Export CSV
-        </button>
-        <button class="btn btn-teal" onclick="exportLaTeX()">
-          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="2" y="2" width="12" height="12" rx="1" />
-            <path d="M5 8h6M5 5h6M5 11h4" />
-          </svg>
-          Export LaTeX
+  <!-- CONTROL PANEL -->
+  <div class="control-panel">
+    <div class="panel-header">
+      <span class="panel-title">Filters &amp; Display</span>
+      <div class="panel-actions">
+        <button class="btn btn-ghost" onclick="resetFilters()">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2.5 8A5.5 5.5 0 1 0 8 2.5"/><polyline points="2.5,2.5 2.5,8 8,8"/></svg>
+          Reset All
         </button>
       </div>
     </div>
+    <div class="panel-body">
 
-    <!-- TABLE -->
-    <div class="table-wrap">
-      <table id="results-table">
-        <thead id="table-head"></thead>
-        <tbody id="table-body"></tbody>
-      </table>
+      <!-- SEVERITY -->
+      <div class="filter-row">
+        <div class="filter-label">
+          <span class="dot dot-severity"></span>
+          Severity
+          <button class="toggle-link" onclick="toggleAll('severity', true)">all</button>/
+          <button class="toggle-link" onclick="toggleAll('severity', false)">none</button>
+        </div>
+        <div class="chip-group" id="chips-severity"></div>
+      </div>
+
+      <!-- PEAKS -->
+      <div class="filter-row">
+        <div class="filter-label">
+          <span class="dot dot-peaks"></span>
+          Peaks
+          <button class="toggle-link" onclick="toggleAll('peaks', true)">all</button>/
+          <button class="toggle-link" onclick="toggleAll('peaks', false)">none</button>
+        </div>
+        <div class="chip-group" id="chips-peaks"></div>
+      </div>
+
+      <!-- DIMENSIONS -->
+      <div class="filter-row">
+        <div class="filter-label">
+          <span class="dot dot-dims"></span>
+          Dimensions
+          <button class="toggle-link" onclick="toggleAll('dims', true)">all</button>/
+          <button class="toggle-link" onclick="toggleAll('dims', false)">none</button>
+        </div>
+        <div class="chip-group" id="chips-dims"></div>
+      </div>
+
+      <!-- FREQUENCIES -->
+      <div class="filter-row">
+        <div class="filter-label">
+          <span class="dot dot-freq"></span>
+          Frequencies
+          <button class="toggle-link" onclick="toggleAll('freq', true)">all</button>/
+          <button class="toggle-link" onclick="toggleAll('freq', false)">none</button>
+        </div>
+        <div class="chip-group" id="chips-freq"></div>
+      </div>
+
+      <!-- YEAR RANGE -->
+      <div class="year-range-row">
+        <span class="year-range-label">Year Range</span>
+        <div class="year-inputs">
+          <input type="number" class="year-input" id="yearFrom" placeholder="2006" min="2006" max="2025"/>
+          <span class="year-sep">–</span>
+          <input type="number" class="year-input" id="yearTo" placeholder="2025" min="2006" max="2025"/>
+        </div>
+      </div>
+
+      <!-- CATEGORY FILTER -->
+      <div class="filter-row">
+        <div class="filter-label">
+          <span class="dot" style="background:#7c3aed"></span>
+          Algorithm Category
+          <button class="toggle-link" onclick="toggleAllCats(true)">all</button>/
+          <button class="toggle-link" onclick="toggleAllCats(false)">none</button>
+        </div>
+        <div class="chip-group" id="chips-category"></div>
+      </div>
+
+      <!-- BEST ONLY FILTER -->
+      <div class="filter-row best-only-row">
+        <button id="bestOnlyBtn" class="best-only-btn" onclick="toggleBestOnly()">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><polygon points="8,1 10,6 15,6 11,9.5 12.5,15 8,11.5 3.5,15 5,9.5 1,6 6,6"/></svg>
+          Show only best-in-class algorithms
+        </button>
+        <span class="best-only-hint" id="bestOnlyHint"></span>
+      </div>
+
     </div>
-
   </div>
 
-  <footer>
-    <p>Moving Peaks Benchmark · Scenario 2 · Algorithm Comparison Table</p>
-    <p style="margin-top:6px">To report a missing entry or correction: <a
-        href="/cdn-cgi/l/email-protection#4a273a2864282f242922272b38210a2d272b232664292527">mpb.benchmark&#64;gmail.com</a>
-    </p>
-  </footer>
+  <!-- STATS + EXPORT -->
+  <div class="stats-bar">
+    <div class="stats-info" id="stats-info">Loading…</div>
+    <div class="export-group">
+      <button class="btn btn-ghost" onclick="exportCSV()">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 14h12M8 2v8M4 7l4 4 4-4"/></svg>
+        Export CSV
+      </button>
+      <button class="btn btn-teal" onclick="exportLaTeX()">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="12" height="12" rx="1"/><path d="M5 8h6M5 5h6M5 11h4"/></svg>
+        Export LaTeX
+      </button>
+    </div>
+  </div>
 
-  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
-  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
-  <script>
-    // ─────────────────────────────────────────────
-    // DATA
-    // ─────────────────────────────────────────────
-    const RAW_CSV = `Method;Paper title;Paper link;Year publication;Bibtex;Runs;Severity_0;STD_Error_Standard_0;Standard_1_10_5_5000;STD_Error_Standard_1;Severity_2;STD_Error_Standard_2;Severity_3;STD_Error_Standard_3;Severity_4;STD_Error_Standard_4;Severity_5;STD_Error_Standard_5;Severity_6;STD_Error_Standard_6;Peaks_1;STD_Error_Peaks_1;Peaks_5;STD_Error_Peaks_5;Peaks_20;STD_Error_Peaks_20;Peaks_30;STD_Error_Peaks_30;Peaks_40;STD_Error_Peaks_40;Peaks_50;STD_Error_Peaks_50;Peaks_100;STD_Error_Peaks_100;Peaks_200;STD_Error_Peaks_200;Dimensions_10;STD_Error_Dimensions_10;Dimensions_20;STD_Error_Dimensions_20;Dimensions_50;STD_Error_Dimensions_50;Dimensions_100;STD_Error_Dimensions_100;Frequencies_500;STD_Error_Frequencies_500;Frequencies_1000;STD_Error_Frequencies_1000;Frequencies_2000;STD_Error_Frequencies_2000;Frequencies_2500;STD_Error_Frequencies_2500;Frequencies_3000;STD_Error_Frequencies_3000;Frequencies_10000;STD_Error_Frequencies_10000;COMMENT
-EFDS (FDS+CMA-ES);Evolutionary Fractal Decomposition based Search for Dynamic Optimization;https://ieeexplore.ieee.org/abstract/document/11342855;2025;llanza2025evolutionary;10;0.77;0.12;0.20;0.10;0.75;0.21;1.18;0.28;1.01;0.22;0.88;0.22;1.33;0.21;0.13;0.09;0.34;0.09;0.34;0.15;0.31;0.11;0.11;0.06;0.11;0.08;0.27;0.06;0.19;0.08;0.22;0.16;0.28;0.24;0.87;1.57;;;0.84;0.37;1.02;0.23;0.81;0.19;0.50;0.14;0.46;0.25;0.31;0.13;
-EFDS (FDS+GA);Evolutionary Fractal Decomposition based Search for Dynamic Optimization;https://ieeexplore.ieee.org/abstract/document/11342855;2025;llanza2025evolutionary;10;0.72;0.19;0.34;0.14;0.81;0.26;1.17;0.27;0.93;0.18;1.04;0.21;1.47;0.31;0.14;0.09;0.39;0.11;0.30;0.16;0.50;0.10;0.18;0.09;0.13;0.10;0.27;0.08;0.26;0.08;0.68;0.19;;;;;;;0.92;0.46;1.36;0.20;1.04;0.18;0.94;0.19;0.54;0.27;0.28;0.18;
-FDS;FDS: Fractal Decomposition based Direct Search Approach for Continuous Dynamic Optimization;https://www.sciencedirect.com/science/article/pii/S002002552500369X;2025;llanza2025fds;100;0.28;0.04;0.37;0.04;0.44;0.04;0.58;0.04;0.68;0.04;0.83;0.05;1.01;0.05;0.10;0.02;0.25;0.04;0.42;0.04;0.46;0.04;0.49;0.04;0.45;0.04;0.5;0.03;1.36;0.04;1.76;0.13;2.72;0.16;3.40;0.20;4.06;0.39;1.47;0.06;0.55;0.06;0.37;0.05;0.33;0.04;0.32;0.04;0.41;0.04;
-EFWA(CE);Efficient fireworks algorithms for dynamic optimisation problems in continuous space.pdf;https://www.tandfonline.com/doi/abs/10.1080/0952813X.2022.2093404;2024;pekdemir2022efficient;50;0.778;;1.673;0.084;2.113;;2.609;;;;;;;;;;;;2.981;;3.317;;3.299;;3.313;;2.982;;3.011;;;;;;;;;;12.890;0.414;6.852;0.269;3.218;0.201;;;;;1.141;0.085;
-DPCPSO ;A fast density peak clustering based particle swarm optimizer for dynamic optimization ;https://pdf.sciencedirectassets.com/271506/1-s2.0-S0957417423X00220/1-s2.0-S0957417423017566/main.pdf?X-Amz-Security-Token=IQoJb3JpZ2luX2VjEGkaCXVzLWVhc3QtMSJHMEUCIQDwPdZ0p%2FW87PiEmTAeFUlxWkVoQVZ3d62G4A%2Bkguz8NgIgEr%2BEpPq8%2FfR7Rgm8jyXWbTKT8EUi9eW%2F1l;2024;li2024fast;30;0.14;0.03;0.77;0.05;0.71;0.06;0.94;0.06;1.11;0.08;1.07;0.06;1.09;0.05;1.47;0.49;0.66;0.07;1.04;0.05;1.34;0.05;;;1.46;0.05;1.70;0.05;;;;;;;;;;;;;;;4.50;0.11;;;2.01;0.08;0.43;0.05;
-CaAIS;CaAIS: Cellular Automata-Based Artificial Immune System for Dynamic Environments ;https://www.mdpi.com/1999-4893/17/1/18/pdf;2024;rezvanian2023caais;30;;;2.24;0.02;;;;;;;;;;;2.24;0.02;2.28;0.02;2.51;0.03;2.63;0.03;2.28;0.02;2.32;0.02;1.67;0.03;2.64;0.03;;;;;;;;;;;;;;;;;;;;;
-HMRS;A Hybrid Multi-Population Reinitialization Strategy to Tackle Dynamic Optimization Problems;https://ieeexplore.ieee.org/document/10278109;2023;raghul2023hybrid;20;;;1.76;0.12;;;;;;;2.08;0.19;;;;;1.84;0.67;1.95;1.03;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;IT HAS A DIFFERENT WIDTH SEVERITY
-CM-AIS;A full-featured cooperative coevolutionary memory-based artificial immune system for dynamic optimization ;https://www.sciencedirect.com/science/article/abs/pii/S1568494621011510;2022;etaati2022full;50;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;0.38 ;0.02;Almost no results
-HIDE;Historical Information-based Differential Evolution for Dynamic Optimization Problem ;https://ieeexplore.ieee.org/document/9504965;2021;wu2021historical;20;;;2.68;0.38;;;;;;;5.69;0.83;;;;;2.48;0.52;3.81;1.01;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;IT HAS A DIFFERENT WIDTH SEVERITY
-AdaMPSO ;Adaptive multi-swarm in dynamic environments ;https://pdf.sciencedirectassets.com/280294/1-s2.0-S2210650221X0003X/1-s2.0-S2210650221000316/main.pdf?X-Amz-Security-Token=IQoJb3JpZ2luX2VjEDkaCXVzLWVhc3QtMSJHMEUCIBeB1DpQlchPf1H8zd%2BOKvbMBGmVxi53FfNRPl4s8gM1AiEA6K6wmg9Sq7wsCVzL%2BOp8S1u4smjW%2BPpICsCCWU;2021;qin2021adaptive;100;;;0.53 ;0.11 ;0.87 ;0.16 ;1.32 ;0.20;1.92 ;0.18 ;2.43 ;0.19;;;;;;;1.20 ;0.22 ;0.66 ;0.08 ;;;0.99 ;0.08 ;1.03 ;0.08 ;0.92 ;0.08 ;2.75 ;0.41 ;3.63 ;0.46 ;10.71 ;1.26 ;;;;;;;;;;;;;;;
-AdaMDE ;Adaptive multi-swarm in dynamic environments ;https://pdf.sciencedirectassets.com/280294/1-s2.0-S2210650221X0003X/1-s2.0-S2210650221000316/main.pdf?X-Amz-Security-Token=IQoJb3JpZ2luX2VjEDkaCXVzLWVhc3QtMSJHMEUCIBeB1DpQlchPf1H8zd%2BOKvbMBGmVxi53FfNRPl4s8gM1AiEA6K6wmg9Sq7wsCVzL%2BOp8S1u4smjW%2BPpICsCCWU;2021;qin2021adaptive;100;;;0.90;0.30 ;1.43 ;0.29 ;2.03 ;0.25 ;2.60 ;0.27 ;3.22 ;0.30 ;;;;;;;1.58 ;0.20 ;0.98 ;0.12 ;;;1.25 ;0.11 ;1.17 ;0.09 ;0.97 ;0.06 ;3.03 ;0.43 ;4.63 ;0.46 ;19.48 ;2.98 ;;;;;;;;;;;;;;;
-idPSO;A Framework for Adapting Population-Based and Heuristic Algorithms for Dynamic Optimization Problems ;https://ijeee.iust.ac.ir/article-1-1448-en.pdf;2020;ejabati2020framework;50;;;0.62;0.05;0.67;0.07;0.76;0.06;;;0.91;0.09;;;0.12;0.00;0.58;0.07;0.75;0.03;0.67;0.04;;;0.64;0.01;0.25;0.02;0.26;0.04;;;;;;;;;;;;;;;;;;;;;
-idALO;A Framework for Adapting Population-Based and Heuristic Algorithms for Dynamic Optimization Problems ;https://ijeee.iust.ac.ir/article-1-1448-en.pdf;2020;ejabati2020framework;50;;;0.71;0.06;0.81;0.07;0.93;0.07;;;1.09;0.09;;;0.09;0.02;0.49;0.06;1.41;0.05;1.30;0.07;;;1.21;0.08;1.20;0.09;1.22;0.05;;;;;;;;;;;;;;;;;;;;;
-sslPSO;A Species Conservation-Based Particle Swarm Optimization with Local Search for Dynamic Optimization Problems ;https://downloads.hindawi.com/journals/cin/2020/2815802.pdf;2020;shen2020species;30;0.65;0.04;0.75;0.05;1.18;0.05;1.32;0.05;1.59;0.04;1.59;0.04;1.92;0.04;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-APCPSO;An affinity propagation clustering based particle swarm optimizer for dynamic optimization ;https://www.sciencedirect.com/science/article/abs/pii/S0950705120301362;2020;liu2020affinity;30;0.16;0.04;0.66;0.04;0.94;0.07;1.01;0.07;1.08;0.05;1.19;0.07;1.33;0.09;1.13;0.03;0.53;0.06;1.04;0.05;1.41;0.04;;;1.95;0.05;2.36;0.05;;;1.39;0.06;4.33;0.17;;;;;;;;;5.72;0.12;;;2.12;0.08;0.32;0.05;
-eFA-rw ;Quantum firefly swarms for multimodal dynamic optimization problems ;https://www.sciencedirect.com/science/article/abs/pii/S0957417418305153;2019;ozsoydan2019quantum;50;;;1.63;0.05;2.00;0.06;2.30;0.06;2.42;0.07;2.60;0.06;;;0.64;0.03;1.21;0.09;2.16;0.05;2.50;0.04;;;2.70;0.03;3.03;0.03;3.14;0.03;;;;;;;;;;;;;;;;;;;;;
-eFA-seq;Quantum firefly swarms for multimodal dynamic optimization problems ;https://www.sciencedirect.com/science/article/abs/pii/S0957417418305153;2019;ozsoydan2019quantum;50;;;1.58;0.05;1.91;0.03;2.27;0.06;2.50;0.06;2.57;0.05;;;0.64;0.03;1.06;0.05;2.22;0.04;2.64;0.03;;;2.91;0.03;3.27;0.04;3.44;0.03;;;;;;;;;;;;;;;;;;;;;
-DynDE + LA ;A novel framework for improving multi-population algorithms for dynamic optimization problems: A scheduling approach ;https://www.sciencedirect.com/science/article/abs/pii/S2210650217306272;2019;kordestani2019novel;50;;;1.32;0.06;;;2.23;0.06;;;3.33;0.09;;;3.07 ;0.12;1.41;0.08;2.60;0.07;3.05;0.10;3.34;0.07;3.56;0.09;3.88;0.11;3.71;0.09;;;;;;;;;;;2.83;0.04;1.96;0.04;;;1.65;0.05;;;
-DynDE + PI;A novel framework for improving multi-population algorithms for dynamic optimization problems: A scheduling approach ;https://www.sciencedirect.com/science/article/abs/pii/S2210650217306272;2019;kordestani2019novel;50;;;1.47;0.08;;;2.24;0.08;;;3.17;0.10;;;2.70 ;0.11;1.32;0.09;2.46;0.08;2.91;0.11;3.28;0.09;3.38;0.10;3.78;0.11;3.62;0.09;;;;;;;;;;;2.96;0.05;2.05;0.05;;;1.69;0.06;;;
-CCSA;A cluster-based clonal selection algorithm for optimization in dynamic environment, ;https://pdf.sciencedirectassets.com/280294/1-s2.0-S2210650219X00061/1-s2.0-S2210650218300944/main.pdf?X-Amz-Security-Token=IQoJb3JpZ2luX2VjEDgaCXVzLWVhc3QtMSJIMEYCIQC%2F3DOnVgRNlMAj5wjw85UPtPQ36YdTTjgg6hH%2BLH7fRQIhAMSzPPv5IwESXBtJLyw0swPFGZSZ8a%2B7Zb7edM;2019;zhang2019cluster;30;;;1.09;0.03;1.37;0.04;1.89;0.05;1.99;0.04;2.07;0.04;;;0.64;0.01;0.73;0.04;1.80;0.03;1.90;0.03;;;1.87;0.02;1.75;0.02;1.56;0.02;;;;;;;;;;;;;;;;;;;;;
-Algorithm 1;A note on the exclusion operator in multi-swarm PSO algorithms for dynamic environments ;https://www.tandfonline.com/doi/pdf/10.1080/09540091.2019.1700912;2019;kazemi2020note;100;;;2.34;0.06;;;;;;;;;;;5.11;0.16;2.35;0.07;3.19;0.06;3.49;0.06;3.73;0.06;3.71;0.06;;;3.62;0.04;;;;;;;;;;;;;;;;;;;;;
-Algorithm 2;A note on the exclusion operator in multi-swarm PSO algorithms for dynamic environments ;https://www.tandfonline.com/doi/pdf/10.1080/09540091.2019.1700912;2019;kazemi2020note;100;;;2.72;0.06;;;;;;;;;;;5.61;0.17;2.69;0.07;3.09;0.06;3.32;0.05;3.35;0.05;3.29;0.04;;;2.92;0.03;;;;;;;;;;;;;;;;;;;;;
-Algorithm 3;A note on the exclusion operator in multi-swarm PSO algorithms for dynamic environments ;https://www.tandfonline.com/doi/pdf/10.1080/09540091.2019.1700912;2019;kazemi2020note;100;;;1.81;0.05;;;;;;;;;;;3.74;0.11;1.80;0.06;2.82;0.06;3.27;0.06;3.53;0.06;3.57;0.06;;;3.87;0.05;;;;;;;;;;;;;;;;;;;;;
-Algorithm 4;A note on the exclusion operator in multi-swarm PSO algorithms for dynamic environments ;https://www.tandfonline.com/doi/pdf/10.1080/09540091.2019.1700912;2019;kazemi2020note;100;;;1.72;0.05;;;;;;;;;;;4.62;0.14;1.74;0.05;2.77;0.05;3.25;0.06;3.50;0.05;3.66;0.06;;;3.91;0.05;;;;;;;;;;;;;;;;;;;;;
-BfCS-wVN;An adaptive bi-flight cuckoo search with variable nests for continuous dynamic optimization problems ;https://link.springer.com/content/pdf/10.1007/s10489-017-0963-7.pdf;2018;kordestani2018adaptive;50;0.40;0.08;0.51;0.11;0.89;0.16;1.26;0.13;1.89;0.18;2.39;0.20;;;0.30;0.06;0.38;0.21;0.74;0.11;1.00;0.12;0.97;0.07;0.84;0.06;1.11;0.06;1.18;0.08;;;;;;;;;4.28;0.42;;;;;0.99;0.24;;;0.30;0.06;
-cGA;Chaotic Genetic Algorithm based on Explicit Memory with a new Strategy for Updating and Retrieval of Memory in Dynamic Environments ;https://jad.shahroodut.ac.ir/article_957_f703c33927d05d0623d26bcfe37a0644.pdf;2018;mohammadpour2018chaotic;100;;;1.15;0.13;2.19;0.15;3.31;0.25;5.35;0.35;6.45;0.45;8.15;0.68;0.92;0.09;1.06;0.07;1.18;0.06;1.35;0.05;1.53;0.09;1.65;0.07;1.80;0.06;1.71;0.05;2.45;0.28;4.25;0.35;;;;;3.96;0.21;1.28;0.13;;;;;;;;;
-GRDE;Global replacement-based differential evolution with neighbor-based memory for dynamic optimization ;https://link.springer.com/content/pdf/10.1007/s10489-018-1147-9.pdf;2018;zhu2018global;30;0.20;0.04;0.39;0.07;1.12;0.07;1.27;0.08;1.38;0.08;1.64;0.10;;;0.0;0.00;0.27;0.08;1.08;0.09;1.15;0.06;;;1.26;0.08;1.06;0.10;0.99;0.12;;;;;;;;;;;;;;;;;0.99;0.06;0.23;0.05;
-WD2O;WD2O: a novel wind driven dynamic optimization approach with effective change detection ;https://link.springer.com/content/pdf/10.1007/s10489-017-0895-2.pdf;2017;boulesnane2017wd2o;30;;;1.25;0.02;;;;;;;;;;;1.21;0.03;0.76;0.03;1.22;0.02;1.75;0.01;;;1.87;0.01;2.11;0.01;1.95;0.01;3.36;0.04;4.82;0.03;;;;;;;;;;;;;;;;;
-A-SFA ;Improved Speciation-Based Firefly Algorithm in Dynamic and Uncertain Environments ;https://www.airitilibrary.com/Article/Detail/10162364-201605-201605170005-201605170005-661-676;2016;nasiri2016improved;30;;;0.90;0.05;1.31;0.07;1.76;0.09;;;2.64;0.08;;;0.66;0.05;0.79;0.06;1.24;0.08;1.41;0.06;;;1.71;0.04;1.84;0.04;1.90;0.05;;;;;;;;;5.09;0.10;3.51;0.08;;;1.77;0.08;;;0.63;0.03;
-CHPSO;A novel hybrid adaptive collaborative approach based on particle swarm optimiza ;https://citeseerx.ist.psu.edu/document?repid=rep1&type=pdf&doi=a209a80b3d605a53a38038015e48e3a73439610c;2015;sharifi2015novel;500;0.46;0.02;0.64;0.02;0.92;0.01;1.22;0.02;1.50;0.02;1.82;0.02;;;0.19;0.00;0.44;0.02;0.91;0.01;0.99;0.01;1.02;0.01;1.03;0.01;1.04;0.01;1.01;0.00;3.32;0.06;5.04;0.07;9.95;0.11;;;3.74;0.05;2.35;0.04;;;1.16;0.02;;;0.40;0.01;
-AMP/PSO;An Adaptive Multi-Population Framework for Locating and Tracking Multiple Optima ;https://researchonline.ljmu.ac.uk/id/eprint/2371/1/accepted_version.pdf;2015;li2015adaptive;30;;;0.69;0.03;;;;;;;;;;;;;;;1.1;0.09;1.1;0.05;;;1.2;0.05;1.4;0.05;1.8;0.04;;;;;;;;;;;;;;;;;;;;;
-AMP/DE;An Adaptive Multi-Population Framework for Locating and Tracking Multiple Optima ;https://researchonline.ljmu.ac.uk/id/eprint/2371/1/accepted_version.pdf;2015;li2015adaptive;30;;;0.9;0.10;;;;;;;;;;;;;;;1.4;0.10;1.3;0.06;;;1.4;0.05;1.7;0.08;2.00;0.04;;;;;;;;;;;;;;;;;;;;;
-AMSO;An Adaptive Multi-Swarm Optimizer for Dynamic Optimization Problems;https://ieeexplore.ieee.org/abstract/document/6975267;2014;li2014amso;30;;;1.40;0.11;2.20;0.13;2.90;0.18;3.40;0.19;3.80;0.16;4.20;0.15;2.40;0.71;1.60;0.28;2.00;0.19;1.50;0.10;;;2.00;0.16;2.10;0.16;1.90;0.17;4.20;0.50;6.50;1.40;25.00;3.70;;;;;;;;;;;;;;;We assume that the provided value is the Standard Error
-CDEPSO;CDEPSO: a bi-population hybrid approach for dynamic optimization problems;https://link.springer.com/article/10.1007/s10489-013-0483-z;2014;kordestani2014cdepso;100;;;1.22;0.01;1.74;0.01;;;;;3.56;0.01;;;0.41;0.00;0.97;0.01;1.54;0.01;2.62;0.01;;;2.20;0.01;1.54;0.01;2.11;0.01;;;;;;;;;6.57;0.02;4.00;0.01;;;1.92;0.01;;;;;
-mNAFSA;mNAFSA: A novel approach for optimization in dynamic environments with global changes ;https://www.sciencedirect.com/science/article/pii/S221065021400039X/pdfft?casa_token=tfkDzH8tLWYAAAAA:GefycFWhciwAv_iY-O69MV644UNjYknIdfITc0xjK73dWx6_JEr8Ib0rpVj8Wq3X1yiq1vhMCP8&md5=319f36ceda796691f5f0095ddd9ff250&pid=1-s2.0-S221065021400039X-main.pdf;2014;yazdani2014mnafsa;50;;;0.90;0.03;1.41;0.06;1.77;0.07;2.15;0.09;2.58;0.10;;;0.38;0.06;0.55;0.04;1.25;0.06;1.47;0.05;1.65;0.05;;;1.83;0.05;1.84;0.05;2.36;0.28;4.30;0.35;;;;;;;1.83;0.08;;;;;;;0.45;0.02;
-CbDE-wCA;Cluster-based differential evolution with Crowding Archive for niching in dynamic environments;https://www.sciencedirect.com/science/article/abs/pii/S0020025513008335;2014;haghbayan2014cbde;50;;;0.86;0.24;0.88;0.29;0.98;0.29;1.31;0.35;1.54;0.21;1.69;0.21;0.14;0.03;0.30;0.04;0.98;0.25;1.34;0.28;1.15;0.24;1.31;0.26;1.35;0.29;1.29;0.24;;;;;;;;;;;;;;;;;;;;;
-MLSDO;A multiple local search algorithm for continuous dynamic optimization;https://link.springer.com/article/10.1007/s10732-013-9215-0;2013;lepagnot2013mlsdo;100;;;0.36;0.08;0.60;0.07;0.92;0.10;1.22;0.12;1.62;0.13;2.01;0.19;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-FTMPSO;A novel multi-swarm algorithm for optimization in dynamic environments based on particle swarm optimization;https://www.sciencedirect.com/science/article/abs/pii/S1568494612005649;2013;yazdani2013ftmpso;50;;;0.67;0.04;1.20;0.06;1.40;0.09;;;1.69;0.07;;;0.18;0.01;0.47;0.05;0.93;0.04;1.14;0.04;;;1.32;0.04;1.61;0.03;1.67;0.03;;;;;;;;;3.91;0.19;2.36;0.09;;;1.21;0.06;;;0.43;0.03;
-DynPopDE;Differential evolution for dynamic environments with unknown numbers of optima;https://link.springer.com/article/10.1007/s10898-012-9864-9;2013;duplessis2013dynpopde;50;;;1.39;0.07;;;;;;;;;;;;;1.03;0.13;1.72;0.07;;;1.97;0.06;2.10;0.06;2.34;0.05;2.44;0.05;;;;;;;;;;;3.08;0.08;;;;;;;;;
-PSO-AQ;Optimization in Dynamic Environments Utilizing a Novel Method Based on Particle Swarm Optimization;https://d1wqtxts1xzle7.cloudfront.net/83925235/Optimization_in_Dynamic_Environments_Uti20220411-12242-ejk98d.pdf;2013;hashemi2012psoaq;50;;;0.89;0.03;1.14;0.09;1.86;0.08;;;2.28;0.12;;;0.34;0.02;0.80;0.12;1.45;0.06;1.52;0.04;;;1.77;0.05;1.95;0.05;1.96;0.04;;;;;;;;;6.21;0.16;3.87;0.11;;;2.63;0.07;;;1.18;0.05;
-TP-CPSO;Two phased cellular PSO: A new collaborative cellular algorithm for optimization in dynamic environments;https://ieeexplore.ieee.org/abstract/document/6256517;2012;bashiri2012tpcpso;100;;;0.96;0.05;1.25;0.04;1.69;0.04;2.12;0.05;2.46;0.05;;;0.40;0.01;0.75;0.07;1.18;0.03;1.32;0.03;1.36;0.03;1.40;0.03;1.50;0.02;1.56;0.02;;;;;;;;;5.56;0.11;3.17;0.06;;;1.59;0.06;;;0.54;0.03;
-SFA;Speciation based firefly algorithm for optimization in dynamic environments;https://d1wqtxts1xzle7.cloudfront.net/81327518/Nasiri-International_20j_20of_20AI-2012_FULL-libre.pdf;2012;nasiri2012sfa;50;;;1.05;0.08;1.44;0.06;2.06;0.07;;;2.89;0.13;;;0.42;0.07;0.89;0.09;1.48;0.05;1.56;0.06;;;1.87;0.05;2.01;0.04;1.99;0.06;;;;;;;;;5.11;0.14;;;;;1.95;0.04;;;0.72;0.02;
-CCPSO;A competitive clustering particle swarm optimizer for dynamic optimization problems;https://link.springer.com/article/10.1007/s11721-012-0069-0;2012;nickabadi2012ccpso;50;;;0.75;0.06;0.84;0.04;0.89;0.08;1.27;0.08;1.34;0.05;1.40;0.09;0.09;0.00;0.25;0.01;1.21;0.08;1.40;0.07;1.47;0.08;1.50;0.09;1.76;0.09;;;;;;;;;;;;;;;;;;;;;;;
-DMAFSA;A new artificial fish swarm algorithm for dynamic optimization problems;https://ieeexplore.ieee.org/abstract/document/6256169;2012;yazdani2012dmafsa;50;;;1.01;0.05;;;;;;;;;;;0.55;0.06;0.78;0.06;1.42;0.06;1.63;0.06;;;1.84;0.07;1.95;0.05;1.99;0.04;;;;;;;;;;;;;;;;;;;;;
-MPSO;A memetic particle swarm optimisation algorithm for dynamic multi-modal optimisation problems;https://www.tandfonline.com/doi/abs/10.1080/00207721.2011.605966;2012;wang2012mpso;50;;;0.71;0.20;0.99;0.40;;;;;1.03;0.39;;;;;0.56;0.09;1.11;0.56;;;;;1.58;0.69;;;;;;;;;;;;;;;;;;;;;;;0.50;0.06;
-APSO;Particle Swarm Optimization Algorithm in Dynamic Environments: Adapting Inertia Weight and Clustering Particles;https://ieeexplore.ieee.org/abstract/document/6131192;2011;parvin2011apso;100;;;1.31;0.03;;;;;;;;;;;0.53;0.01;1.05;0.06;1.69;0.05;1.78;0.02;1.86;0.02;1.95;0.02;1.95;0.01;1.90;0.01;;;;;;;;;5.16;0.11;3.87;0.08;;;2.17;0.07;;;0.82;0.02;
-CellularDE;CellularDE: A Cellular Based Differential Evolution for Dynamic Optimization Problems;https://link.springer.com/chapter/10.1007/978-3-642-20282-7_35;2011;nseef2011cellularde;100;;;1.64;0.03;;;;;;;;;;;1.53;0.07;1.50;0.04;2.46;0.05;2.62;0.05;2.76;0.05;2.75;0.05;2.73;0.03;2.61;0.02;;;;;;;;;;;3.98;0.03;;;2.42;0.02;;;;;
-EO;Dynamic function optimisation with hybridised extremal dynamics;https://link.springer.com/article/10.1007/s12293-009-0027-6;2010;tinoco2010eo;50;;;0.25;0.08;0.47;0.12;0.49;0.12;0.53;0.13;0.65;0.19;0.77;0.24;7.47;1.98;;;0.40;0.11;0.49;0.10;0.56;0.09;0.59;0.10;0.66;0.07;;;2.25;0.85;;;6.22;1.60;17.80;6.90;;;;;;;;;;;;;
-PSO-CP;An adaptive bi-flight cuckoo search with variable nests for continuous dynamic optimization problems;https://link.springer.com/article/10.1007/s10489-017-0963-7;2010;liu2010psocp;30;;;1.31;0.06;1.98;0.06;2.21;0.06;2.61;0.11;3.20;0.13;3.93;0.14;3.41;0.06;;;;;2.02;0.07;;;2.14;0.08;2.04;0.05;;;2.12;0.08;;;18.25;0.32;;;;;;;;;;;;;0.97;0.03;
-HmSO;A hibernating multi-swarm optimization algorithm for dynamic environments;https://ieeexplore.ieee.org/abstract/document/5716372;2010;kamosi2010hmso;100;;;1.46;0.04;2.54;0.13;3.79;0.16;5.03;0.19;6.04;0.22;;;1.01;0.03;1.23;0.05;1.67;0.04;1.72;0.03;1.78;0.03;1.75;0.02;1.78;0.02;1.82;0.01;4.63;0.17;25.40;0.32;66.25;1.37;;;8.04;0.14;4.79;0.07;;;2.43;0.07;;;0.90;0.04;
-ESCA;Evolutionary swarm cooperative optimization in dynamic environments;https://link.springer.com/article/10.1007/s11047-009-9129-9;2010;lung2010esca;50;;;1.53;0.01;1.98;0.06;2.21;0.06;2.61;0.11;3.20;0.13;3.93;0.14;0.98;0.00;;;1.89;0.04;1.52;0.02;1.61;0.02;1.67;0.02;1.61;0.03;;;;;;;;;;;;;;;;;;;;;;;
-mPSO;A new particle swarm optimization algorithm for dynamic environments;https://link.springer.com/chapter/10.1007/978-3-642-17563-3_16;2010;kamosi2010mpso;100;;;1.66;0.08;2.54;0.11;3.46;0.11;4.51;0.15;5.32;0.09;;;0.90;0.05;1.21;0.12;2.05;0.08;2.18;0.06;2.24;0.06;2.30;0.04;2.32;0.04;2.34;0.03;4.52;0.15;12.52;0.20;119.80;3.21;;;7.19;0.23;4.57;0.18;;;2.66;0.16;;;1.05;0.10;
-MDUMDA;Multi-population and diffusion UMDA for dynamic multimodal problems;https://ieeexplore.ieee.org/abstract/document/6075515;2010;servadio2010mdumda;50;;;1.14;0.39;2.87;0.45;4.44;1.21;6.67;1.54;8.22;4.17;10.59;4.08;4.45;0.69;1.53;0.47;2.99;0.50;3.98;0.74;4.05;0.46;4.66;0.54;;;;;;;;;;;;;;;;;;;;;;;;;
-CellularPSO;Cellular PSO: A PSO for Dynamic Environments;https://link.springer.com/chapter/10.1007/978-3-642-04843-2_45;2009;hashemi2009cellularpso;100;;;1.93;0.08;2.72;0.10;3.70;0.11;4.71;0.14;5.68;0.18;;;2.79;0.19;1.94;0.18;2.73;0.12;3.08;0.11;3.28;0.11;3.34;0.07;3.48;0.11;3.37;0.08;;;;;;;;;6.81;0.17;5.94;0.23;;;3.09;0.16;;;1.19;0.09;
-CESO;A collaborative model for tracking optima in dynamic environments;https://ieeexplore.ieee.org/abstract/document/4424520;2007;lung2007ceso;50;;;1.38;0.02;1.78;0.02;2.03;0.03;;;2.52;0.06;;;1.04;0.00;;;1.72;0.02;1.24;0.01;1.30;0.02;1.45;0.01;1.28;0.02;;;2.51;0.04;;;6.81;0.07;24.60;0.25;;;;;;;;;;;;;
-rSPSO;Using regression to improve local convergence;https://ieeexplore.ieee.org/abstract/document/4424524;2007;blackwell2007rspso;50;;;1.50;0.08;1.87;0.05;2.40;0.08;2.90;0.08;3.25;0.09;3.86;0.11;1.42;0.06;1.04;0.03;2.20;0.07;2.62;0.07;2.76;0.08;2.72;0.08;2.93;0.06;2.79;0.05;;;;;;;;;;;;;;;;;;;;;PAPER NOT FOUND
-AmQSO;Particle Swarms for Dynamic Optimization Problems;https://link.springer.com/chapter/10.1007/978-3-540-74089-6_6;2007;blackwell2008amqso;50;;;1.64;0.05;2.26;0.05;2.86;0.06;3.35;0.06;3.80;0.07;;;1.27;0.04;1.30;0.06;2.03;0.04;2.11;0.03;2.18;0.02;2.18;0.02;2.14;0.01;2.12;0.01;3.80;0.10;7.60;0.14;26.79;0.61;;;6.97;0.13;4.50;0.09;;;2.65;0.05;;;1.01;0.04;
-mQSO;Multi-swarm Optimization in Dynamic Environments;https://link.springer.com/chapter/10.1007/978-3-540-24653-4_50;2006;blackwell2004mqso;50;;;1.75;0.06;2.40;0.06;3.00;0.06;3.59;0.10;4.24;0.10;4.79;0.10;5.07;0.17;1.81;0.07;2.42;0.07;2.48;0.07;2.55;0.07;2.50;0.06;2.36;0.04;2.26;0.03;4.38;0.12;8.37;0.16;25.57;0.63;;;8.96;0.19;5.20;0.10;;;2.85;0.07;;;1.10;0.03;
-mCPSO;Multiswarms, exclusion, and anti-convergence in dynamic environments;https://ieeexplore.ieee.org/abstract/document/1665033;2006;blackwell2006mcpso;50;;;2.05;0.07;2.80;0.07;3.57;0.08;4.18;0.09;4.89;0.11;5.53;0.13;4.93;0.17;2.07;0.08;2.64;0.07;2.63;0.08;2.67;0.07;2.65;0.06;2.49;0.04;2.44;0.04;;;;;;;;;;;;;;;;;;;;;`;
-    // ─────────────────────────────────────────────
+  <!-- TABLE -->
+  <div class="table-wrap">
+    <table id="results-table">
+      <thead id="table-head"></thead>
+      <tbody id="table-body"></tbody>
+    </table>
+  </div>
 
-    // ─────────────────────────────────────────────
-    // COLUMN DEFINITIONS
-    // ─────────────────────────────────────────────
-    const COLUMN_GROUPS = [
-      {
-        id: 'severity', label: 'Severity', cls: 'severity',
-        cols: [
-          { id: 's0', label: 'Sev. 0', valKey: 'Severity_0', stdKey: 'STD_Error_Standard_0' },
-          { id: 's1', label: 'Sev. 1', valKey: 'Standard_1_10_5_5000', stdKey: 'STD_Error_Standard_1' },
-          { id: 's2', label: 'Sev. 2', valKey: 'Severity_2', stdKey: 'STD_Error_Standard_2' },
-          { id: 's3', label: 'Sev. 3', valKey: 'Severity_3', stdKey: 'STD_Error_Standard_3' },
-          { id: 's4', label: 'Sev. 4', valKey: 'Severity_4', stdKey: 'STD_Error_Standard_4' },
-          { id: 's5', label: 'Sev. 5', valKey: 'Severity_5', stdKey: 'STD_Error_Standard_5' },
-          { id: 's6', label: 'Sev. 6', valKey: 'Severity_6', stdKey: 'STD_Error_Standard_6' },
-        ]
-      },
-      {
-        id: 'peaks', label: 'Peaks', cls: 'peaks',
-        cols: [
-          { id: 'p1', label: 'P=1', valKey: 'Peaks_1', stdKey: 'STD_Error_Peaks_1' },
-          { id: 'p5', label: 'P=5', valKey: 'Peaks_5', stdKey: 'STD_Error_Peaks_5' },
-          { id: 'p20', label: 'P=20', valKey: 'Peaks_20', stdKey: 'STD_Error_Peaks_20' },
-          { id: 'p30', label: 'P=30', valKey: 'Peaks_30', stdKey: 'STD_Error_Peaks_30' },
-          { id: 'p40', label: 'P=40', valKey: 'Peaks_40', stdKey: 'STD_Error_Peaks_40' },
-          { id: 'p50', label: 'P=50', valKey: 'Peaks_50', stdKey: 'STD_Error_Peaks_50' },
-          { id: 'p100', label: 'P=100', valKey: 'Peaks_100', stdKey: 'STD_Error_Peaks_100' },
-          { id: 'p200', label: 'P=200', valKey: 'Peaks_200', stdKey: 'STD_Error_Peaks_200' },
-        ]
-      },
-      {
-        id: 'dims', label: 'Dimensions', cls: 'dims',
-        cols: [
-          { id: 'd10', label: 'D=10', valKey: 'Dimensions_10', stdKey: 'STD_Error_Dimensions_10' },
-          { id: 'd20', label: 'D=20', valKey: 'Dimensions_20', stdKey: 'STD_Error_Dimensions_20' },
-          { id: 'd50', label: 'D=50', valKey: 'Dimensions_50', stdKey: 'STD_Error_Dimensions_50' },
-          { id: 'd100', label: 'D=100', valKey: 'Dimensions_100', stdKey: 'STD_Error_Dimensions_100' },
-        ]
-      },
-      {
-        id: 'freq', label: 'Frequencies', cls: 'freq',
-        cols: [
-          { id: 'f500', label: 'f=500', valKey: 'Frequencies_500', stdKey: 'STD_Error_Frequencies_500' },
-          { id: 'f1000', label: 'f=1000', valKey: 'Frequencies_1000', stdKey: 'STD_Error_Frequencies_1000' },
-          { id: 'f2000', label: 'f=2000', valKey: 'Frequencies_2000', stdKey: 'STD_Error_Frequencies_2000' },
-          { id: 'f2500', label: 'f=2500', valKey: 'Frequencies_2500', stdKey: 'STD_Error_Frequencies_2500' },
-          { id: 'f3000', label: 'f=3000', valKey: 'Frequencies_3000', stdKey: 'STD_Error_Frequencies_3000' },
-          { id: 'f10000', label: 'f=10000', valKey: 'Frequencies_10000', stdKey: 'STD_Error_Frequencies_10000' },
-        ]
-      },
-    ];
+</div>
 
-    // ─────────────────────────────────────────────
-    // PARSE CSV
-    // ─────────────────────────────────────────────
-    function parseCSV(raw) {
-      const lines = raw.trim().split('\n').map(l => l.replace(/\r/g, ''));
-      const headers = lines[0].split(';');
-      return lines.slice(1).map(line => {
-        const vals = line.split(';');
-        const obj = {};
-        headers.forEach((h, i) => { obj[h.trim()] = (vals[i] || '').trim(); });
-        return obj;
-      });
-    }
+<footer>
+  <p>Moving Peaks Benchmark · Scenario 2 · Algorithm Comparison Table</p>
+  <p style="margin-top:6px">To report a missing entry or correction: <a href="/cdn-cgi/l/email-protection#4a273a2864282f242922272b38210a2d272b232664292527">mpb.benchmark&#64;gmail.com</a></p>
+</footer>
 
-    const ALL_DATA = parseCSV(RAW_CSV);
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+// ─────────────────────────────────────────────
+// DATA
+// ─────────────────────────────────────────────
+const RAW_CSV = `Method;Paper title;Paper link;Year publication;Bibtex;Category;Runs;Severity_0;STD_Error_Standard_0;Standard_1_10_5_5000;STD_Error_Standard_1;Severity_2;STD_Error_Standard_2;Severity_3;STD_Error_Standard_3;Severity_4;STD_Error_Standard_4;Severity_5;STD_Error_Standard_5;Severity_6;STD_Error_Standard_6;Peaks_1;STD_Error_Peaks_1;Peaks_5;STD_Error_Peaks_5;Peaks_20;STD_Error_Peaks_20;Peaks_30;STD_Error_Peaks_30;Peaks_40;STD_Error_Peaks_40;Peaks_50;STD_Error_Peaks_50;Peaks_100;STD_Error_Peaks_100;Peaks_200;STD_Error_Peaks_200;Dimensions_10;STD_Error_Dimensions_10;Dimensions_20;STD_Error_Dimensions_20;Dimensions_50;STD_Error_Dimensions_50;Dimensions_100;STD_Error_Dimensions_100;Frequencies_500;STD_Error_Frequencies_500;Frequencies_1000;STD_Error_Frequencies_1000;Frequencies_2000;STD_Error_Frequencies_2000;Frequencies_2500;STD_Error_Frequencies_2500;Frequencies_3000;STD_Error_Frequencies_3000;Frequencies_10000;STD_Error_Frequencies_10000;COMMENT
+EFDS (FDS+CMA-ES);Evolutionary Fractal Decomposition based Search for Dynamic Optimization;https://ieeexplore.ieee.org/abstract/document/11342855;2025;llanza2025evolutionary;Direct Search|DS,CMA-ES|EA;10;0.77;0.12;0.20;0.10;0.75;0.21;1.18;0.28;1.01;0.22;0.88;0.22;1.33;0.21;0.13;0.09;0.34;0.09;0.34;0.15;0.31;0.11;0.11;0.06;0.11;0.08;0.27;0.06;0.19;0.08;0.22;0.16;0.28;0.24;0.87;1.57;;;0.84;0.37;1.02;0.23;0.81;0.19;0.50;0.14;0.46;0.25;0.31;0.13;
+EFDS (FDS+GA);Evolutionary Fractal Decomposition based Search for Dynamic Optimization;https://ieeexplore.ieee.org/abstract/document/11342855;2025;llanza2025evolutionary;Direct Search|DS,GA|EA;10;0.72;0.19;0.34;0.14;0.81;0.26;1.17;0.27;0.93;0.18;1.04;0.21;1.47;0.31;0.14;0.09;0.39;0.11;0.30;0.16;0.50;0.10;0.18;0.09;0.13;0.10;0.27;0.08;0.26;0.08;0.68;0.19;;;;;;;0.92;0.46;1.36;0.20;1.04;0.18;0.94;0.19;0.54;0.27;0.28;0.18;
+FDS;FDS: Fractal Decomposition based Direct Search Approach for Continuous Dynamic Optimization;https://www.sciencedirect.com/science/article/pii/S002002552500369X;2025;llanza2025fds;Direct Search|DS;100;0.28;0.04;0.37;0.04;0.44;0.04;0.58;0.04;0.68;0.04;0.83;0.05;1.01;0.05;0.10;0.02;0.25;0.04;0.42;0.04;0.46;0.04;0.49;0.04;0.45;0.04;0.5;0.03;1.36;0.04;1.76;0.13;2.72;0.16;3.40;0.20;4.06;0.39;1.47;0.06;0.55;0.06;0.37;0.05;0.33;0.04;0.32;0.04;0.41;0.04;
+EFWA(CE);Efficient fireworks algorithms for dynamic optimisation problems in continuous space.pdf;https://www.tandfonline.com/doi/abs/10.1080/0952813X.2022.2093404;2024;pekdemir2022efficient;Fireworks|SI;50;0.778;;1.673;0.084;2.113;;2.609;;;;;;;;;;;;2.981;;3.317;;3.299;;3.313;;2.982;;3.011;;;;;;;;;;12.890;0.414;6.852;0.269;3.218;0.201;;;;;1.141;0.085;
+DPCPSO ;A fast density peak clustering based particle swarm optimizer for dynamic optimization ;https://pdf.sciencedirectassets.com/271506/1-s2.0-S0957417423X00220/1-s2.0-S0957417423017566/main.pdf?X-Amz-Security-Token=IQoJb3JpZ2luX2VjEGkaCXVzLWVhc3QtMSJHMEUCIQDwPdZ0p%2FW87PiEmTAeFUlxWkVoQVZ3d62G4A%2Bkguz8NgIgEr%2BEpPq8%2FfR7Rgm8jyXWbTKT8EUi9eW%2F1l;2024;li2024fast;PSO|SI;30;0.14;0.03;0.77;0.05;0.71;0.06;0.94;0.06;1.11;0.08;1.07;0.06;1.09;0.05;1.47;0.49;0.66;0.07;1.04;0.05;1.34;0.05;;;1.46;0.05;1.70;0.05;;;;;;;;;;;;;;;4.50;0.11;;;2.01;0.08;0.43;0.05;
+CaAIS;CaAIS: Cellular Automata-Based Artificial Immune System for Dynamic Environments ;https://www.mdpi.com/1999-4893/17/1/18/pdf;2024;rezvanian2023caais;AIS|EA;30;;;2.24;0.02;;;;;;;;;;;2.24;0.02;2.28;0.02;2.51;0.03;2.63;0.03;2.28;0.02;2.32;0.02;1.67;0.03;2.64;0.03;;;;;;;;;;;;;;;;;;;;;
+HMRS;A Hybrid Multi-Population Reinitialization Strategy to Tackle Dynamic Optimization Problems;https://ieeexplore.ieee.org/document/10278109;2023;raghul2023hybrid;PSO|SI,EA|EA;20;;;1.76;0.12;;;;;;;2.08;0.19;;;;;1.84;0.67;1.95;1.03;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;IT HAS A DIFFERENT WIDTH SEVERITY
+CM-AIS;A full-featured cooperative coevolutionary memory-based artificial immune system for dynamic optimization ;https://www.sciencedirect.com/science/article/abs/pii/S1568494621011510;2022;etaati2022full;AIS|EA;50;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;0.38 ;0.02;Almost no results
+HIDE;Historical Information-based Differential Evolution for Dynamic Optimization Problem ;https://ieeexplore.ieee.org/document/9504965;2021;wu2021historical;DE|DE;20;;;2.68;0.38;;;;;;;5.69;0.83;;;;;2.48;0.52;3.81;1.01;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;IT HAS A DIFFERENT WIDTH SEVERITY
+AdaMPSO ;Adaptive multi-swarm in dynamic environments ;https://pdf.sciencedirectassets.com/280294/1-s2.0-S2210650221X0003X/1-s2.0-S2210650221000316/main.pdf?X-Amz-Security-Token=IQoJb3JpZ2luX2VjEDkaCXVzLWVhc3QtMSJHMEUCIBeB1DpQlchPf1H8zd%2BOKvbMBGmVxi53FfNRPl4s8gM1AiEA6K6wmg9Sq7wsCVzL%2BOp8S1u4smjW%2BPpICsCCWU;2021;qin2021adaptive;PSO|SI;100;;;0.53 ;0.11 ;0.87 ;0.16 ;1.32 ;0.20;1.92 ;0.18 ;2.43 ;0.19;;;;;;;1.20 ;0.22 ;0.66 ;0.08 ;;;0.99 ;0.08 ;1.03 ;0.08 ;0.92 ;0.08 ;2.75 ;0.41 ;3.63 ;0.46 ;10.71 ;1.26 ;;;;;;;;;;;;;;;
+AdaMDE ;Adaptive multi-swarm in dynamic environments ;https://pdf.sciencedirectassets.com/280294/1-s2.0-S2210650221X0003X/1-s2.0-S2210650221000316/main.pdf?X-Amz-Security-Token=IQoJb3JpZ2luX2VjEDkaCXVzLWVhc3QtMSJHMEUCIBeB1DpQlchPf1H8zd%2BOKvbMBGmVxi53FfNRPl4s8gM1AiEA6K6wmg9Sq7wsCVzL%2BOp8S1u4smjW%2BPpICsCCWU;2021;qin2021adaptive;DE|DE,PSO|SI;100;;;0.90;0.30 ;1.43 ;0.29 ;2.03 ;0.25 ;2.60 ;0.27 ;3.22 ;0.30 ;;;;;;;1.58 ;0.20 ;0.98 ;0.12 ;;;1.25 ;0.11 ;1.17 ;0.09 ;0.97 ;0.06 ;3.03 ;0.43 ;4.63 ;0.46 ;19.48 ;2.98 ;;;;;;;;;;;;;;;
+idPSO;A Framework for Adapting Population-Based and Heuristic Algorithms for Dynamic Optimization Problems ;https://ijeee.iust.ac.ir/article-1-1448-en.pdf;2020;ejabati2020framework;PSO|SI;50;;;0.62;0.05;0.67;0.07;0.76;0.06;;;0.91;0.09;;;0.12;0.00;0.58;0.07;0.75;0.03;0.67;0.04;;;0.64;0.01;0.25;0.02;0.26;0.04;;;;;;;;;;;;;;;;;;;;;
+idALO;A Framework for Adapting Population-Based and Heuristic Algorithms for Dynamic Optimization Problems ;https://ijeee.iust.ac.ir/article-1-1448-en.pdf;2020;ejabati2020framework;ALO|SI;50;;;0.71;0.06;0.81;0.07;0.93;0.07;;;1.09;0.09;;;0.09;0.02;0.49;0.06;1.41;0.05;1.30;0.07;;;1.21;0.08;1.20;0.09;1.22;0.05;;;;;;;;;;;;;;;;;;;;;
+sslPSO;A Species Conservation-Based Particle Swarm Optimization with Local Search for Dynamic Optimization Problems ;https://downloads.hindawi.com/journals/cin/2020/2815802.pdf;2020;shen2020species;PSO|SI;30;0.65;0.04;0.75;0.05;1.18;0.05;1.32;0.05;1.59;0.04;1.59;0.04;1.92;0.04;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+APCPSO;An affinity propagation clustering based particle swarm optimizer for dynamic optimization ;https://www.sciencedirect.com/science/article/abs/pii/S0950705120301362;2020;liu2020affinity;PSO|SI;30;0.16;0.04;0.66;0.04;0.94;0.07;1.01;0.07;1.08;0.05;1.19;0.07;1.33;0.09;1.13;0.03;0.53;0.06;1.04;0.05;1.41;0.04;;;1.95;0.05;2.36;0.05;;;1.39;0.06;4.33;0.17;;;;;;;;;5.72;0.12;;;2.12;0.08;0.32;0.05;
+eFA-rw ;Quantum firefly swarms for multimodal dynamic optimization problems ;https://www.sciencedirect.com/science/article/abs/pii/S0957417418305153;2019;ozsoydan2019quantum;Firefly|SI;50;;;1.63;0.05;2.00;0.06;2.30;0.06;2.42;0.07;2.60;0.06;;;0.64;0.03;1.21;0.09;2.16;0.05;2.50;0.04;;;2.70;0.03;3.03;0.03;3.14;0.03;;;;;;;;;;;;;;;;;;;;;
+eFA-seq;Quantum firefly swarms for multimodal dynamic optimization problems ;https://www.sciencedirect.com/science/article/abs/pii/S0957417418305153;2019;ozsoydan2019quantum;Firefly|SI;50;;;1.58;0.05;1.91;0.03;2.27;0.06;2.50;0.06;2.57;0.05;;;0.64;0.03;1.06;0.05;2.22;0.04;2.64;0.03;;;2.91;0.03;3.27;0.04;3.44;0.03;;;;;;;;;;;;;;;;;;;;;
+DynDE + LA ;A novel framework for improving multi-population algorithms for dynamic optimization problems: A scheduling approach ;https://www.sciencedirect.com/science/article/abs/pii/S2210650217306272;2019;kordestani2019novel;DE|DE;50;;;1.32;0.06;;;2.23;0.06;;;3.33;0.09;;;3.07 ;0.12;1.41;0.08;2.60;0.07;3.05;0.10;3.34;0.07;3.56;0.09;3.88;0.11;3.71;0.09;;;;;;;;;;;2.83;0.04;1.96;0.04;;;1.65;0.05;;;
+DynDE + PI;A novel framework for improving multi-population algorithms for dynamic optimization problems: A scheduling approach ;https://www.sciencedirect.com/science/article/abs/pii/S2210650217306272;2019;kordestani2019novel;DE|DE;50;;;1.47;0.08;;;2.24;0.08;;;3.17;0.10;;;2.70 ;0.11;1.32;0.09;2.46;0.08;2.91;0.11;3.28;0.09;3.38;0.10;3.78;0.11;3.62;0.09;;;;;;;;;;;2.96;0.05;2.05;0.05;;;1.69;0.06;;;
+CCSA;A cluster-based clonal selection algorithm for optimization in dynamic environment, ;https://pdf.sciencedirectassets.com/280294/1-s2.0-S2210650219X00061/1-s2.0-S2210650218300944/main.pdf?X-Amz-Security-Token=IQoJb3JpZ2luX2VjEDgaCXVzLWVhc3QtMSJIMEYCIQC%2F3DOnVgRNlMAj5wjw85UPtPQ36YdTTjgg6hH%2BLH7fRQIhAMSzPPv5IwESXBtJLyw0swPFGZSZ8a%2B7Zb7edM;2019;zhang2019cluster;AIS|EA;30;;;1.09;0.03;1.37;0.04;1.89;0.05;1.99;0.04;2.07;0.04;;;0.64;0.01;0.73;0.04;1.80;0.03;1.90;0.03;;;1.87;0.02;1.75;0.02;1.56;0.02;;;;;;;;;;;;;;;;;;;;;
+Algorithm 1;A note on the exclusion operator in multi-swarm PSO algorithms for dynamic environments ;https://www.tandfonline.com/doi/pdf/10.1080/09540091.2019.1700912;2019;kazemi2020note;PSO|SI;100;;;2.34;0.06;;;;;;;;;;;5.11;0.16;2.35;0.07;3.19;0.06;3.49;0.06;3.73;0.06;3.71;0.06;;;3.62;0.04;;;;;;;;;;;;;;;;;;;;;
+Algorithm 2;A note on the exclusion operator in multi-swarm PSO algorithms for dynamic environments ;https://www.tandfonline.com/doi/pdf/10.1080/09540091.2019.1700912;2019;kazemi2020note;PSO|SI;100;;;2.72;0.06;;;;;;;;;;;5.61;0.17;2.69;0.07;3.09;0.06;3.32;0.05;3.35;0.05;3.29;0.04;;;2.92;0.03;;;;;;;;;;;;;;;;;;;;;
+Algorithm 3;A note on the exclusion operator in multi-swarm PSO algorithms for dynamic environments ;https://www.tandfonline.com/doi/pdf/10.1080/09540091.2019.1700912;2019;kazemi2020note;PSO|SI;100;;;1.81;0.05;;;;;;;;;;;3.74;0.11;1.80;0.06;2.82;0.06;3.27;0.06;3.53;0.06;3.57;0.06;;;3.87;0.05;;;;;;;;;;;;;;;;;;;;;
+Algorithm 4;A note on the exclusion operator in multi-swarm PSO algorithms for dynamic environments ;https://www.tandfonline.com/doi/pdf/10.1080/09540091.2019.1700912;2019;kazemi2020note;PSO|SI;100;;;1.72;0.05;;;;;;;;;;;4.62;0.14;1.74;0.05;2.77;0.05;3.25;0.06;3.50;0.05;3.66;0.06;;;3.91;0.05;;;;;;;;;;;;;;;;;;;;;
+BfCS-wVN;An adaptive bi-flight cuckoo search with variable nests for continuous dynamic optimization problems ;https://link.springer.com/content/pdf/10.1007/s10489-017-0963-7.pdf;2018;kordestani2018adaptive;Cuckoo Search|SI;50;0.40;0.08;0.51;0.11;0.89;0.16;1.26;0.13;1.89;0.18;2.39;0.20;;;0.30;0.06;0.38;0.21;0.74;0.11;1.00;0.12;0.97;0.07;0.84;0.06;1.11;0.06;1.18;0.08;;;;;;;;;4.28;0.42;;;;;0.99;0.24;;;0.30;0.06;
+cGA;Chaotic Genetic Algorithm based on Explicit Memory with a new Strategy for Updating and Retrieval of Memory in Dynamic Environments ;https://jad.shahroodut.ac.ir/article_957_f703c33927d05d0623d26bcfe37a0644.pdf;2018;mohammadpour2018chaotic;GA|EA;100;;;1.15;0.13;2.19;0.15;3.31;0.25;5.35;0.35;6.45;0.45;8.15;0.68;0.92;0.09;1.06;0.07;1.18;0.06;1.35;0.05;1.53;0.09;1.65;0.07;1.80;0.06;1.71;0.05;2.45;0.28;4.25;0.35;;;;;3.96;0.21;1.28;0.13;;;;;;;;;
+GRDE;Global replacement-based differential evolution with neighbor-based memory for dynamic optimization ;https://link.springer.com/content/pdf/10.1007/s10489-018-1147-9.pdf;2018;zhu2018global;DE|DE;30;0.20;0.04;0.39;0.07;1.12;0.07;1.27;0.08;1.38;0.08;1.64;0.10;;;0.0;0.00;0.27;0.08;1.08;0.09;1.15;0.06;;;1.26;0.08;1.06;0.10;0.99;0.12;;;;;;;;;;;;;;;;;0.99;0.06;0.23;0.05;
+WD2O;WD2O: a novel wind driven dynamic optimization approach with effective change detection ;https://link.springer.com/content/pdf/10.1007/s10489-017-0895-2.pdf;2017;boulesnane2017wd2o;WDO|SI;30;;;1.25;0.02;;;;;;;;;;;1.21;0.03;0.76;0.03;1.22;0.02;1.75;0.01;;;1.87;0.01;2.11;0.01;1.95;0.01;3.36;0.04;4.82;0.03;;;;;;;;;;;;;;;;;
+A-SFA ;Improved Speciation-Based Firefly Algorithm in Dynamic and Uncertain Environments ;https://www.airitilibrary.com/Article/Detail/10162364-201605-201605170005-201605170005-661-676;2016;nasiri2016improved;Firefly|SI;30;;;0.90;0.05;1.31;0.07;1.76;0.09;;;2.64;0.08;;;0.66;0.05;0.79;0.06;1.24;0.08;1.41;0.06;;;1.71;0.04;1.84;0.04;1.90;0.05;;;;;;;;;5.09;0.10;3.51;0.08;;;1.77;0.08;;;0.63;0.03;
+CHPSO;A novel hybrid adaptive collaborative approach based on particle swarm optimiza ;https://citeseerx.ist.psu.edu/document?repid=rep1&type=pdf&doi=a209a80b3d605a53a38038015e48e3a73439610c;2015;sharifi2015novel;PSO|SI;500;0.46;0.02;0.64;0.02;0.92;0.01;1.22;0.02;1.50;0.02;1.82;0.02;;;0.19;0.00;0.44;0.02;0.91;0.01;0.99;0.01;1.02;0.01;1.03;0.01;1.04;0.01;1.01;0.00;3.32;0.06;5.04;0.07;9.95;0.11;;;3.74;0.05;2.35;0.04;;;1.16;0.02;;;0.40;0.01;
+AMP/PSO;An Adaptive Multi-Population Framework for Locating and Tracking Multiple Optima ;https://researchonline.ljmu.ac.uk/id/eprint/2371/1/accepted_version.pdf;2015;li2015adaptive;PSO|SI;30;;;0.69;0.03;;;;;;;;;;;;;;;1.1;0.09;1.1;0.05;;;1.2;0.05;1.4;0.05;1.8;0.04;;;;;;;;;;;;;;;;;;;;;
+AMP/DE;An Adaptive Multi-Population Framework for Locating and Tracking Multiple Optima ;https://researchonline.ljmu.ac.uk/id/eprint/2371/1/accepted_version.pdf;2015;li2015adaptive;DE|DE,PSO|SI;30;;;0.9;0.10;;;;;;;;;;;;;;;1.4;0.10;1.3;0.06;;;1.4;0.05;1.7;0.08;2.00;0.04;;;;;;;;;;;;;;;;;;;;;
+AMSO;An Adaptive Multi-Swarm Optimizer for Dynamic Optimization Problems;https://ieeexplore.ieee.org/abstract/document/6975267;2014;li2014amso;PSO|SI;30;;;1.40;0.11;2.20;0.13;2.90;0.18;3.40;0.19;3.80;0.16;4.20;0.15;2.40;0.71;1.60;0.28;2.00;0.19;1.50;0.10;;;2.00;0.16;2.10;0.16;1.90;0.17;4.20;0.50;6.50;1.40;25.00;3.70;;;;;;;;;;;;;;;We assume that the provided value is the Standard Error
+CDEPSO;CDEPSO: a bi-population hybrid approach for dynamic optimization problems;https://link.springer.com/article/10.1007/s10489-013-0483-z;2014;kordestani2014cdepso;DE|DE,PSO|SI;100;;;1.22;0.01;1.74;0.01;;;;;3.56;0.01;;;0.41;0.00;0.97;0.01;1.54;0.01;2.62;0.01;;;2.20;0.01;1.54;0.01;2.11;0.01;;;;;;;;;6.57;0.02;4.00;0.01;;;1.92;0.01;;;;;
+mNAFSA;mNAFSA: A novel approach for optimization in dynamic environments with global changes ;https://www.sciencedirect.com/science/article/pii/S221065021400039X/pdfft?casa_token=tfkDzH8tLWYAAAAA:GefycFWhciwAv_iY-O69MV644UNjYknIdfITc0xjK73dWx6_JEr8Ib0rpVj8Wq3X1yiq1vhMCP8&md5=319f36ceda796691f5f0095ddd9ff250&pid=1-s2.0-S221065021400039X-main.pdf;2014;yazdani2014mnafsa;Fish Swarm|SI;50;;;0.90;0.03;1.41;0.06;1.77;0.07;2.15;0.09;2.58;0.10;;;0.38;0.06;0.55;0.04;1.25;0.06;1.47;0.05;1.65;0.05;;;1.83;0.05;1.84;0.05;2.36;0.28;4.30;0.35;;;;;;;1.83;0.08;;;;;;;0.45;0.02;
+CbDE-wCA;Cluster-based differential evolution with Crowding Archive for niching in dynamic environments;https://www.sciencedirect.com/science/article/abs/pii/S0020025513008335;2014;haghbayan2014cbde;DE|DE;50;;;0.86;0.24;0.88;0.29;0.98;0.29;1.31;0.35;1.54;0.21;1.69;0.21;0.14;0.03;0.30;0.04;0.98;0.25;1.34;0.28;1.15;0.24;1.31;0.26;1.35;0.29;1.29;0.24;;;;;;;;;;;;;;;;;;;;;
+MLSDO;A multiple local search algorithm for continuous dynamic optimization;https://link.springer.com/article/10.1007/s10732-013-9215-0;2013;lepagnot2013mlsdo;Local Search|DS;100;;;0.36;0.08;0.60;0.07;0.92;0.10;1.22;0.12;1.62;0.13;2.01;0.19;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+FTMPSO;A novel multi-swarm algorithm for optimization in dynamic environments based on particle swarm optimization;https://www.sciencedirect.com/science/article/abs/pii/S1568494612005649;2013;yazdani2013ftmpso;PSO|SI;50;;;0.67;0.04;1.20;0.06;1.40;0.09;;;1.69;0.07;;;0.18;0.01;0.47;0.05;0.93;0.04;1.14;0.04;;;1.32;0.04;1.61;0.03;1.67;0.03;;;;;;;;;3.91;0.19;2.36;0.09;;;1.21;0.06;;;0.43;0.03;
+DynPopDE;Differential evolution for dynamic environments with unknown numbers of optima;https://link.springer.com/article/10.1007/s10898-012-9864-9;2013;duplessis2013dynpopde;DE|DE;50;;;1.39;0.07;;;;;;;;;;;;;1.03;0.13;1.72;0.07;;;1.97;0.06;2.10;0.06;2.34;0.05;2.44;0.05;;;;;;;;;;;3.08;0.08;;;;;;;;;
+PSO-AQ;Optimization in Dynamic Environments Utilizing a Novel Method Based on Particle Swarm Optimization;https://d1wqtxts1xzle7.cloudfront.net/83925235/Optimization_in_Dynamic_Environments_Uti20220411-12242-ejk98d.pdf;2013;hashemi2012psoaq;PSO|SI;50;;;0.89;0.03;1.14;0.09;1.86;0.08;;;2.28;0.12;;;0.34;0.02;0.80;0.12;1.45;0.06;1.52;0.04;;;1.77;0.05;1.95;0.05;1.96;0.04;;;;;;;;;6.21;0.16;3.87;0.11;;;2.63;0.07;;;1.18;0.05;
+TP-CPSO;Two phased cellular PSO: A new collaborative cellular algorithm for optimization in dynamic environments;https://ieeexplore.ieee.org/abstract/document/6256517;2012;bashiri2012tpcpso;PSO|SI;100;;;0.96;0.05;1.25;0.04;1.69;0.04;2.12;0.05;2.46;0.05;;;0.40;0.01;0.75;0.07;1.18;0.03;1.32;0.03;1.36;0.03;1.40;0.03;1.50;0.02;1.56;0.02;;;;;;;;;5.56;0.11;3.17;0.06;;;1.59;0.06;;;0.54;0.03;
+SFA;Speciation based firefly algorithm for optimization in dynamic environments;https://d1wqtxts1xzle7.cloudfront.net/81327518/Nasiri-International_20j_20of_20AI-2012_FULL-libre.pdf;2012;nasiri2012sfa;Firefly|SI;50;;;1.05;0.08;1.44;0.06;2.06;0.07;;;2.89;0.13;;;0.42;0.07;0.89;0.09;1.48;0.05;1.56;0.06;;;1.87;0.05;2.01;0.04;1.99;0.06;;;;;;;;;5.11;0.14;;;;;1.95;0.04;;;0.72;0.02;
+CCPSO;A competitive clustering particle swarm optimizer for dynamic optimization problems;https://link.springer.com/article/10.1007/s11721-012-0069-0;2012;nickabadi2012ccpso;PSO|SI;50;;;0.75;0.06;0.84;0.04;0.89;0.08;1.27;0.08;1.34;0.05;1.40;0.09;0.09;0.00;0.25;0.01;1.21;0.08;1.40;0.07;1.47;0.08;1.50;0.09;1.76;0.09;;;;;;;;;;;;;;;;;;;;;;;
+DMAFSA;A new artificial fish swarm algorithm for dynamic optimization problems;https://ieeexplore.ieee.org/abstract/document/6256169;2012;yazdani2012dmafsa;Fish Swarm|SI;50;;;1.01;0.05;;;;;;;;;;;0.55;0.06;0.78;0.06;1.42;0.06;1.63;0.06;;;1.84;0.07;1.95;0.05;1.99;0.04;;;;;;;;;;;;;;;;;;;;;
+MPSO;A memetic particle swarm optimisation algorithm for dynamic multi-modal optimisation problems;https://www.tandfonline.com/doi/abs/10.1080/00207721.2011.605966;2012;wang2012mpso;PSO|SI;50;;;0.71;0.20;0.99;0.40;;;;;1.03;0.39;;;;;0.56;0.09;1.11;0.56;;;;;1.58;0.69;;;;;;;;;;;;;;;;;;;;;;;0.50;0.06;
+APSO;Particle Swarm Optimization Algorithm in Dynamic Environments: Adapting Inertia Weight and Clustering Particles;https://ieeexplore.ieee.org/abstract/document/6131192;2011;parvin2011apso;PSO|SI;100;;;1.31;0.03;;;;;;;;;;;0.53;0.01;1.05;0.06;1.69;0.05;1.78;0.02;1.86;0.02;1.95;0.02;1.95;0.01;1.90;0.01;;;;;;;;;5.16;0.11;3.87;0.08;;;2.17;0.07;;;0.82;0.02;
+CellularDE;CellularDE: A Cellular Based Differential Evolution for Dynamic Optimization Problems;https://link.springer.com/chapter/10.1007/978-3-642-20282-7_35;2011;nseef2011cellularde;DE|DE;100;;;1.64;0.03;;;;;;;;;;;1.53;0.07;1.50;0.04;2.46;0.05;2.62;0.05;2.76;0.05;2.75;0.05;2.73;0.03;2.61;0.02;;;;;;;;;;;3.98;0.03;;;2.42;0.02;;;;;
+EO;Dynamic function optimisation with hybridised extremal dynamics;https://link.springer.com/article/10.1007/s12293-009-0027-6;2010;tinoco2010eo;Extremal Optimization|DS;50;;;0.25;0.08;0.47;0.12;0.49;0.12;0.53;0.13;0.65;0.19;0.77;0.24;7.47;1.98;;;0.40;0.11;0.49;0.10;0.56;0.09;0.59;0.10;0.66;0.07;;;2.25;0.85;;;6.22;1.60;17.80;6.90;;;;;;;;;;;;;
+PSO-CP;An adaptive bi-flight cuckoo search with variable nests for continuous dynamic optimization problems;https://link.springer.com/article/10.1007/s10489-017-0963-7;2010;liu2010psocp;PSO|SI;30;;;1.31;0.06;1.98;0.06;2.21;0.06;2.61;0.11;3.20;0.13;3.93;0.14;3.41;0.06;;;;;2.02;0.07;;;2.14;0.08;2.04;0.05;;;2.12;0.08;;;18.25;0.32;;;;;;;;;;;;;0.97;0.03;
+HmSO;A hibernating multi-swarm optimization algorithm for dynamic environments;https://ieeexplore.ieee.org/abstract/document/5716372;2010;kamosi2010hmso;PSO|SI;100;;;1.46;0.04;2.54;0.13;3.79;0.16;5.03;0.19;6.04;0.22;;;1.01;0.03;1.23;0.05;1.67;0.04;1.72;0.03;1.78;0.03;1.75;0.02;1.78;0.02;1.82;0.01;4.63;0.17;25.40;0.32;66.25;1.37;;;8.04;0.14;4.79;0.07;;;2.43;0.07;;;0.90;0.04;
+ESCA;Evolutionary swarm cooperative optimization in dynamic environments;https://link.springer.com/article/10.1007/s11047-009-9129-9;2010;lung2010esca;EA|EA,PSO|SI;50;;;1.53;0.01;1.98;0.06;2.21;0.06;2.61;0.11;3.20;0.13;3.93;0.14;0.98;0.00;;;1.89;0.04;1.52;0.02;1.61;0.02;1.67;0.02;1.61;0.03;;;;;;;;;;;;;;;;;;;;;;;
+mPSO;A new particle swarm optimization algorithm for dynamic environments;https://link.springer.com/chapter/10.1007/978-3-642-17563-3_16;2010;kamosi2010mpso;PSO|SI;100;;;1.66;0.08;2.54;0.11;3.46;0.11;4.51;0.15;5.32;0.09;;;0.90;0.05;1.21;0.12;2.05;0.08;2.18;0.06;2.24;0.06;2.30;0.04;2.32;0.04;2.34;0.03;4.52;0.15;12.52;0.20;119.80;3.21;;;7.19;0.23;4.57;0.18;;;2.66;0.16;;;1.05;0.10;
+MDUMDA;Multi-population and diffusion UMDA for dynamic multimodal problems;https://ieeexplore.ieee.org/abstract/document/6075515;2010;servadio2010mdumda;EDA|EA;50;;;1.14;0.39;2.87;0.45;4.44;1.21;6.67;1.54;8.22;4.17;10.59;4.08;4.45;0.69;1.53;0.47;2.99;0.50;3.98;0.74;4.05;0.46;4.66;0.54;;;;;;;;;;;;;;;;;;;;;;;;;
+CellularPSO;Cellular PSO: A PSO for Dynamic Environments;https://link.springer.com/chapter/10.1007/978-3-642-04843-2_45;2009;hashemi2009cellularpso;PSO|SI;100;;;1.93;0.08;2.72;0.10;3.70;0.11;4.71;0.14;5.68;0.18;;;2.79;0.19;1.94;0.18;2.73;0.12;3.08;0.11;3.28;0.11;3.34;0.07;3.48;0.11;3.37;0.08;;;;;;;;;6.81;0.17;5.94;0.23;;;3.09;0.16;;;1.19;0.09;
+CESO;A collaborative model for tracking optima in dynamic environments;https://ieeexplore.ieee.org/abstract/document/4424520;2007;lung2007ceso;EA|EA,PSO|SI;50;;;1.38;0.02;1.78;0.02;2.03;0.03;;;2.52;0.06;;;1.04;0.00;;;1.72;0.02;1.24;0.01;1.30;0.02;1.45;0.01;1.28;0.02;;;2.51;0.04;;;6.81;0.07;24.60;0.25;;;;;;;;;;;;;
+rSPSO;Using regression to improve local convergence;https://ieeexplore.ieee.org/abstract/document/4424524;2007;blackwell2007rspso;PSO|SI;50;;;1.50;0.08;1.87;0.05;2.40;0.08;2.90;0.08;3.25;0.09;3.86;0.11;1.42;0.06;1.04;0.03;2.20;0.07;2.62;0.07;2.76;0.08;2.72;0.08;2.93;0.06;2.79;0.05;;;;;;;;;;;;;;;;;;;;;PAPER NOT FOUND
+AmQSO;Particle Swarms for Dynamic Optimization Problems;https://link.springer.com/chapter/10.1007/978-3-540-74089-6_6;2007;blackwell2008amqso;PSO|SI;50;;;1.64;0.05;2.26;0.05;2.86;0.06;3.35;0.06;3.80;0.07;;;1.27;0.04;1.30;0.06;2.03;0.04;2.11;0.03;2.18;0.02;2.18;0.02;2.14;0.01;2.12;0.01;3.80;0.10;7.60;0.14;26.79;0.61;;;6.97;0.13;4.50;0.09;;;2.65;0.05;;;1.01;0.04;
+mQSO;Multi-swarm Optimization in Dynamic Environments;https://link.springer.com/chapter/10.1007/978-3-540-24653-4_50;2006;blackwell2004mqso;PSO|SI;50;;;1.75;0.06;2.40;0.06;3.00;0.06;3.59;0.10;4.24;0.10;4.79;0.10;5.07;0.17;1.81;0.07;2.42;0.07;2.48;0.07;2.55;0.07;2.50;0.06;2.36;0.04;2.26;0.03;4.38;0.12;8.37;0.16;25.57;0.63;;;8.96;0.19;5.20;0.10;;;2.85;0.07;;;1.10;0.03;
+mCPSO;Multiswarms, exclusion, and anti-convergence in dynamic environments;https://ieeexplore.ieee.org/abstract/document/1665033;2006;blackwell2006mcpso;PSO|SI;50;;;2.05;0.07;2.80;0.07;3.57;0.08;4.18;0.09;4.89;0.11;5.53;0.13;4.93;0.17;2.07;0.08;2.64;0.07;2.63;0.08;2.67;0.07;2.65;0.06;2.49;0.04;2.44;0.04;;;;;;;;;;;;;;;;;;;;;`;
+// ─────────────────────────────────────────────
 
-    // ─────────────────────────────────────────────
-    // BIBTEX DATABASE
-    // ─────────────────────────────────────────────
-    const BIBTEX_DB = `
+// ─────────────────────────────────────────────
+// COLUMN DEFINITIONS
+// ─────────────────────────────────────────────
+const COLUMN_GROUPS = [
+  {
+    id: 'severity', label: 'Severity', cls: 'severity',
+    cols: [
+      { id: 's0', label: 'Sev. 0',  valKey: 'Severity_0',           stdKey: 'STD_Error_Standard_0' },
+      { id: 's1', label: 'Sev. 1',  valKey: 'Standard_1_10_5_5000', stdKey: 'STD_Error_Standard_1' },
+      { id: 's2', label: 'Sev. 2',  valKey: 'Severity_2',           stdKey: 'STD_Error_Standard_2' },
+      { id: 's3', label: 'Sev. 3',  valKey: 'Severity_3',           stdKey: 'STD_Error_Standard_3' },
+      { id: 's4', label: 'Sev. 4',  valKey: 'Severity_4',           stdKey: 'STD_Error_Standard_4' },
+      { id: 's5', label: 'Sev. 5',  valKey: 'Severity_5',           stdKey: 'STD_Error_Standard_5' },
+      { id: 's6', label: 'Sev. 6',  valKey: 'Severity_6',           stdKey: 'STD_Error_Standard_6' },
+    ]
+  },
+  {
+    id: 'peaks', label: 'Peaks', cls: 'peaks',
+    cols: [
+      { id: 'p1',   label: 'P=1',   valKey: 'Peaks_1',   stdKey: 'STD_Error_Peaks_1' },
+      { id: 'p5',   label: 'P=5',   valKey: 'Peaks_5',   stdKey: 'STD_Error_Peaks_5' },
+      { id: 'p20',  label: 'P=20',  valKey: 'Peaks_20',  stdKey: 'STD_Error_Peaks_20' },
+      { id: 'p30',  label: 'P=30',  valKey: 'Peaks_30',  stdKey: 'STD_Error_Peaks_30' },
+      { id: 'p40',  label: 'P=40',  valKey: 'Peaks_40',  stdKey: 'STD_Error_Peaks_40' },
+      { id: 'p50',  label: 'P=50',  valKey: 'Peaks_50',  stdKey: 'STD_Error_Peaks_50' },
+      { id: 'p100', label: 'P=100', valKey: 'Peaks_100', stdKey: 'STD_Error_Peaks_100' },
+      { id: 'p200', label: 'P=200', valKey: 'Peaks_200', stdKey: 'STD_Error_Peaks_200' },
+    ]
+  },
+  {
+    id: 'dims', label: 'Dimensions', cls: 'dims',
+    cols: [
+      { id: 'd10',  label: 'D=10',  valKey: 'Dimensions_10',  stdKey: 'STD_Error_Dimensions_10' },
+      { id: 'd20',  label: 'D=20',  valKey: 'Dimensions_20',  stdKey: 'STD_Error_Dimensions_20' },
+      { id: 'd50',  label: 'D=50',  valKey: 'Dimensions_50',  stdKey: 'STD_Error_Dimensions_50' },
+      { id: 'd100', label: 'D=100', valKey: 'Dimensions_100', stdKey: 'STD_Error_Dimensions_100' },
+    ]
+  },
+  {
+    id: 'freq', label: 'Frequencies', cls: 'freq',
+    cols: [
+      { id: 'f500',   label: 'f=500',   valKey: 'Frequencies_500',   stdKey: 'STD_Error_Frequencies_500' },
+      { id: 'f1000',  label: 'f=1000',  valKey: 'Frequencies_1000',  stdKey: 'STD_Error_Frequencies_1000' },
+      { id: 'f2000',  label: 'f=2000',  valKey: 'Frequencies_2000',  stdKey: 'STD_Error_Frequencies_2000' },
+      { id: 'f2500',  label: 'f=2500',  valKey: 'Frequencies_2500',  stdKey: 'STD_Error_Frequencies_2500' },
+      { id: 'f3000',  label: 'f=3000',  valKey: 'Frequencies_3000',  stdKey: 'STD_Error_Frequencies_3000' },
+      { id: 'f10000', label: 'f=10000', valKey: 'Frequencies_10000', stdKey: 'STD_Error_Frequencies_10000' },
+    ]
+  },
+];
+
+// ─────────────────────────────────────────────
+// PARSE CSV
+// ─────────────────────────────────────────────
+function parseCSV(raw) {
+  const lines = raw.trim().split('\n').map(l => l.replace(/\r/g, ''));
+  const headers = lines[0].split(';');
+  return lines.slice(1).map(line => {
+    const vals = line.split(';');
+    const obj = {};
+    headers.forEach((h, i) => { obj[h.trim()] = (vals[i] || '').trim(); });
+    return obj;
+  });
+}
+
+const ALL_DATA = parseCSV(RAW_CSV);
+
+// ─────────────────────────────────────────────
+// BIBTEX DATABASE
+// ─────────────────────────────────────────────
+const BIBTEX_DB = `
 @inproceedings{llanza2025evolutionary,
   title        = {Evolutionary Fractal Decomposition based Search for Dynamic Optimization},
   author       = {Llanza, Arcadi and Shvai, Nadiya and Nakib, Amir},
@@ -1671,473 +1339,684 @@ mCPSO;Multiswarms, exclusion, and anti-convergence in dynamic environments;https
 }
 `;
 
-    // ─────────────────────────────────────────────
-    // STATE
-    // ─────────────────────────────────────────────
-    const state = {
-      activeIds: new Set(),
-      yearFrom: null,
-      yearTo: null,
-      sortCol: '__rank__',
-      sortDir: 'asc',
-      bestOnly: false,
-    };
+// ─────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────
+const state = {
+  activeIds: new Set(),
+  yearFrom: null,
+  yearTo: null,
+  sortCol: '__rank__',
+  sortDir: 'asc',
+  bestOnly: false,
+  activeCats: new Set(), // populated by buildCategoryChips()
+};
 
-    // Initialize all checkboxes ON
-    COLUMN_GROUPS.forEach(g => g.cols.forEach(c => state.activeIds.add(c.id)));
+// Initialize all checkboxes ON
+COLUMN_GROUPS.forEach(g => g.cols.forEach(c => state.activeIds.add(c.id)));
 
-    // ─────────────────────────────────────────────
-    // YEAR BOUNDS
-    // ─────────────────────────────────────────────
-    const years = ALL_DATA.map(r => parseInt(r['Year publication'])).filter(y => !isNaN(y));
-    const MIN_YEAR = Math.min(...years);
-    const MAX_YEAR = Math.max(...years);
+// ─────────────────────────────────────────────
+// YEAR BOUNDS
+// ─────────────────────────────────────────────
+const years = ALL_DATA.map(r => parseInt(r['Year publication'])).filter(y => !isNaN(y));
+const MIN_YEAR = Math.min(...years);
+const MAX_YEAR = Math.max(...years);
 
-    // ─────────────────────────────────────────────
-    // BUILD CHIPS
-    // ─────────────────────────────────────────────
-    function buildChips() {
-      COLUMN_GROUPS.forEach(g => {
-        const container = document.getElementById(`chips-${g.id}`);
-        container.innerHTML = '';
-        g.cols.forEach(col => {
-          const chip = document.createElement('label');
-          chip.className = `chip ${g.id}-chip on`;
-          chip.dataset.id = col.id;
-          chip.innerHTML = `<input type="checkbox" checked/>${col.label}`;
-          chip.addEventListener('click', (e) => {
-            e.preventDefault();
-            const on = state.activeIds.has(col.id);
-            if (on) { state.activeIds.delete(col.id); chip.classList.remove('on'); }
-            else { state.activeIds.add(col.id); chip.classList.add('on'); }
-            render();
-          });
-          container.appendChild(chip);
-        });
-      });
+// ─────────────────────────────────────────────
+// BUILD CHIPS
+// ─────────────────────────────────────────────
+
+// Parse comma-separated "sub|main" pairs from Category field
+// Returns array of { sub, main }
+function parseCats(raw) {
+  if (!raw) return [{ sub: 'Unknown', main: 'Unknown' }];
+  return raw.split(',').map(pair => {
+    const parts = pair.trim().split('|');
+    return { sub: parts[0] || 'Unknown', main: parts[1] || 'Unknown' };
+  });
+}
+
+// Collect all unique subcategories from the data, grouped by main
+function collectSubcats() {
+  const groups = {}; // main -> Set of subs
+  ALL_DATA.forEach(row => {
+    parseCats((row['Category'] || '').trim()).forEach(({ sub, main }) => {
+      if (!groups[main]) groups[main] = new Set();
+      groups[main].add(sub);
+    });
+  });
+  const order = ['SI', 'DE', 'EA', 'DS', 'Unknown'];
+  const result = [];
+  order.forEach(main => {
+    if (groups[main]) {
+      [...groups[main]].sort().forEach(sub => result.push({ sub, main }));
     }
+  });
+  return result;
+}
 
-    function toggleAll(groupId, on) {
-      const g = COLUMN_GROUPS.find(x => x.id === groupId);
-      if (!g) return;
-      g.cols.forEach(col => {
-        if (on) state.activeIds.add(col.id);
-        else state.activeIds.delete(col.id);
-      });
-      document.querySelectorAll(`#chips-${groupId} .chip`).forEach(chip => {
-        chip.classList.toggle('on', on);
-      });
-      render();
-    }
+let ALL_SUBCATS = [];
 
-    // ─────────────────────────────────────────────
-    // YEAR RANGE
-    // ─────────────────────────────────────────────
-    function initYearRange() {
-      const fromEl = document.getElementById('yearFrom');
-      const toEl = document.getElementById('yearTo');
-      fromEl.value = MIN_YEAR;
-      toEl.value = MAX_YEAR;
-      fromEl.min = MIN_YEAR; fromEl.max = MAX_YEAR;
-      toEl.min = MIN_YEAR; toEl.max = MAX_YEAR;
-      state.yearFrom = MIN_YEAR;
-      state.yearTo = MAX_YEAR;
-      fromEl.addEventListener('input', () => {
-        state.yearFrom = parseInt(fromEl.value) || MIN_YEAR;
-        render();
-      });
-      toEl.addEventListener('input', () => {
-        state.yearTo = parseInt(toEl.value) || MAX_YEAR;
-        render();
-      });
-    }
+function buildCategoryChips() {
+  ALL_SUBCATS = collectSubcats();
 
-    // ─────────────────────────────────────────────
-    // GET ACTIVE COLS
-    // ─────────────────────────────────────────────
-    function getActiveCols() {
-      const cols = [];
-      COLUMN_GROUPS.forEach(g => {
-        g.cols.forEach(c => {
-          if (state.activeIds.has(c.id)) cols.push({ ...c, groupId: g.id, groupCls: g.cls });
-        });
-      });
-      return cols;
-    }
+  // Determine which subcats are actually present in the full dataset
+  const presentInAll = new Set();
+  ALL_DATA.forEach(row => {
+    parseCats((row['Category'] || '').trim()).forEach(({ sub }) => presentInAll.add(sub));
+  });
 
-    // ─────────────────────────────────────────────
-    // FILTER DATA
-    // ─────────────────────────────────────────────
-    function getFilteredData() {
-      const activeCols = getActiveCols();
-      // Pre-compute mins across ALL year-filtered rows (before bestOnly)
-      const yearFiltered = ALL_DATA.filter(row => {
-        const y = parseInt(row['Year publication']);
-        if (!isNaN(y)) {
-          if (state.yearFrom && y < state.yearFrom) return false;
-          if (state.yearTo && y > state.yearTo) return false;
-        }
-        return true;
-      });
-      if (!state.bestOnly) return yearFiltered;
-      // Compute per-column minimums across year-filtered set
-      const mins = {};
-      activeCols.forEach(c => {
-        let min = Infinity;
-        yearFiltered.forEach(row => {
-          const v = parseFloat((row[c.valKey] || '').trim());
-          if (!isNaN(v) && v < min) min = v;
-        });
-        mins[c.valKey] = isFinite(min) ? min : null;
-      });
-      // Keep only rows that hold the minimum in at least one visible column
-      return yearFiltered.filter(row =>
-        activeCols.some(c => {
-          const v = parseFloat((row[c.valKey] || '').trim());
-          return mins[c.valKey] !== null && !isNaN(v) && v === mins[c.valKey];
-        })
-      );
-    }
+  // Only activate subcats that have at least one algorithm
+  state.activeCats = new Set([...ALL_SUBCATS.map(c => c.sub)].filter(s => presentInAll.has(s)));
 
-    // ─────────────────────────────────────────────
-    // SORTING
-    // ─────────────────────────────────────────────
-    function sortData(data, ranks) {
-      if (!state.sortCol) return data;
-      if (state.sortCol === '__rank__') {
-        return [...data].map((row, i) => ({ row, rank: ranks ? ranks[i] : null }))
-          .sort((a, b) => {
-            const ra = a.rank, rb = b.rank;
-            if (ra === null && rb === null) return 0;
-            if (ra === null) return 1;
-            if (rb === null) return -1;
-            return state.sortDir === 'asc' ? ra - rb : rb - ra;
-          })
-          .map(x => x.row);
+  const container = document.getElementById('chips-category');
+  container.innerHTML = '';
+
+  let lastMain = null;
+  ALL_SUBCATS.forEach(({ sub, main }) => {
+    if (main !== lastMain) {
+      if (lastMain !== null) {
+        const br = document.createElement('div');
+        br.className = 'cat-group-sep';
+        container.appendChild(br);
       }
-      return [...data].sort((a, b) => {
-        let va = a[state.sortCol], vb = b[state.sortCol];
-        const na = parseFloat(va), nb = parseFloat(vb);
-        if (!isNaN(na) && !isNaN(nb)) { va = na; vb = nb; }
-        if (va < vb) return state.sortDir === 'asc' ? -1 : 1;
-        if (va > vb) return state.sortDir === 'asc' ? 1 : -1;
-        return 0;
-      });
+      const sep = document.createElement('span');
+      sep.style.cssText = 'font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-faint);align-self:center;padding:0 4px 0 0;white-space:nowrap';
+      sep.textContent = main + ':';
+      container.appendChild(sep);
+      lastMain = main;
     }
-
-    function handleSort(colKey) {
-      if (state.sortCol === colKey) {
-        state.sortDir = state.sortDir === 'asc' ? 'desc' : 'asc';
+    const isPresent = presentInAll.has(sub);
+    const chip = document.createElement('label');
+    // Start ON only if subcategory actually has algorithms
+    chip.className = isPresent ? 'chip cat-chip on' : 'chip cat-chip';
+    chip.dataset.id = sub;
+    chip.dataset.userOff = isPresent ? 'false' : 'true'; // track user intent
+    if (!isPresent) {
+      chip.style.opacity = '0.3';
+      chip.style.pointerEvents = 'none';
+    }
+    chip.innerHTML = `<input type="checkbox" ${isPresent ? 'checked' : ''}/><span class="cat-badge cat-${main}">${sub}</span>`;
+    chip.addEventListener('click', e => {
+      e.preventDefault();
+      const on = state.activeCats.has(sub);
+      if (on) {
+        state.activeCats.delete(sub);
+        chip.classList.remove('on');
+        chip.dataset.userOff = 'true';   // user explicitly turned off
       } else {
-        state.sortCol = colKey;
-        state.sortDir = 'asc';
+        state.activeCats.add(sub);
+        chip.classList.add('on');
+        chip.dataset.userOff = 'false';  // user explicitly turned on
       }
       render();
+    });
+    container.appendChild(chip);
+  });
+}
+
+function toggleAllCats(on) {
+  document.querySelectorAll('#chips-category .chip').forEach(chip => {
+    const sub = chip.dataset.id;
+    // Only toggle chips that are currently interactable (not force-disabled)
+    if (chip.style.pointerEvents !== 'none') {
+      if (on) {
+        state.activeCats.add(sub);
+        chip.classList.add('on');
+        chip.dataset.userOff = 'false';
+      } else {
+        state.activeCats.delete(sub);
+        chip.classList.remove('on');
+        chip.dataset.userOff = 'true';
+      }
     }
+  });
+  render();
+}
 
-    // ─────────────────────────────────────────────
-    // RENDER TABLE HEADER
-    // ─────────────────────────────────────────────
-    function renderHeader(activeCols) {
-      const thead = document.getElementById('table-head');
-
-      // Group row
-      let gRow = '<tr>';
-      gRow += '<th class="th-group th-group-fixed" colspan="1" style="background:#111">Rank</th>';
-      gRow += '<th class="th-group th-group-fixed" colspan="4">Algorithm</th>';
-
-      // Group spans
-      const groupSpans = {};
-      activeCols.forEach(c => { groupSpans[c.groupId] = (groupSpans[c.groupId] || 0) + 1; });
-      COLUMN_GROUPS.forEach(g => {
-        if (groupSpans[g.id]) {
-          gRow += `<th class="th-group th-group-${g.id}" colspan="${groupSpans[g.id]}">${g.label}</th>`;
-        }
+function buildChips() {
+  COLUMN_GROUPS.forEach(g => {
+    const container = document.getElementById(`chips-${g.id}`);
+    container.innerHTML = '';
+    g.cols.forEach(col => {
+      const chip = document.createElement('label');
+      chip.className = `chip ${g.id}-chip on`;
+      chip.dataset.id = col.id;
+      chip.innerHTML = `<input type="checkbox" checked/>${col.label}`;
+      chip.addEventListener('click', (e) => {
+        e.preventDefault();
+        const on = state.activeIds.has(col.id);
+        if (on) { state.activeIds.delete(col.id); chip.classList.remove('on'); }
+        else { state.activeIds.add(col.id); chip.classList.add('on'); }
+        render();
       });
-      gRow += '</tr>';
+      container.appendChild(chip);
+    });
+  });
+}
 
-      // Column row
-      let cRow = '<tr>';
-      const rankSorted = state.sortCol === '__rank__';
-      const rankCls = rankSorted ? (state.sortDir === 'asc' ? 'sorted-asc' : 'sorted-desc') : '';
-      cRow += `<th class="col-fixed col-rank ${rankCls}" onclick="handleSort('__rank__')" title="Average rank across all visible columns (lower = better)">Avg Rank</th>`;
-      const fixedCols = [
-        { key: 'Method', label: 'Method' },
-        { key: 'Paper title', label: 'Paper Title' },
-        { key: 'Year publication', label: 'Year' },
-        { key: 'Runs', label: 'Runs' },
-      ];
-      fixedCols.forEach(fc => {
-        const sorted = state.sortCol === fc.key;
-        const cls = sorted ? (state.sortDir === 'asc' ? 'sorted-asc' : 'sorted-desc') : '';
-        cRow += `<th class="col-fixed ${cls}" onclick="handleSort('${fc.key}')">${fc.label}</th>`;
-      });
-      activeCols.forEach(c => {
-        const sorted = state.sortCol === c.valKey;
-        const cls = `col-${c.groupCls} ${sorted ? (state.sortDir === 'asc' ? 'sorted-asc' : 'sorted-desc') : ''}`;
-        cRow += `<th class="${cls}" onclick="handleSort('${c.valKey}')">${c.label}</th>`;
-      });
-      cRow += '</tr>';
+function toggleAll(groupId, on) {
+  const g = COLUMN_GROUPS.find(x => x.id === groupId);
+  if (!g) return;
+  g.cols.forEach(col => {
+    if (on) state.activeIds.add(col.id);
+    else state.activeIds.delete(col.id);
+  });
+  document.querySelectorAll(`#chips-${groupId} .chip`).forEach(chip => {
+    chip.classList.toggle('on', on);
+  });
+  render();
+}
 
-      thead.innerHTML = gRow + cRow;
+// ─────────────────────────────────────────────
+// YEAR RANGE
+// ─────────────────────────────────────────────
+function initYearRange() {
+  const fromEl = document.getElementById('yearFrom');
+  const toEl   = document.getElementById('yearTo');
+  fromEl.value = MIN_YEAR;
+  toEl.value   = MAX_YEAR;
+  fromEl.min = MIN_YEAR; fromEl.max = MAX_YEAR;
+  toEl.min   = MIN_YEAR; toEl.max   = MAX_YEAR;
+  state.yearFrom = MIN_YEAR;
+  state.yearTo   = MAX_YEAR;
+  fromEl.addEventListener('input', () => {
+    state.yearFrom = parseInt(fromEl.value) || MIN_YEAR;
+    render();
+  });
+  toEl.addEventListener('input', () => {
+    state.yearTo = parseInt(toEl.value) || MAX_YEAR;
+    render();
+  });
+}
+
+// ─────────────────────────────────────────────
+// GET ACTIVE COLS
+// ─────────────────────────────────────────────
+function getActiveCols() {
+  const cols = [];
+  COLUMN_GROUPS.forEach(g => {
+    g.cols.forEach(c => {
+      if (state.activeIds.has(c.id)) cols.push({ ...c, groupId: g.id, groupCls: g.cls });
+    });
+  });
+  return cols;
+}
+
+// ─────────────────────────────────────────────
+// FILTER DATA
+// ─────────────────────────────────────────────
+function getFilteredData() {
+  const activeCols = getActiveCols();
+  // Pre-compute mins across ALL year-filtered rows (before bestOnly)
+  const yearFiltered = ALL_DATA.filter(row => {
+    const y = parseInt(row['Year publication']);
+    if (!isNaN(y)) {
+      if (state.yearFrom && y < state.yearFrom) return false;
+      if (state.yearTo   && y > state.yearTo)   return false;
     }
+    return true;
+  });
+  // Category filter: row passes if ANY of its subcategories is active
+  const catFiltered = yearFiltered.filter(row => {
+    const cats = parseCats((row['Category'] || '').trim());
+    return cats.some(({ sub }) => state.activeCats.has(sub));
+  });
+  if (!state.bestOnly) return catFiltered;
+  // Compute per-column minimums across year-filtered set
+  const mins = {};
+  activeCols.forEach(c => {
+    let min = Infinity;
+    catFiltered.forEach(row => {
+      const v = parseFloat((row[c.valKey] || '').trim());
+      if (!isNaN(v) && v < min) min = v;
+    });
+    mins[c.valKey] = isFinite(min) ? min : null;
+  });
+  // Keep only rows that hold the minimum in at least one visible column
+  return catFiltered.filter(row =>
+    activeCols.some(c => {
+      const v = parseFloat((row[c.valKey] || '').trim());
+      return mins[c.valKey] !== null && !isNaN(v) && v === mins[c.valKey];
+    })
+  );
+}
 
-    // ─────────────────────────────────────────────
-    // BEST VALUE PER COLUMN (lower is better)
-    // ─────────────────────────────────────────────
-    function computeColMins(data, activeCols) {
-      const mins = {};
-      activeCols.forEach(c => {
-        let min = Infinity;
-        data.forEach(row => {
-          const v = parseFloat((row[c.valKey] || '').trim());
-          if (!isNaN(v) && v < min) min = v;
-        });
-        mins[c.valKey] = isFinite(min) ? min : null;
-      });
-      return mins;
+// ─────────────────────────────────────────────
+// SORTING
+// ─────────────────────────────────────────────
+function sortData(data, ranks) {
+  if (!state.sortCol) return data;
+  if (state.sortCol === '__rank__') {
+    return [...data].map((row, i) => ({ row, rank: ranks ? ranks[i] : null }))
+      .sort((a, b) => {
+        const ra = a.rank, rb = b.rank;
+        if (ra === null && rb === null) return 0;
+        if (ra === null) return 1;
+        if (rb === null) return -1;
+        return state.sortDir === 'asc' ? ra - rb : rb - ra;
+      })
+      .map(x => x.row);
+  }
+  return [...data].sort((a, b) => {
+    let va = a[state.sortCol], vb = b[state.sortCol];
+    const na = parseFloat(va), nb = parseFloat(vb);
+    if (!isNaN(na) && !isNaN(nb)) { va = na; vb = nb; }
+    if (va < vb) return state.sortDir === 'asc' ? -1 : 1;
+    if (va > vb) return state.sortDir === 'asc' ? 1 : -1;
+    return 0;
+  });
+}
+
+function handleSort(colKey) {
+  if (state.sortCol === colKey) {
+    state.sortDir = state.sortDir === 'asc' ? 'desc' : 'asc';
+  } else {
+    state.sortCol = colKey;
+    state.sortDir = 'asc';
+  }
+  render();
+}
+
+// ─────────────────────────────────────────────
+// RENDER TABLE HEADER
+// ─────────────────────────────────────────────
+function renderHeader(activeCols) {
+  const thead = document.getElementById('table-head');
+
+  // Group row
+  let gRow = '<tr>';
+  gRow += '<th class="th-group th-group-fixed" colspan="1" style="background:#111">Rank</th>';
+  gRow += '<th class="th-group th-group-fixed" colspan="5">Algorithm</th>';
+
+  // Group spans
+  const groupSpans = {};
+  activeCols.forEach(c => { groupSpans[c.groupId] = (groupSpans[c.groupId] || 0) + 1; });
+  COLUMN_GROUPS.forEach(g => {
+    if (groupSpans[g.id]) {
+      gRow += `<th class="th-group th-group-${g.id}" colspan="${groupSpans[g.id]}">${g.label}</th>`;
     }
+  });
+  gRow += '</tr>';
 
-    // ─────────────────────────────────────────────
-    // AVERAGE RANK PER ROW (lower value = better rank = rank 1)
-    // ─────────────────────────────────────────────
-    function computeAvgRanks(data, activeCols) {
-      // For each active column, rank all rows that have a numeric value
-      const rankMap = {};  // rowIndex -> { sumRanks, count }
-      data.forEach((_, i) => { rankMap[i] = { sum: 0, count: 0 }; });
+  // Column row
+  let cRow = '<tr>';
+  const rankSorted = state.sortCol === '__rank__';
+  const rankCls = rankSorted ? (state.sortDir === 'asc' ? 'sorted-asc' : 'sorted-desc') : '';
+  cRow += `<th class="col-fixed col-rank ${rankCls}" onclick="handleSort('__rank__')" title="Average rank across all visible columns (lower = better)">Avg Rank</th>`;
+  cRow += `<th class="col-fixed" style="background:#141312;min-width:80px">Category</th>`;
+  const fixedCols = [
+    { key: 'Method', label: 'Method' },
+    { key: 'Paper title', label: 'Paper Title' },
+    { key: 'Year publication', label: 'Year' },
+    { key: 'Runs', label: 'Runs' },
+  ];
+  fixedCols.forEach(fc => {
+    const sorted = state.sortCol === fc.key;
+    const cls = sorted ? (state.sortDir === 'asc' ? 'sorted-asc' : 'sorted-desc') : '';
+    cRow += `<th class="col-fixed ${cls}" onclick="handleSort('${fc.key}')">${fc.label}</th>`;
+  });
+  activeCols.forEach(c => {
+    const sorted = state.sortCol === c.valKey;
+    const cls = `col-${c.groupCls} ${sorted ? (state.sortDir === 'asc' ? 'sorted-asc' : 'sorted-desc') : ''}`;
+    cRow += `<th class="${cls}" onclick="handleSort('${c.valKey}')">${c.label}</th>`;
+  });
+  cRow += '</tr>';
 
-      activeCols.forEach(c => {
-        // Collect numeric values with their row indices
-        const entries = [];
-        data.forEach((row, i) => {
-          const v = parseFloat((row[c.valKey] || '').trim());
-          if (!isNaN(v)) entries.push({ i, v });
-        });
-        if (entries.length === 0) return;
-        // Sort ascending (lower = better)
-        entries.sort((a, b) => a.v - b.v);
-        // Assign ranks with tie handling (average rank for ties)
-        let pos = 0;
-        while (pos < entries.length) {
-          let end = pos;
-          while (end + 1 < entries.length && entries[end + 1].v === entries[pos].v) end++;
-          const avgRank = (pos + end) / 2 + 1;
-          for (let k = pos; k <= end; k++) {
-            rankMap[entries[k].i].sum += avgRank;
-            rankMap[entries[k].i].count += 1;
-          }
-          pos = end + 1;
-        }
-      });
+  thead.innerHTML = gRow + cRow;
+}
 
-      return data.map((_, i) => {
-        const { sum, count } = rankMap[i];
-        return count > 0 ? sum / count : null;
-      });
+// ─────────────────────────────────────────────
+// BEST VALUE PER COLUMN (lower is better)
+// ─────────────────────────────────────────────
+function computeColMins(data, activeCols) {
+  const mins = {};
+  activeCols.forEach(c => {
+    let min = Infinity;
+    data.forEach(row => {
+      const v = parseFloat((row[c.valKey] || '').trim());
+      if (!isNaN(v) && v < min) min = v;
+    });
+    mins[c.valKey] = isFinite(min) ? min : null;
+  });
+  return mins;
+}
+
+// ─────────────────────────────────────────────
+// AVERAGE RANK PER ROW (lower value = better rank = rank 1)
+// ─────────────────────────────────────────────
+function computeAvgRanks(data, activeCols) {
+  // For each active column, rank all rows that have a numeric value
+  const rankMap = {};  // rowIndex -> { sumRanks, count }
+  data.forEach((_, i) => { rankMap[i] = { sum: 0, count: 0 }; });
+
+  activeCols.forEach(c => {
+    // Collect numeric values with their row indices
+    const entries = [];
+    data.forEach((row, i) => {
+      const v = parseFloat((row[c.valKey] || '').trim());
+      if (!isNaN(v)) entries.push({ i, v });
+    });
+    if (entries.length === 0) return;
+    // Sort ascending (lower = better)
+    entries.sort((a, b) => a.v - b.v);
+    // Assign ranks with tie handling (average rank for ties)
+    let pos = 0;
+    while (pos < entries.length) {
+      let end = pos;
+      while (end + 1 < entries.length && entries[end + 1].v === entries[pos].v) end++;
+      const avgRank = (pos + end) / 2 + 1;
+      for (let k = pos; k <= end; k++) {
+        rankMap[entries[k].i].sum   += avgRank;
+        rankMap[entries[k].i].count += 1;
+      }
+      pos = end + 1;
     }
+  });
 
-    // ─────────────────────────────────────────────
-    // FORMAT CELL
-    // ─────────────────────────────────────────────
-    function fmtNum(val, std, cls, isBest) {
-      const v = val.trim();
-      const s = std.trim();
-      if (!v) return `<td class="cell-empty">\u2014</td>`;
-      const vn = parseFloat(v);
-      const sn = parseFloat(s);
-      const vStr = isNaN(vn) ? v : vn.toFixed(2);
-      const sStr = (!s || isNaN(sn)) ? '' : sn.toFixed(2);
-      const valTag = isBest
-        ? `<span class="val best">${vStr}</span>`
-        : `<span class="val">${vStr}</span>`;
-      return `<td class="cell-num ${cls}${isBest ? ' best-cell' : ''}">
+  return data.map((_, i) => {
+    const { sum, count } = rankMap[i];
+    return count > 0 ? sum / count : null;
+  });
+}
+
+// ─────────────────────────────────────────────
+// FORMAT CELL
+// ─────────────────────────────────────────────
+function fmtNum(val, std, cls, isBest) {
+  const v = val.trim();
+  const s = std.trim();
+  if (!v) return `<td class="cell-empty">\u2014</td>`;
+  const vn = parseFloat(v);
+  const sn = parseFloat(s);
+  const vStr = isNaN(vn) ? v : vn.toFixed(2);
+  const sStr = (!s || isNaN(sn)) ? '' : sn.toFixed(2);
+  const valTag = isBest
+    ? `<span class="val best">${vStr}</span>`
+    : `<span class="val">${vStr}</span>`;
+  return `<td class="cell-num ${cls}${isBest ? ' best-cell' : ''}">
     ${valTag}${sStr ? `<span class="pm"> \u00b1 </span><span class="std">${sStr}</span>` : ''}
   </td>`;
-    }
-    // ─────────────────────────────────────────────
-    // RENDER TABLE BODY
-    // ─────────────────────────────────────────────
-    function renderBody(data, activeCols, ranks) {
-      const tbody = document.getElementById('table-body');
-      if (data.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="${5 + activeCols.length}" class="empty-state">
+}
+// ─────────────────────────────────────────────
+// RENDER TABLE BODY
+// ─────────────────────────────────────────────
+function renderBody(data, activeCols, ranks) {
+  const tbody = document.getElementById('table-body');
+  if (data.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="${6 + activeCols.length}" class="empty-state">
       <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
       No results match the current filters.
     </td></tr>`;
-        return;
-      }
-      const colMins = computeColMins(data, activeCols);
-      const rows = data.map((row, i) => {
-        const avgRank = ranks ? ranks[i] : null;
-        const method = (row['Method'] || '').trim();
-        const title = (row['Paper title'] || '').trim();
-        const link = (row['Paper link'] || '').trim();
-        const year = (row['Year publication'] || '').trim();
-        const runs = (row['Runs'] || '').trim();
-        const titleCell = link
-          ? `<a href="${link}" target="_blank" rel="noopener" title="${title}">${title || '—'}</a>`
-          : (title || '—');
+    return;
+  }
+  const colMins = computeColMins(data, activeCols);
+  const rows = data.map((row, i) => {
+    const avgRank = ranks ? ranks[i] : null;
+    const method  = (row['Method'] || '').trim();
+    const title   = (row['Paper title'] || '').trim();
+    const link    = (row['Paper link'] || '').trim();
+    const year    = (row['Year publication'] || '').trim();
+    const runs    = (row['Runs'] || '').trim();
+    const titleCell = link
+      ? `<a href="${link}" target="_blank" rel="noopener" title="${title}">${title || '—'}</a>`
+      : (title || '—');
 
-        const rankDisplay = avgRank !== null ? avgRank.toFixed(2) : '—';
-        let tr = `<tr>
+    const rankDisplay = avgRank !== null ? avgRank.toFixed(2) : '—';
+    const catRaw  = (row['Category'] || '').trim();
+    const catList = parseCats(catRaw);
+    const catBadges = catList.map(({sub, main}) =>
+      `<span class="cat-badge cat-${main}" title="${main}">${sub}</span>`
+    ).join(' ');
+    let tr = `<tr>
       <td class="col-fixed cell-rank">${rankDisplay}</td>
+      <td class="col-fixed" style="text-align:center;min-width:90px">${catBadges}</td>
       <td class="col-fixed cell-method">${method || '—'}</td>
       <td class="cell-title">${titleCell}</td>
       <td class="cell-year">${year || '—'}</td>
       <td class="cell-runs">${runs || '—'}</td>`;
 
-        activeCols.forEach(c => {
-          const vn = parseFloat((row[c.valKey] || '').trim());
-          const isBest = colMins[c.valKey] !== null && !isNaN(vn) && vn === colMins[c.valKey];
-          tr += fmtNum(row[c.valKey] || '', row[c.stdKey] || '', c.groupCls, isBest);
-        });
-        tr += '</tr>';
-        return tr;
+    activeCols.forEach(c => {
+      const vn = parseFloat((row[c.valKey] || '').trim());
+      const isBest = colMins[c.valKey] !== null && !isNaN(vn) && vn === colMins[c.valKey];
+      tr += fmtNum(row[c.valKey] || '', row[c.stdKey] || '', c.groupCls, isBest);
+    });
+    tr += '</tr>';
+    return tr;
+  });
+  tbody.innerHTML = rows.join('');
+}
+
+// ─────────────────────────────────────────────
+// RENDER ALL
+// ─────────────────────────────────────────────
+// Auto-sync category chips: if a subcategory has no rows in the
+// year-filtered data, deselect its chip (keep it greyed out).
+function syncCategoryChips() {
+  // Compute which subcats are present after ALL other active filters
+  // (year range + bestOnly) — but ignoring the category filter itself,
+  // so the chips stay coherent with the visible table rows.
+  const activeCols = getActiveCols();
+
+  // Step 1: year filter
+  let base = ALL_DATA.filter(row => {
+    const y = parseInt(row['Year publication']);
+    if (!isNaN(y)) {
+      if (state.yearFrom && y < state.yearFrom) return false;
+      if (state.yearTo   && y > state.yearTo)   return false;
+    }
+    return true;
+  });
+
+  // Step 2: bestOnly filter (same logic as getFilteredData but cat-agnostic)
+  if (state.bestOnly) {
+    const mins = {};
+    activeCols.forEach(c => {
+      let min = Infinity;
+      base.forEach(row => {
+        const v = parseFloat((row[c.valKey] || '').trim());
+        if (!isNaN(v) && v < min) min = v;
       });
-      tbody.innerHTML = rows.join('');
+      mins[c.valKey] = isFinite(min) ? min : null;
+    });
+    base = base.filter(row =>
+      activeCols.some(c => {
+        const v = parseFloat((row[c.valKey] || '').trim());
+        return mins[c.valKey] !== null && !isNaN(v) && v === mins[c.valKey];
+      })
+    );
+  }
+
+  // Collect subcategories present in the resulting set
+  const present = new Set();
+  base.forEach(row => {
+    parseCats((row['Category'] || '').trim()).forEach(({ sub }) => present.add(sub));
+  });
+
+  // Update chips: disable + deselect if not present; re-enable if present again
+  document.querySelectorAll('#chips-category .chip').forEach(chip => {
+    const sub = chip.dataset.id;
+    if (!present.has(sub)) {
+      // Subcategory no longer available due to other filters — force-disable
+      state.activeCats.delete(sub);
+      chip.classList.remove('on');
+      chip.style.opacity = '0.3';
+      chip.style.pointerEvents = 'none';
+      chip.dataset.wasAbsent = 'true';
+    } else {
+      // Subcategory is available
+      chip.style.opacity = '';
+      chip.style.pointerEvents = '';
+      const wasAbsent  = chip.dataset.wasAbsent === 'true';
+      const userTurnedOff = chip.dataset.userOff === 'true';
+      chip.dataset.wasAbsent = 'false';
+      // Auto-select only if it just became available again AND user hadn't manually turned it off
+      if (!state.activeCats.has(sub) && (wasAbsent || !userTurnedOff)) {
+        state.activeCats.add(sub);
+        chip.classList.add('on');
+        chip.dataset.userOff = 'false';
+      }
     }
+  });
+}
 
-    // ─────────────────────────────────────────────
-    // RENDER ALL
-    // ─────────────────────────────────────────────
-    function render() {
-      const activeCols = getActiveCols();
-      const filtered = getFilteredData();
-      const ranks = computeAvgRanks(filtered, activeCols);
-      // Attach ranks to rows so sortData can use them
-      const filteredWithRanks = filtered.map((row, i) => ({ ...row, __rank__: ranks[i] }));
-      const sorted = sortData(filteredWithRanks, ranks);
-      // Recompute ranks in the sorted order for display
-      const sortedRanks = sorted.map(row => row.__rank__);
-      renderHeader(activeCols);
-      renderBody(sorted, activeCols, sortedRanks);
-      // Stats
-      const info = document.getElementById('stats-info');
-      info.innerHTML = `Showing <strong>${sorted.length}</strong> of <strong>${ALL_DATA.length}</strong> algorithms · <strong>${activeCols.length}</strong> result columns`;
-      const hint = document.getElementById('bestOnlyHint');
-      if (hint) hint.textContent = state.bestOnly ? `${sorted.length} algorithm${sorted.length !== 1 ? 's' : ''} lead in at least one column` : '';
+function render() {
+  const activeCols = getActiveCols();
+  syncCategoryChips();
+  const filtered = getFilteredData();
+  const ranks = computeAvgRanks(filtered, activeCols);
+  // Attach ranks to rows so sortData can use them
+  const filteredWithRanks = filtered.map((row, i) => ({ ...row, __rank__: ranks[i] }));
+  const sorted = sortData(filteredWithRanks, ranks);
+  // Recompute ranks in the sorted order for display
+  const sortedRanks = sorted.map(row => row.__rank__);
+  renderHeader(activeCols);
+  renderBody(sorted, activeCols, sortedRanks);
+  // Stats
+  const info = document.getElementById('stats-info');
+  info.innerHTML = `Showing <strong>${sorted.length}</strong> of <strong>${ALL_DATA.length}</strong> algorithms · <strong>${activeCols.length}</strong> result columns`;
+  const hint = document.getElementById('bestOnlyHint');
+  if (hint) hint.textContent = state.bestOnly ? `${sorted.length} algorithm${sorted.length !== 1 ? 's' : ''} lead in at least one column` : '';
+}
+
+// ─────────────────────────────────────────────
+// RESET
+// ─────────────────────────────────────────────
+function resetFilters() {
+  state.activeIds.clear();
+  COLUMN_GROUPS.forEach(g => g.cols.forEach(c => state.activeIds.add(c.id)));
+  document.querySelectorAll('.chip').forEach(c => c.classList.add('on'));
+  document.getElementById('yearFrom').value = MIN_YEAR;
+  document.getElementById('yearTo').value   = MAX_YEAR;
+  state.yearFrom = MIN_YEAR;
+  state.yearTo   = MAX_YEAR;
+  state.sortCol  = null;
+  state.sortDir  = 'asc';
+  state.bestOnly = false;
+  document.getElementById('bestOnlyBtn').classList.remove('on');
+  state.activeCats = new Set(ALL_SUBCATS.filter(c => {
+    // Only re-activate subcats that actually have data
+    return [...document.querySelectorAll('#chips-category .chip')]
+      .some(chip => chip.dataset.id === c.sub && chip.style.pointerEvents !== 'none');
+  }).map(c => c.sub));
+  document.querySelectorAll('#chips-category .chip').forEach(c => {
+    if (c.style.pointerEvents !== 'none') {
+      c.classList.add('on');
+      c.dataset.userOff = 'false';
     }
+  });
+  render();
+}
 
-    // ─────────────────────────────────────────────
-    // RESET
-    // ─────────────────────────────────────────────
-    function resetFilters() {
-      state.activeIds.clear();
-      COLUMN_GROUPS.forEach(g => g.cols.forEach(c => state.activeIds.add(c.id)));
-      document.querySelectorAll('.chip').forEach(c => c.classList.add('on'));
-      document.getElementById('yearFrom').value = MIN_YEAR;
-      document.getElementById('yearTo').value = MAX_YEAR;
-      state.yearFrom = MIN_YEAR;
-      state.yearTo = MAX_YEAR;
-      state.sortCol = null;
-      state.sortDir = 'asc';
-      state.bestOnly = false;
-      document.getElementById('bestOnlyBtn').classList.remove('on');
-      render();
-    }
+// ─────────────────────────────────────────────
+// EXPORT CSV
+// ─────────────────────────────────────────────
+function exportCSV() {
+  const activeCols = getActiveCols();
+  const filtered = sortData(getFilteredData());
 
-    // ─────────────────────────────────────────────
-    // EXPORT CSV
-    // ─────────────────────────────────────────────
-    function exportCSV() {
-      const activeCols = getActiveCols();
-      const filtered = sortData(getFilteredData());
+  const headers = ['Method', 'Paper title', 'Year publication', 'Category', 'Runs',
+    ...activeCols.flatMap(c => [c.valKey, c.stdKey])];
+  const rows = filtered.map(row =>
+    headers.map(h => {
+      let val = (row[h] || '').trim();
+      if (h === 'Category') {
+        const cats = parseCats(val);
+        val = cats.map(({ sub, main }) => main === sub ? sub : `${main} (${sub})`).join(' + ');
+      }
+      return `"${val.replace(/"/g, '""')}"`;
+    }).join(',')
+  );
+  const csv = [headers.join(','), ...rows].join('\n');
+  downloadFile(csv, 'MPB_Scenario2_results.csv', 'text/csv');
+}
 
-      const headers = ['Method', 'Paper title', 'Year publication', 'Runs',
-        ...activeCols.flatMap(c => [c.valKey, c.stdKey])];
-      const rows = filtered.map(row =>
-        headers.map(h => `"${(row[h] || '').trim().replace(/"/g, '""')}"`).join(',')
-      );
-      const csv = [headers.join(','), ...rows].join('\n');
-      downloadFile(csv, 'MPB_Scenario2_results.csv', 'text/csv');
-    }
+// ─────────────────────────────────────────────
+// EXPORT LATEX  (one file per visible category,
+//                only if ≥1 row has data in it)
+// ─────────────────────────────────────────────
 
-    // ─────────────────────────────────────────────
-    // EXPORT LATEX  (one file per visible category,
-    //                only if ≥1 row has data in it)
-    // ─────────────────────────────────────────────
+// Escape special LaTeX characters in plain text
+function latexEsc(str) {
+  return str
+    .replace(/\\/g, '\\textbackslash{}')
+    .replace(/&/g, '\\&')
+    .replace(/%/g, '\\%')
+    .replace(/_/g, '\\_')
+    .replace(/\^/g, '\\^{}')
+    .replace(/#/g, '\\#')
+    .replace(/\$/g, '\\$')
+    .replace(/\{/g, '\\{')
+    .replace(/\}/g, '\\}')
+    .replace(/~/g, '\\textasciitilde{}');
+}
 
-    // Escape special LaTeX characters in plain text
-    function latexEsc(str) {
-      return str
-        .replace(/\\/g, '\\textbackslash{}')
-        .replace(/&/g, '\\&')
-        .replace(/%/g, '\\%')
-        .replace(/_/g, '\\_')
-        .replace(/\^/g, '\\^{}')
-        .replace(/#/g, '\\#')
-        .replace(/\$/g, '\\$')
-        .replace(/\{/g, '\\{')
-        .replace(/\}/g, '\\}')
-        .replace(/~/g, '\\textasciitilde{}');
-    }
+function buildLatexForGroup(group, groupCols, filtered, dateStr) {
+  // Only keep rows that have at least one non-empty value for this group
+  const usefulRows = filtered.filter(row =>
+    groupCols.some(c => (row[c.valKey] || '').trim() !== '')
+  );
+  if (usefulRows.length === 0) return null;
 
-    function buildLatexForGroup(group, groupCols, filtered, dateStr) {
-      // Only keep rows that have at least one non-empty value for this group
-      const usefulRows = filtered.filter(row =>
-        groupCols.some(c => (row[c.valKey] || '').trim() !== '')
-      );
-      if (usefulRows.length === 0) return null;
+  const nResultCols = groupCols.length;
+  const colSpec = 'll cc ' + groupCols.map(() => 'r').join(' ');
 
-      const nResultCols = groupCols.length;
-      const colSpec = 'll cc ' + groupCols.map(() => 'r').join(' ');
+  // Column header labels
+  const colHeaderParts = [
+    'Method',
+    'Paper title',
+    'Year',
+    'Runs',
+    ...groupCols.map(c => c.label.replace('=', '$=$'))
+  ];
+  const colHeaderRow = colHeaderParts.join(' & ');
 
-      // Column header labels
-      const colHeaderParts = [
-        'Method',
-        'Paper title',
-        'Year',
-        'Runs',
-        ...groupCols.map(c => c.label.replace('=', '$=$'))
-      ];
-      const colHeaderRow = colHeaderParts.join(' & ');
+  // cmidrule for result block (cols 5 … 4+n)
+  const resultStart = 5;
+  const resultEnd   = 4 + nResultCols;
+  const cmidrules = `\\cmidrule(lr){1-4} \\cmidrule(lr){${resultStart}-${resultEnd}}`;
 
-      // cmidrule for result block (cols 5 … 4+n)
-      const resultStart = 5;
-      const resultEnd = 4 + nResultCols;
-      const cmidrules = `\\cmidrule(lr){1-4} \\cmidrule(lr){${resultStart}-${resultEnd}}`;
+  // Group span row
+  const groupHeaderRow =
+    `\\multicolumn{4}{c}{Algorithm} & \\multicolumn{${nResultCols}}{c}{${group.label}}`;
 
-      // Group span row
-      const groupHeaderRow =
-        `\\multicolumn{4}{c}{Algorithm} & \\multicolumn{${nResultCols}}{c}{${group.label}}`;
+  // Compute best (min) value per column for this group
+  const latexMins = {};
+  groupCols.forEach(c => {
+    let min = Infinity;
+    usefulRows.forEach(row => {
+      const v = parseFloat((row[c.valKey] || '').trim());
+      if (!isNaN(v) && v < min) min = v;
+    });
+    latexMins[c.valKey] = isFinite(min) ? min : null;
+  });
 
-      // Compute best (min) value per column for this group
-      const latexMins = {};
-      groupCols.forEach(c => {
-        let min = Infinity;
-        usefulRows.forEach(row => {
-          const v = parseFloat((row[c.valKey] || '').trim());
-          if (!isNaN(v) && v < min) min = v;
-        });
-        latexMins[c.valKey] = isFinite(min) ? min : null;
-      });
+  // Data rows
+  const dataRows = usefulRows.map(row => {
+    const methodRaw = (row['Method'] || '').trim();
+    const method    = latexEsc(methodRaw);
+    const citeKey   = (row['Bibtex'] || '').trim();
+    const methodCell = citeKey ? `${method}~\\cite{${citeKey}}` : method;
+    const rawTitle = (row['Paper title'] || '').trim();
+    const title  = latexEsc(rawTitle.length > 48 ? rawTitle.substring(0, 45) + '...' : rawTitle);
+    const year   = (row['Year publication'] || '').trim() || '---';
+    const runs   = (row['Runs'] || '').trim() || '---';
+    const cells  = [methodCell, title, year, runs];
+    groupCols.forEach(c => {
+      const v = (row[c.valKey] || '').trim();
+      const s = (row[c.stdKey] || '').trim();
+      if (!v) { cells.push('---'); return; }
+      const vn = parseFloat(v), sn = parseFloat(s);
+      const vStr = isNaN(vn) ? latexEsc(v) : vn.toFixed(2);
+      const sStr = (!s || isNaN(sn)) ? '' : ` $\\pm$ ${sn.toFixed(2)}`;
+      const isBest = latexMins[c.valKey] !== null && !isNaN(vn) && vn === latexMins[c.valKey];
+      const cell = isBest ? `\\textbf{${vStr}${sStr}}` : `${vStr}${sStr}`;
+      cells.push(cell);
+    });
+    return '    ' + cells.join(' & ') + ' \\\\';
+  });
 
-      // Data rows
-      const dataRows = usefulRows.map(row => {
-        const methodRaw = (row['Method'] || '').trim();
-        const method = latexEsc(methodRaw);
-        const citeKey = (row['Bibtex'] || '').trim();
-        const methodCell = citeKey ? `${method}~\\cite{${citeKey}}` : method;
-        const rawTitle = (row['Paper title'] || '').trim();
-        const title = latexEsc(rawTitle.length > 48 ? rawTitle.substring(0, 45) + '...' : rawTitle);
-        const year = (row['Year publication'] || '').trim() || '---';
-        const runs = (row['Runs'] || '').trim() || '---';
-        const cells = [methodCell, title, year, runs];
-        groupCols.forEach(c => {
-          const v = (row[c.valKey] || '').trim();
-          const s = (row[c.stdKey] || '').trim();
-          if (!v) { cells.push('---'); return; }
-          const vn = parseFloat(v), sn = parseFloat(s);
-          const vStr = isNaN(vn) ? latexEsc(v) : vn.toFixed(2);
-          const sStr = (!s || isNaN(sn)) ? '' : ` $\\pm$ ${sn.toFixed(2)}`;
-          const isBest = latexMins[c.valKey] !== null && !isNaN(vn) && vn === latexMins[c.valKey];
-          const cell = isBest ? `\\textbf{${vStr}${sStr}}` : `${vStr}${sStr}`;
-          cells.push(cell);
-        });
-        return '    ' + cells.join(' & ') + ' \\\\';
-      });
-
-      return `% MPB Scenario 2 — ${group.label} Results
+  return `% MPB Scenario 2 — ${group.label} Results
 % Generated ${dateStr}
 % Algorithms: ${usefulRows.length} | Columns: ${nResultCols}
 % Requires: \\usepackage{booktabs}
@@ -2156,95 +2035,95 @@ ${dataRows.join('\n')}
     \\bottomrule
   \\end{tabular}}
 \\end{table}`;
+}
+
+function exportLaTeX() {
+  const activeCols = getActiveCols();
+  const filtered   = sortData(getFilteredData());
+  const dateStr    = new Date().toISOString().slice(0, 10);
+
+  let filesExported = 0;
+
+  COLUMN_GROUPS.forEach(group => {
+    // Only columns that are currently active AND belong to this group
+    const groupCols = activeCols.filter(c => c.groupId === group.id);
+    if (groupCols.length === 0) return; // group entirely hidden — skip
+
+    const latex = buildLatexForGroup(group, groupCols, filtered, dateStr);
+    if (!latex) return; // no row had data for this group — skip
+
+    // Stagger downloads slightly so browsers don't block them
+    setTimeout(() => {
+      downloadFile(latex, `MPB_Scenario2_${group.id}.tex`, 'text/plain');
+    }, filesExported * 300);
+    filesExported++;
+  });
+
+  if (filesExported === 0) {
+    alert('No data to export: no visible columns have results for the current filter selection.');
+    return;
+  }
+
+  // Collect all unique cite keys from the filtered rows
+  const usedKeys = new Set();
+  filtered.forEach(row => {
+    const k = (row['Bibtex'] || '').trim();
+    if (k) usedKeys.add(k);
+  });
+
+  // Build a .bib file containing only the entries actually used
+  // Extract individual @entries from BIBTEX_DB
+  const bibLines   = BIBTEX_DB.split('\n');
+  const allEntries = [];
+  let current = [];
+  bibLines.forEach(line => {
+    if (line.startsWith('@') && current.length > 0) {
+      allEntries.push(current.join('\n'));
+      current = [];
     }
+    current.push(line);
+  });
+  if (current.length > 0) allEntries.push(current.join('\n'));
 
-    function exportLaTeX() {
-      const activeCols = getActiveCols();
-      const filtered = sortData(getFilteredData());
-      const dateStr = new Date().toISOString().slice(0, 10);
+  const matchedEntries = allEntries.filter(entry => {
+    const m = entry.match(/@\w+\{([^,]+),/);
+    return m && usedKeys.has(m[1].trim());
+  });
 
-      let filesExported = 0;
+  const bibHeader = `% MPB Scenario 2 — Reference Bibliography\n% Generated ${dateStr}\n% Algorithms: ${filtered.length}\n\n`;
+  setTimeout(() => {
+    downloadFile(bibHeader + matchedEntries.join('\n\n'), 'MPB_Scenario2_references.bib', 'text/plain');
+  }, filesExported * 300);
+}
 
-      COLUMN_GROUPS.forEach(group => {
-        // Only columns that are currently active AND belong to this group
-        const groupCols = activeCols.filter(c => c.groupId === group.id);
-        if (groupCols.length === 0) return; // group entirely hidden — skip
+// ─────────────────────────────────────────────
+// DOWNLOAD HELPER
+// ─────────────────────────────────────────────
+function downloadFile(content, filename, mime) {
+  const blob = new Blob([content], { type: mime });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+}
 
-        const latex = buildLatexForGroup(group, groupCols, filtered, dateStr);
-        if (!latex) return; // no row had data for this group — skip
+// ─────────────────────────────────────────────
+// BEST-ONLY TOGGLE
+// ─────────────────────────────────────────────
+function toggleBestOnly() {
+  state.bestOnly = !state.bestOnly;
+  const btn = document.getElementById('bestOnlyBtn');
+  btn.classList.toggle('on', state.bestOnly);
+  render();
+}
 
-        // Stagger downloads slightly so browsers don't block them
-        setTimeout(() => {
-          downloadFile(latex, `MPB_Scenario2_${group.id}.tex`, 'text/plain');
-        }, filesExported * 300);
-        filesExported++;
-      });
-
-      if (filesExported === 0) {
-        alert('No data to export: no visible columns have results for the current filter selection.');
-        return;
-      }
-
-      // Collect all unique cite keys from the filtered rows
-      const usedKeys = new Set();
-      filtered.forEach(row => {
-        const k = (row['Bibtex'] || '').trim();
-        if (k) usedKeys.add(k);
-      });
-
-      // Build a .bib file containing only the entries actually used
-      // Extract individual @entries from BIBTEX_DB
-      const bibLines = BIBTEX_DB.split('\n');
-      const allEntries = [];
-      let current = [];
-      bibLines.forEach(line => {
-        if (line.startsWith('@') && current.length > 0) {
-          allEntries.push(current.join('\n'));
-          current = [];
-        }
-        current.push(line);
-      });
-      if (current.length > 0) allEntries.push(current.join('\n'));
-
-      const matchedEntries = allEntries.filter(entry => {
-        const m = entry.match(/@\w+\{([^,]+),/);
-        return m && usedKeys.has(m[1].trim());
-      });
-
-      const bibHeader = `% MPB Scenario 2 — Reference Bibliography\n% Generated ${dateStr}\n% Algorithms: ${filtered.length}\n\n`;
-      setTimeout(() => {
-        downloadFile(bibHeader + matchedEntries.join('\n\n'), 'MPB_Scenario2_references.bib', 'text/plain');
-      }, filesExported * 300);
-    }
-
-    // ─────────────────────────────────────────────
-    // DOWNLOAD HELPER
-    // ─────────────────────────────────────────────
-    function downloadFile(content, filename, mime) {
-      const blob = new Blob([content], { type: mime });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = filename; a.click();
-      URL.revokeObjectURL(url);
-    }
-
-    // ─────────────────────────────────────────────
-    // BEST-ONLY TOGGLE
-    // ─────────────────────────────────────────────
-    function toggleBestOnly() {
-      state.bestOnly = !state.bestOnly;
-      const btn = document.getElementById('bestOnlyBtn');
-      btn.classList.toggle('on', state.bestOnly);
-      render();
-    }
-
-    // ─────────────────────────────────────────────
-    // INIT
-    // ─────────────────────────────────────────────
-    buildChips();
-    initYearRange();
-    render();
-  </script>
+// ─────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────
+buildChips();
+buildCategoryChips();
+initYearRange();
+render();
+</script>
 </body>
-
 </html>
