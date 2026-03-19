@@ -19,19 +19,40 @@ If an entry is missing or incorrect, please contact us at [mpb.benchmark@gmail.c
 ## Features
 
 ### Filtering
+
 - **Toggle columns by group** — independently show or hide individual columns within Severity (0–6), Peaks (1–200), Dimensions (10–100), and Frequencies (500–10000) using chip-style checkboxes; use the *all / none* shortcuts per group
 - **Filter by year range** — restrict results to a specific publication period using the min/max year inputs
+- **Algorithm Category filter** — filter algorithms by their algorithmic subfamily (e.g. PSO, DE, GA, AIS, Firefly, Direct Search); subcategories are grouped by main family (SI, DE, EA, DS) with *all / none* shortcuts; chips are automatically enabled or disabled based on whether any algorithm from that subcategory is present in the current filtered view; hybrid algorithms belong to multiple subcategories and appear when any of their subcategories is active
 - **Best-in-class filter** — toggle *"Show only best-in-class algorithms"* to keep only algorithms that hold the lowest value in at least one currently visible column; the count of qualifying algorithms is shown inline
 
 ### Table
-- **Average Rank column** — the first column shows each algorithm's average rank across all visible result columns (lower value = rank 1); ties are resolved by averaging (e.g. two tied algorithms both receive rank 1.5); algorithms with no data in a column are not penalised for it; the table is sorted by this column by default
+
+- **Average Rank column** — the first column shows each algorithm's average rank across all visible result columns (lower = better, rank 1); ties are resolved by averaging; algorithms with no data in a column are not penalised for it; the table is sorted by this column by default
+- **Algorithm Category column** — displays a colour-coded subcategory badge (e.g. `PSO`, `DE`, `Firefly`) for each algorithm; hybrid algorithms show multiple badges; colour coding: blue = SI, pink = DE, green = EA, yellow = DS
 - **Best value highlighting** — the lowest value in each result column is shown in **bold** with a subtle colour-coded background (purple = Severity, blue = Peaks, green = Dimensions, amber = Frequencies)
 - **Sort** — click any column header to sort ascending or descending; clicking again reverses the direction
 - **Linked paper titles** — paper titles link directly to the source PDF or publisher page where available
 
 ### Export
-- **Export to CSV** — downloads the currently visible rows and columns as a `.csv` file
-- **Export to LaTeX** — downloads up to 4 separate `.tex` files, one per category (Severity, Peaks, Dimensions, Frequencies); a file is only generated if at least one visible column in that category has data for the filtered algorithms; best values are automatically wrapped in `\textbf{}`; files use `booktabs` formatting and are ready to `\input{}` directly into a paper
+
+- **Export to CSV** — downloads the currently visible rows and columns as a `.csv` file, including the full algorithm category description (e.g. `SI (PSO)`, `DE (DE) + SI (PSO)` for hybrids)
+- **Export to LaTeX** — downloads up to 4 separate `.tex` files, one per experimental condition (Severity, Peaks, Dimensions, Frequencies); a file is only generated if at least one visible column has data for the filtered algorithms; best values per column are automatically wrapped in `\textbf{}`; algorithm names include `\cite{}` references; files use `booktabs` formatting and are ready to `\input{}` directly into a paper
+- **Export references** — a `MPB_Scenario2_references.bib` file is downloaded alongside the LaTeX tables, containing only the BibTeX entries for the algorithms present in the current export
+
+---
+
+## Algorithm Categories
+
+Algorithms are classified into the following subcategories, grouped by main family:
+
+| Family | Subcategories |
+|---|---|
+| **SI** — Swarm Intelligence | PSO, Firefly, Fireworks, Cuckoo Search, Fish Swarm, ALO, WDO |
+| **DE** — Differential Evolution | DE |
+| **EA** — Evolutionary Algorithms | GA, AIS, EDA, CMA-ES |
+| **DS** — Direct Search | Direct Search, Local Search, Extremal Optimization |
+
+Hybrid algorithms are assigned to multiple subcategories (e.g. CDEPSO → DE + PSO, EFDS (FDS+CMA-ES) → Direct Search + CMA-ES).
 
 ---
 
@@ -67,7 +88,7 @@ The data lives directly inside `index.html` as a plain semicolon-delimited strin
 3. Add a new row or edit an existing one following the same semicolon-separated format as the other rows
 4. Save, commit, and push
 
-The column order matches the header row at the top of the `RAW_CSV` block. Empty fields (no data reported) are left blank between two consecutive semicolons.
+The column order matches the header row at the top of the `RAW_CSV` block. The `Category` field uses the format `subcategory|MainFamily`, with multiple categories separated by commas (e.g. `DE|DE,PSO|SI` for a hybrid). Empty result fields are left blank between two consecutive semicolons.
 
 ---
 
