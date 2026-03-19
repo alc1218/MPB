@@ -14,6 +14,7 @@
 <title>MPB Scenario 2 — Benchmark Results</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <style>
   :root {
@@ -474,6 +475,47 @@
     font-family: var(--font-mono);
   }
 
+  /* ── TOP-K FILTER ── */
+  .topk-row { flex-direction: row !important; align-items: center; gap: 12px; }
+  .topk-label { font-size: 11px; font-weight: 600; letter-spacing:.08em; text-transform:uppercase; color: var(--text-muted); white-space:nowrap; }
+  .topk-input {
+    width: 64px; padding: 5px 8px;
+    border: 1.5px solid var(--border); border-radius: 6px;
+    font-family: var(--font-mono); font-size: 13px;
+    background: var(--bg); color: var(--text); outline: none;
+    transition: border-color .15s;
+  }
+  .topk-input:focus { border-color: var(--accent); }
+  .topk-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 12px; border-radius: 6px;
+    border: 1.5px solid var(--border); background: var(--bg);
+    font-size: 12px; font-weight: 500; cursor: pointer;
+    color: var(--text-muted); font-family: 'DM Sans', sans-serif;
+    transition: all .15s;
+  }
+  .topk-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+  .topk-btn.on { background: var(--accent-light); border-color: var(--accent); color: var(--accent); font-weight: 600; }
+
+  /* ── TREND CHART ── */
+  .trend-panel {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); box-shadow: var(--shadow-md);
+    margin-bottom: 24px; overflow: hidden;
+  }
+  .trend-panel .panel-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid var(--border); background: var(--surface2); flex-wrap: wrap; gap: 10px; }
+  .trend-controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .trend-select {
+    padding: 5px 10px; border: 1.5px solid var(--border); border-radius: 6px;
+    font-family: var(--font-mono); font-size: 12px;
+    background: var(--bg); color: var(--text); outline: none;
+    cursor: pointer; transition: border-color .15s;
+  }
+  .trend-select:focus { border-color: var(--accent); }
+  #trend-canvas-wrap { padding: 20px; position: relative; min-height: 220px; }
+  #trend-canvas { width: 100%; height: 200px; display: block; }
+  .trend-empty { text-align:center; padding: 48px 20px; color: var(--text-faint); font-size:13px; }
+
   /* ── CATEGORY ── */
   .cat-badge {
     display: inline-block;
@@ -606,6 +648,17 @@
         <div class="chip-group" id="chips-category"></div>
       </div>
 
+      <!-- TOP-K FILTER -->
+      <div class="filter-row topk-row">
+        <span class="topk-label">Top K by Avg Rank</span>
+        <input type="number" id="topkInput" class="topk-input" min="1" max="200" placeholder="K" value=""/>
+        <button id="topkBtn" class="topk-btn" onclick="toggleTopK()">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2v12M2 8l6-6 6 6"/></svg>
+          Show Top K
+        </button>
+        <span class="best-only-hint" id="topkHint"></span>
+      </div>
+
       <!-- BEST ONLY FILTER -->
       <div class="filter-row best-only-row">
         <button id="bestOnlyBtn" class="best-only-btn" onclick="toggleBestOnly()">
@@ -615,6 +668,28 @@
         <span class="best-only-hint" id="bestOnlyHint"></span>
       </div>
 
+    </div>
+  </div>
+
+  <!-- TREND CHART -->
+  <div class="trend-panel" id="trend-panel">
+    <div class="panel-header">
+      <span class="panel-title">Trend Over Years</span>
+      <div class="trend-controls">
+        <label style="font-size:12px;color:var(--text-muted)">Column:</label>
+        <select id="trendColSelect" class="trend-select" onchange="renderTrend()">
+          <option value="Standard_1_10_5_5000">Sev. 1 (default)</option>
+        </select>
+        <label style="font-size:12px;color:var(--text-muted)">Metric:</label>
+        <select id="trendMetric" class="trend-select" onchange="renderTrend()">
+          <option value="mean">Best result per year</option>
+          <option value="median">Median result per year</option>
+        </select>
+      </div>
+    </div>
+    <div id="trend-canvas-wrap">
+      <canvas id="trend-canvas"></canvas>
+      <div class="trend-empty" id="trend-empty" style="display:none">No data available for the selected column and filters.</div>
     </div>
   </div>
 
@@ -1349,6 +1424,7 @@ const state = {
   sortCol: '__rank__',
   sortDir: 'asc',
   bestOnly: false,
+  topK: null,
   activeCats: new Set(), // populated by buildCategoryChips()
 };
 
@@ -1867,11 +1943,31 @@ function render() {
   const ranks = computeAvgRanks(filtered, activeCols);
   // Attach ranks to rows so sortData can use them
   const filteredWithRanks = filtered.map((row, i) => ({ ...row, __rank__: ranks[i] }));
-  const sorted = sortData(filteredWithRanks, ranks);
+  let sorted = sortData(filteredWithRanks, ranks);
+  // Apply Top-K: keep only the K best by average rank
+  if (state.topK !== null && state.topK >= 1) {
+    // Sort by rank ascending to pick the best K, then restore user sort
+    const byRank = [...sorted].sort((a, b) => {
+      const ra = a.__rank__, rb = b.__rank__;
+      if (ra === null && rb === null) return 0;
+      if (ra === null) return 1;
+      if (rb === null) return -1;
+      return ra - rb;
+    });
+    const topSet = new Set(byRank.slice(0, state.topK).map(r => r['Method']));
+    sorted = sorted.filter(r => topSet.has(r['Method']));
+    const hint = document.getElementById('topkHint');
+    if (hint) hint.textContent = `Showing ${sorted.length} of ${filtered.length} algorithms`;
+    document.getElementById('topkBtn').classList.add('on');
+  } else {
+    const hint = document.getElementById('topkHint');
+    if (hint) hint.textContent = '';
+  }
   // Recompute ranks in the sorted order for display
   const sortedRanks = sorted.map(row => row.__rank__);
   renderHeader(activeCols);
   renderBody(sorted, activeCols, sortedRanks);
+  renderTrend();
   // Stats
   const info = document.getElementById('stats-info');
   info.innerHTML = `Showing <strong>${sorted.length}</strong> of <strong>${ALL_DATA.length}</strong> algorithms · <strong>${activeCols.length}</strong> result columns`;
@@ -1894,6 +1990,10 @@ function resetFilters() {
   state.sortDir  = 'asc';
   state.bestOnly = false;
   document.getElementById('bestOnlyBtn').classList.remove('on');
+  state.topK = null;
+  document.getElementById('topkBtn').classList.remove('on');
+  document.getElementById('topkInput').value = '';
+  document.getElementById('topkHint').textContent = '';
   state.activeCats = new Set(ALL_SUBCATS.filter(c => {
     // Only re-activate subcats that actually have data
     return [...document.querySelectorAll('#chips-category .chip')]
@@ -2108,6 +2208,36 @@ function downloadFile(content, filename, mime) {
 }
 
 // ─────────────────────────────────────────────
+// TOP-K TOGGLE
+// ─────────────────────────────────────────────
+function toggleTopK() {
+  const btn   = document.getElementById('topkBtn');
+  const input = document.getElementById('topkInput');
+  const k     = parseInt(input.value);
+  if (state.topK !== null) {
+    // Turn off
+    state.topK = null;
+    btn.classList.remove('on');
+    document.getElementById('topkHint').textContent = '';
+  } else {
+    if (!k || k < 1) { input.focus(); return; }
+    state.topK = k;
+    btn.classList.add('on');
+  }
+  render();
+}
+
+// Re-apply top-K when input changes while active
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('topkInput').addEventListener('input', () => {
+    if (state.topK !== null) {
+      const k = parseInt(document.getElementById('topkInput').value);
+      if (k >= 1) { state.topK = k; render(); }
+    }
+  });
+});
+
+// ─────────────────────────────────────────────
 // BEST-ONLY TOGGLE
 // ─────────────────────────────────────────────
 function toggleBestOnly() {
@@ -2118,11 +2248,126 @@ function toggleBestOnly() {
 }
 
 // ─────────────────────────────────────────────
+// TREND CHART
+// ─────────────────────────────────────────────
+let trendChart = null;
+
+function populateTrendSelect() {
+  const sel = document.getElementById('trendColSelect');
+  sel.innerHTML = '';
+  // Build all result columns grouped
+  COLUMN_GROUPS.forEach(g => {
+    const grp = document.createElement('optgroup');
+    grp.label = g.label;
+    g.cols.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c.valKey;
+      opt.textContent = `${g.label}: ${c.label}`;
+      if (c.valKey === 'Standard_1_10_5_5000') opt.selected = true;
+      grp.appendChild(opt);
+    });
+    sel.appendChild(grp);
+  });
+}
+
+function renderTrend() {
+  const colKey  = document.getElementById('trendColSelect').value;
+  const metric  = document.getElementById('trendMetric').value;
+  const canvas  = document.getElementById('trend-canvas');
+  const emptyEl = document.getElementById('trend-empty');
+  const ctx     = canvas.getContext('2d');
+
+  // Gather data from ALL_DATA (not current filter — show full history)
+  const byYear = {};
+  ALL_DATA.forEach(row => {
+    const y = parseInt(row['Year publication']);
+    const v = parseFloat((row[colKey] || '').trim());
+    if (isNaN(y) || isNaN(v)) return;
+    if (!byYear[y]) byYear[y] = [];
+    byYear[y].push(v);
+  });
+
+  const years = Object.keys(byYear).map(Number).sort((a,b)=>a-b);
+
+  if (years.length === 0) {
+    canvas.style.display = 'none';
+    emptyEl.style.display = '';
+    if (trendChart) { trendChart.destroy(); trendChart = null; }
+    return;
+  }
+  canvas.style.display = '';
+  emptyEl.style.display = 'none';
+
+  const vals = years.map(y => {
+    const arr = byYear[y];
+    if (metric === 'mean') return Math.min(...arr);   // best (lowest) per year
+    // median
+    const s = [...arr].sort((a,b)=>a-b);
+    return s[Math.floor(s.length/2)];
+  });
+
+  // CSS variables for theming
+  const style   = getComputedStyle(document.documentElement);
+  const accent  = style.getPropertyValue('--accent').trim()   || '#1d4ed8';
+  const border  = style.getPropertyValue('--border').trim()   || '#e2e0d8';
+  const textMut = style.getPropertyValue('--text-muted').trim()|| '#6b6860';
+  const surface = style.getPropertyValue('--surface').trim()  || '#ffffff';
+
+  if (trendChart) trendChart.destroy();
+
+  trendChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: years,
+      datasets: [{
+        label: metric === 'mean' ? 'Best result that year' : 'Median result that year',
+        data: vals,
+        borderColor: accent,
+        backgroundColor: accent + '22',
+        borderWidth: 2.5,
+        pointRadius: 5,
+        pointHoverRadius: 7,
+        pointBackgroundColor: accent,
+        fill: true,
+        tension: 0.35,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            title: items => `Year ${items[0].label}`,
+            label: item => ` ${item.dataset.label}: ${item.parsed.y.toFixed(3)}`
+          }
+        }
+      },
+      scales: {
+        x: {
+          title: { display: true, text: 'Publication Year', color: textMut, font: { size: 11 } },
+          grid: { color: border },
+          ticks: { color: textMut }
+        },
+        y: {
+          title: { display: true, text: 'Offline Error', color: textMut, font: { size: 11 } },
+          grid: { color: border },
+          ticks: { color: textMut },
+          reverse: false,
+        }
+      }
+    }
+  });
+}
+
+// ─────────────────────────────────────────────
 // INIT
 // ─────────────────────────────────────────────
 buildChips();
 buildCategoryChips();
 initYearRange();
+populateTrendSelect();
 render();
 </script>
 </body>
