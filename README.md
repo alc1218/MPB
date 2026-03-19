@@ -43,7 +43,7 @@ If an entry is missing or incorrect, please contact us at [mpb.benchmark@gmail.c
 └── README.md
 ```
 
-> **Note:** The raw CSV data is not stored in plaintext. It is base64-encoded and embedded directly inside `index.html`, decoded at runtime. The file is fully self-contained — no second file or build step is needed.
+> **Note:** The page is entirely self-contained in a single file. The benchmark data is stored as plain text directly inside `index.html` — no separate data file, no build step, no dependencies.
 
 ---
 
@@ -60,14 +60,14 @@ No build step or external dependencies are required. The page is fully static.
 
 ## Adding or Updating Results
 
-To add a new algorithm or correct an existing entry, edit the source CSV then re-embed it into `index.html`. The base64 string inside the file (assigned to `window._D`) must be replaced with the newly encoded version:
+The data lives directly inside `index.html` as a plain semicolon-delimited string assigned to `const RAW_CSV`. To add or correct an entry:
 
-```bash
-# Generate the new base64 string
-cat MPB_results.csv | base64 | tr -d '\n'
-```
+1. Open `index.html` in any text editor
+2. Find the `const RAW_CSV = \`` block near the top of the `<script>` section
+3. Add a new row or edit an existing one following the same semicolon-separated format as the other rows
+4. Save, commit, and push
 
-Copy the output and replace the value of `window._D='...'` near the top of the `<script>` block in `index.html`. Then commit and push.
+The column order matches the header row at the top of the `RAW_CSV` block. Empty fields (no data reported) are left blank between two consecutive semicolons.
 
 ---
 
