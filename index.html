@@ -61,6 +61,17 @@
     position: relative;
     overflow: hidden;
   }
+  .header-author {
+    position: absolute;
+    top: 20px; right: 24px;
+    font-size: 11px;
+    color: rgba(255,255,255,0.45);
+    font-family: 'DM Sans', sans-serif;
+    letter-spacing: .03em;
+    z-index: 2;
+  }
+  .header-author span { color: rgba(255,255,255,0.7); font-weight: 500; }
+
   header::before {
     content: '';
     position: absolute;
@@ -539,13 +550,14 @@
     letter-spacing: .04em;
     white-space: nowrap;
   }
-  .cat-SI      { background: #dbeafe; color: #1e40af; }
-  .cat-DE      { background: #fce7f3; color: #9d174d; }
-  .cat-EA      { background: #dcfce7; color: #14532d; }
-  .cat-DS      { background: #fef9c3; color: #713f12; }
-  /* Hybrid removed — algorithms show individual family badges */
+  /* Algorithm category colours — intentionally distinct from benchmark chip colours */
+  /* Benchmark uses: purple (severity), blue (peaks), green (dims), amber (freq)      */
+  .cat-SI      { background: #ccfbf1; color: #0f766e; }   /* teal   */
+  .cat-DE      { background: #ffe4e6; color: #be123c; }   /* rose   */
+  .cat-EA      { background: #fed7aa; color: #c2410c; }   /* orange */
+  .cat-DS      { background: #e0e7ff; color: #3730a3; }   /* indigo */
   .cat-Unknown { background: var(--surface2); color: var(--text-muted); }
-  .chip.cat-chip.on { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+  .chip.cat-chip.on { background: #f0fdf4; border-color: #0f766e; color: #0f766e; }
 
   /* ── CUSTOM FAST TOOLTIP ── */
   [data-tip] { position: relative; }
@@ -588,6 +600,7 @@
 
 <header>
   <div class="header-inner">
+    <div class="header-author">Created by <span>Arcadi Llanza</span></div>
     <div class="header-tag">Moving Peaks Benchmark · Scenario 2</div>
     <h1>MPB Benchmark<br/><span>Algorithm Results</span></h1>
     <p>
@@ -598,12 +611,37 @@
     </p>
     <div class="header-contact">
       Missing an entry? &nbsp;→&nbsp;
-      <a href="/cdn-cgi/l/email-protection#82eff2e0ace0e7ece1eaefe3f0e9c2e5efe3ebeeace1edef">mpb.benchmark&#64;gmail.com</a>
+      <a href="mailto:mpb.benchmark@gmail.com">mpb.benchmark&#64;gmail.com</a>
     </div>
   </div>
 </header>
 
 <div class="main-wrap">
+
+  <!-- STATS + EXPORT -->
+  <div class="stats-bar">
+    <div class="stats-info" id="stats-info">Loading…</div>
+    <div class="export-group">
+      <button class="btn btn-ghost" onclick="exportCSV()">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 14h12M8 2v8M4 7l4 4 4-4"/></svg>
+        Export CSV
+      </button>
+      <button class="btn btn-teal" onclick="exportLaTeX()">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="12" height="12" rx="1"/><path d="M5 8h6M5 5h6M5 11h4"/></svg>
+        Export LaTeX
+      </button>
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-wrap">
+    <table id="results-table">
+      <thead id="table-head"></thead>
+      <tbody id="table-body"></tbody>
+    </table>
+  </div>
+
+</div>
 
   <!-- TWO-COLUMN CONTROL PANELS -->
   <div class="control-panels-row">
@@ -686,7 +724,7 @@
           <div class="chip-group" id="chips-category"></div>
           <div style="margin-top:8px;display:flex;align-items:center;gap:8px">
             <div id="hybridChip" class="chip cat-chip on" style="cursor:pointer;user-select:none" data-tip="Hybrid: combines multiple algorithm families (e.g. DE + PSO, Direct Search + GA)" onclick="toggleHybrid()">
-              <span class="cat-badge" style="background:#f3e8ff;color:#581c87">Hybrid</span>
+              <span class="cat-badge" style="background:#f1f5f9;color:#475569">Hybrid</span>
             </div>
             <span style="font-size:11px;color:var(--text-faint)">— show algorithms combining multiple families</span>
           </div>
@@ -727,30 +765,6 @@
 
   </div>
 
-  <!-- STATS + EXPORT -->
-  <div class="stats-bar">
-    <div class="stats-info" id="stats-info">Loading…</div>
-    <div class="export-group">
-      <button class="btn btn-ghost" onclick="exportCSV()">
-        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 14h12M8 2v8M4 7l4 4 4-4"/></svg>
-        Export CSV
-      </button>
-      <button class="btn btn-teal" onclick="exportLaTeX()">
-        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="12" height="12" rx="1"/><path d="M5 8h6M5 5h6M5 11h4"/></svg>
-        Export LaTeX
-      </button>
-    </div>
-  </div>
-
-  <!-- TABLE -->
-  <div class="table-wrap">
-    <table id="results-table">
-      <thead id="table-head"></thead>
-      <tbody id="table-body"></tbody>
-    </table>
-  </div>
-
-</div>
 
   <!-- TREND CHART -->
   <div class="trend-panel" id="trend-panel">
@@ -778,7 +792,8 @@
 
 <footer>
   <p>Moving Peaks Benchmark · Scenario 2 · Algorithm Comparison Table</p>
-  <p style="margin-top:6px">To report a missing entry or correction: <a href="/cdn-cgi/l/email-protection#4a273a2864282f242922272b38210a2d272b232664292527">mpb.benchmark&#64;gmail.com</a></p>
+  <p style="margin-top:6px">To report a missing entry or correction: <a href="mailto:mpb.benchmark@gmail.com">mpb.benchmark&#64;gmail.com</a></p>
+  <p style="margin-top:10px;font-size:11px;color:var(--text-faint)">Created by <strong style="color:var(--text-muted)">Arcadi Llanza</strong></p>
 </footer>
 
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
