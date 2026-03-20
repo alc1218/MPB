@@ -423,6 +423,8 @@
   .cell-num.freq     .val { color: #b45309; }
   .cell-empty { color: var(--text-faint); text-align: center; font-size: 11px; font-family: var(--font-mono); }
   .cell-num .val.best { font-weight: 700; }
+  .cell-num .val.nonsig { font-weight: 700; }
+  .cell-num .nonsig-mark { font-size: 10px; color: var(--text-muted); margin-left: 1px; vertical-align: super; }
   .best-cell { background: rgba(16, 185, 129, 0.07); }
   .best-cell.severity { background: rgba(124, 58, 237, 0.07); }
   .best-cell.peaks    { background: rgba(3, 105, 161, 0.07); }
@@ -611,7 +613,7 @@
     </p>
     <div class="header-contact">
       Missing an entry? &nbsp;→&nbsp;
-      <a href="mailto:mpb.benchmark@gmail.com">mpb.benchmark&#64;gmail.com</a>
+      <a href="/cdn-cgi/l/email-protection#4e233e2c602c2b202d26232f3c250e29232f2722602d2123">mpb.benchmark&#64;gmail.com</a>
     </div>
   </div>
 </header>
@@ -650,6 +652,12 @@
     <div class="control-panel">
       <div class="panel-header">
         <span class="panel-title">Benchmark Filters</span>
+        <div class="panel-actions">
+          <button class="btn btn-ghost" onclick="resetBenchmarkFilters()">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2.5 8A5.5 5.5 0 1 0 8 2.5"/><polyline points="2.5,2.5 2.5,8 8,8"/></svg>
+            Reset
+          </button>
+        </div>
       </div>
       <div class="panel-body">
 
@@ -705,9 +713,9 @@
       <div class="panel-header">
         <span class="panel-title">Display &amp; Algorithm Filters</span>
         <div class="panel-actions">
-          <button class="btn btn-ghost" onclick="resetFilters()">
+          <button class="btn btn-ghost" onclick="resetAlgorithmFilters()">
             <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2.5 8A5.5 5.5 0 1 0 8 2.5"/><polyline points="2.5,2.5 2.5,8 8,8"/></svg>
-            Reset All
+            Reset
           </button>
         </div>
       </div>
@@ -751,7 +759,25 @@
           <span class="best-only-hint" id="topkHint"></span>
         </div>
 
-        <!-- BEST ONLY FILTER -->
+        <!-- SIGNIFICANCE FILTER -->
+      <div class="filter-row" style="flex-direction:column;gap:8px">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <button id="sigBtn" class="best-only-btn on" onclick="toggleSignificance()">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 8h2l2-5 4 10 2-5h2"/></svg>
+            Statistical significance (Welch's t-test, two-tailed)
+          </button>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding-left:2px" id="sigThresholdRow">
+          <span style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);white-space:nowrap">p-value threshold:</span>
+          <input type="number" id="pThresholdInput" class="topk-input" style="width:80px"
+            type="number" lang="en" min="0.001" max="0.999" step="0.001" value="0.050"
+            oninput="updatePThreshold(this.value)"
+            onblur="finalisePThreshold(this.value)"/>
+          <span style="font-size:11px;color:var(--text-faint)">results with p ≥ threshold marked <strong>*</strong></span>
+        </div>
+      </div>
+
+      <!-- BEST ONLY FILTER -->
         <div class="filter-row best-only-row">
           <button id="bestOnlyBtn" class="best-only-btn" onclick="toggleBestOnly()">
             <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><polygon points="8,1 10,6 15,6 11,9.5 12.5,15 8,11.5 3.5,15 5,9.5 1,6 6,6"/></svg>
@@ -792,11 +818,11 @@
 
 <footer>
   <p>Moving Peaks Benchmark · Scenario 2 · Algorithm Comparison Table</p>
-  <p style="margin-top:6px">To report a missing entry or correction: <a href="mailto:mpb.benchmark@gmail.com">mpb.benchmark&#64;gmail.com</a></p>
+  <p style="margin-top:6px">To report a missing entry or correction: <a href="/cdn-cgi/l/email-protection#a1ccd1c38fc3c4cfc2c9ccc0d3cae1c6ccc0c8cd8fc2cecc">mpb.benchmark&#64;gmail.com</a></p>
   <p style="margin-top:10px;font-size:11px;color:var(--text-faint)">Created by <strong style="color:var(--text-muted)">Arcadi Llanza</strong></p>
 </footer>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // ─────────────────────────────────────────────
 // DATA
 // ─────────────────────────────────────────────
@@ -933,6 +959,18 @@ const ALL_DATA = parseCSV(RAW_CSV);
 // BIBTEX DATABASE
 // ─────────────────────────────────────────────
 const BIBTEX_DB = `
+@article{wilcoxon1945individual,
+  title     = {Individual comparisons by ranking methods},
+  author    = {Wilcoxon, Frank},
+  journal   = {Biometrics Bulletin},
+  volume    = {1},
+  number    = {6},
+  pages     = {80--83},
+  year      = {1945},
+  publisher = {International Biometric Society},
+  doi       = {10.2307/3001968}
+}
+
 @inproceedings{llanza2025evolutionary,
   title        = {Evolutionary Fractal Decomposition based Search for Dynamic Optimization},
   author       = {Llanza, Arcadi and Shvai, Nadiya and Nakib, Amir},
@@ -1474,6 +1512,18 @@ const BIBTEX_DB = `
   doi       = {10.1007/978-3-540-24653-4_50}
 }
 
+@article{welch1947generalization,
+  title     = {The generalization of {\`\`Student's''} problem when several different population variances are involved},
+  author    = {Welch, Bernard Lewis},
+  journal   = {Biometrika},
+  volume    = {34},
+  number    = {1/2},
+  pages     = {28--35},
+  year      = {1947},
+  publisher = {Oxford University Press},
+  doi       = {10.1093/biomet/34.1-2.28}
+}
+
 @article{blackwell2006mcpso,
   title     = {Multiswarms, exclusion, and anti-convergence in dynamic environments},
   author    = {Blackwell, Tim and Branke, J{\"u}rgen},
@@ -1499,6 +1549,8 @@ const state = {
   bestOnly: false,
   topK: null,
   showHybrid: true,
+  showSignificance: true,
+  pThreshold: 0.05,
   activeCats: new Set(), // populated by buildCategoryChips()
 };
 
@@ -1692,12 +1744,29 @@ function initYearRange() {
   toEl.min   = MIN_YEAR; toEl.max   = MAX_YEAR;
   state.yearFrom = MIN_YEAR;
   state.yearTo   = MAX_YEAR;
+  function clampYear(el, min, max, fallback) {
+    let v = parseInt(el.value);
+    if (isNaN(v))   { el.value = fallback; return fallback; }
+    if (v < min)    { el.value = min;      return min; }
+    if (v > max)    { el.value = max;      return max; }
+    return v;
+  }
+
+  // Allow free typing; only clamp and apply on blur (leaving the field)
   fromEl.addEventListener('input', () => {
-    state.yearFrom = parseInt(fromEl.value) || MIN_YEAR;
+    const v = parseInt(fromEl.value);
+    if (!isNaN(v)) { state.yearFrom = v; render(); }
+  });
+  fromEl.addEventListener('blur', () => {
+    state.yearFrom = clampYear(fromEl, MIN_YEAR, MAX_YEAR, MIN_YEAR);
     render();
   });
   toEl.addEventListener('input', () => {
-    state.yearTo = parseInt(toEl.value) || MAX_YEAR;
+    const v = parseInt(toEl.value);
+    if (!isNaN(v)) { state.yearTo = v; render(); }
+  });
+  toEl.addEventListener('blur', () => {
+    state.yearTo = clampYear(toEl, MIN_YEAR, MAX_YEAR, MAX_YEAR);
     render();
   });
 }
@@ -1776,7 +1845,13 @@ function sortData(data, ranks) {
   return [...data].sort((a, b) => {
     let va = a[state.sortCol], vb = b[state.sortCol];
     const na = parseFloat(va), nb = parseFloat(vb);
-    if (!isNaN(na) && !isNaN(nb)) { va = na; vb = nb; }
+    const aEmpty = (va === '' || va === undefined || va === null || isNaN(na));
+    const bEmpty = (vb === '' || vb === undefined || vb === null || isNaN(nb));
+    // Empty / missing values always go to the end, regardless of sort direction
+    if (aEmpty && bEmpty) return 0;
+    if (aEmpty) return 1;
+    if (bEmpty) return -1;
+    va = na; vb = nb;
     if (va < vb) return state.sortDir === 'asc' ? -1 : 1;
     if (va > vb) return state.sortDir === 'asc' ? 1 : -1;
     return 0;
@@ -1896,9 +1971,125 @@ function computeAvgRanks(data, activeCols) {
 }
 
 // ─────────────────────────────────────────────
+// WELCH T-TEST  —  each algorithm uses its own individual run count
+// Reference: Welch, B.L. (1947). Biometrika, 34(1/2), 28-35.
+//
+// We have: mean_A, SE_A = σ_A/√nA  (best algorithm, nA runs)
+//           mean_B, SE_B = σ_B/√nB  (compared algorithm, nB runs)
+//
+// t-statistic  = (mean_B − mean_A) / √(SE_A² + SE_B²)
+// Welch df     = (SE_A² + SE_B²)² / [SE_A⁴/(nA−1) + SE_B⁴/(nB−1)]
+// Two-tailed p = P(|T_{df}| > |t|)  [H₁: mean_B ≠ mean_A]
+// If p ≥ 0.05 → cannot conclude B is significantly worse → mark *
+// ─────────────────────────────────────────────
+
+// ── Lanczos log-gamma ────────────────────────
+function lgamma(z) {
+  if (z < 0.5) return Math.log(Math.PI / Math.sin(Math.PI * z)) - lgamma(1 - z);
+  z -= 1;
+  const c = [0.99999999999980993, 676.5203681218851, -1259.1392167224028,
+             771.32342877765313, -176.61502916214059, 12.507343278686905,
+             -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7];
+  let x = c[0];
+  for (let i = 1; i < 9; i++) x += c[i] / (z + i);
+  const t = z + 7.5;
+  return 0.5 * Math.log(2 * Math.PI) + (z + 0.5) * Math.log(t) - t + Math.log(x);
+}
+
+// ── Regularised incomplete beta  I_x(a,b)  via continued fraction ─────────
+function betaCF(a, b, x) {
+  const MAXIT = 200, EPS = 3e-7, FPMIN = 1e-30;
+  const qab = a + b, qap = a + 1, qam = a - 1;
+  let c = 1, d = 1 - qab * x / qap;
+  if (Math.abs(d) < FPMIN) d = FPMIN;
+  d = 1 / d; let h = d;
+  for (let m = 1; m <= MAXIT; m++) {
+    const m2 = 2 * m;
+    let aa = m * (b - m) * x / ((qam + m2) * (a + m2));
+    d = 1 + aa * d; if (Math.abs(d) < FPMIN) d = FPMIN;
+    c = 1 + aa / c; if (Math.abs(c) < FPMIN) c = FPMIN;
+    d = 1 / d; h *= d * c;
+    aa = -(a + m) * (qab + m) * x / ((a + m2) * (qap + m2));
+    d = 1 + aa * d; if (Math.abs(d) < FPMIN) d = FPMIN;
+    c = 1 + aa / c; if (Math.abs(c) < FPMIN) c = FPMIN;
+    d = 1 / d; const del = d * c; h *= del;
+    if (Math.abs(del - 1) < EPS) break;
+  }
+  return h;
+}
+
+function betaI(x, a, b) {
+  if (x <= 0) return 0;
+  if (x >= 1) return 1;
+  const lbeta = lgamma(a) + lgamma(b) - lgamma(a + b);
+  const bt    = Math.exp(a * Math.log(x) + b * Math.log(1 - x) - lbeta);
+  if (x < (a + 1) / (a + b + 2)) return bt * betaCF(a, b, x) / a;
+  return 1 - bt * betaCF(b, a, 1 - x) / b;
+}
+
+// ── Two-tailed p-value  P(|T_{df}| > |t|)  using exact t-distribution CDF ──
+// Standard choice for post-hoc benchmark comparisons (García et al. 2010; Derrac et al. 2011)
+function tTwoTailedP(t, df) {
+  if (df <= 0 || isNaN(df)) return NaN;
+  // I_x(df/2, 0.5) where x = df/(df+t²) is exactly the two-tailed p-value
+  const x = df / (df + t * t);
+  return betaI(x, df / 2, 0.5);
+}
+
+// ── Welch-Satterthwaite df using each algorithm's individual n ─────────────
+function welchDF(seA, nA, seB, nB) {
+  const sA2 = seA * seA, sB2 = seB * seB;   // SE² = s²/n
+  const num  = Math.pow(sA2 + sB2, 2);
+  const den  = sA2 * sA2 / Math.max(nA - 1, 1) + sB2 * sB2 / Math.max(nB - 1, 1);
+  return den > 0 ? num / den : 1;
+}
+
+// ── Main test: returns one-tailed p-value ─────────────────────────────────
+// meanA/seA/nA = best algorithm;  meanB/seB/nB = algorithm under test
+function welchPValue(meanA, seA, nA, meanB, seB, nB) {
+  if (!seA || !seB || isNaN(seA) || isNaN(seB) || seA <= 0 || seB <= 0) return NaN;
+  if (isNaN(nA) || isNaN(nB) || nA < 2 || nB < 2) return NaN;
+  const seDiff = Math.sqrt(seA * seA + seB * seB);
+  if (seDiff === 0) return meanA === meanB ? 1 : 0;
+  const t  = (meanB - meanA) / seDiff;
+  const df = welchDF(seA, nA, seB, nB);
+  return tTwoTailedP(t, df);  // two-tailed: is B significantly different from A?
+}
+
+// ── Per-column significance map ───────────────────────────────────────────
+// Returns { valKey → Set of Method names not significantly worse than best }
+function computeSignificance(data, activeCols) {
+  const sigMap = {};
+  activeCols.forEach(c => {
+    sigMap[c.valKey] = new Set();
+    // Find best (minimum mean) row
+    let bestVal = Infinity, bestRow = null;
+    data.forEach(row => {
+      const v = parseFloat((row[c.valKey] || '').trim());
+      if (!isNaN(v) && v < bestVal) { bestVal = v; bestRow = row; }
+    });
+    if (!bestRow) return;
+    const bestMean = parseFloat((bestRow[c.valKey] || '').trim());
+    const bestSE   = parseFloat((bestRow[c.stdKey]  || '').trim());
+    const bestN    = parseInt((bestRow['Runs']       || '').trim());  // best algo's own n
+    sigMap[c.valKey].add(bestRow['Method'].trim());   // best is trivially non-sig
+    data.forEach(row => {
+      if (row === bestRow) return;
+      const mean = parseFloat((row[c.valKey] || '').trim());
+      const se   = parseFloat((row[c.stdKey]  || '').trim());
+      const n    = parseInt((row['Runs']       || '').trim());         // this algo's own n
+      if (isNaN(mean) || isNaN(se) || se <= 0 || isNaN(n) || n < 2) return;
+      if (isNaN(bestSE) || bestSE <= 0 || isNaN(bestN) || bestN < 2) return;
+      const p = welchPValue(bestMean, bestSE, bestN, mean, se, n);
+      if (!isNaN(p) && p >= state.pThreshold) sigMap[c.valKey].add(row['Method'].trim());
+    });
+  });
+  return sigMap;
+}
+// ─────────────────────────────────────────────
 // FORMAT CELL
 // ─────────────────────────────────────────────
-function fmtNum(val, std, cls, isBest) {
+function fmtNum(val, std, cls, isBest, isNonSig) {
   const v = val.trim();
   const s = std.trim();
   if (!v) return `<td class="cell-empty">\u2014</td>`;
@@ -1906,9 +2097,10 @@ function fmtNum(val, std, cls, isBest) {
   const sn = parseFloat(s);
   const vStr = isNaN(vn) ? v : vn.toFixed(2);
   const sStr = (!s || isNaN(sn)) ? '' : sn.toFixed(2);
-  const valTag = isBest
-    ? `<span class="val best">${vStr}</span>`
-    : `<span class="val">${vStr}</span>`;
+  const showStar = isNonSig && !isBest && state.showSignificance;
+  const valCls = isBest ? 'val best' : (showStar ? 'val nonsig' : 'val');
+  const starMark = showStar ? '<span class="nonsig-mark">*</span>' : '';
+  const valTag = `<span class="${valCls}">${vStr}</span>${starMark}`;
   return `<td class="cell-num ${cls}${isBest ? ' best-cell' : ''}">
     ${valTag}${sStr ? `<span class="pm"> \u00b1 </span><span class="std">${sStr}</span>` : ''}
   </td>`;
@@ -1926,6 +2118,7 @@ function renderBody(data, activeCols, ranks) {
     return;
   }
   const colMins = computeColMins(data, activeCols);
+  const sigMap  = state.showSignificance ? computeSignificance(data, activeCols) : {};
   const rows = data.map((row, i) => {
     const avgRank = ranks ? ranks[i] : null;
     const method  = (row['Method'] || '').trim();
@@ -1954,8 +2147,9 @@ function renderBody(data, activeCols, ranks) {
 
     activeCols.forEach(c => {
       const vn = parseFloat((row[c.valKey] || '').trim());
-      const isBest = colMins[c.valKey] !== null && !isNaN(vn) && vn === colMins[c.valKey];
-      tr += fmtNum(row[c.valKey] || '', row[c.stdKey] || '', c.groupCls, isBest);
+      const isBest   = colMins[c.valKey] !== null && !isNaN(vn) && vn === colMins[c.valKey];
+      const isNonSig = sigMap[c.valKey] ? sigMap[c.valKey].has((row['Method'] || '').trim()) : false;
+      tr += fmtNum(row[c.valKey] || '', row[c.stdKey] || '', c.groupCls, isBest, isNonSig);
     });
     tr += '</tr>';
     return tr;
@@ -2099,6 +2293,56 @@ function render() {
 // ─────────────────────────────────────────────
 // RESET
 // ─────────────────────────────────────────────
+function resetAlgorithmFilters() {
+  // Reset year range
+  document.getElementById('yearFrom').value = MIN_YEAR;
+  document.getElementById('yearTo').value   = MAX_YEAR;
+  state.yearFrom = MIN_YEAR;
+  state.yearTo   = MAX_YEAR;
+  // Reset category chips
+  state.activeCats = new Set(ALL_SUBCATS.filter(c => {
+    return [...document.querySelectorAll('#chips-category .chip')]
+      .some(chip => chip.dataset.id === c.sub && chip.style.pointerEvents !== 'none');
+  }).map(c => c.sub));
+  document.querySelectorAll('#chips-category .chip').forEach(c => {
+    if (c.style.pointerEvents !== 'none') {
+      c.classList.add('on');
+      c.dataset.userOff = 'false';
+    }
+  });
+  // Reset hybrid
+  state.showHybrid = true;
+  const hybridChip = document.getElementById('hybridChip');
+  if (hybridChip) hybridChip.classList.add('on');
+  // Reset Top K
+  state.topK = null;
+  document.getElementById('topkBtn').classList.remove('on');
+  document.getElementById('topkInput').value = '';
+  document.getElementById('topkHint').textContent = '';
+  // Reset Best-in-class
+  state.bestOnly = false;
+  document.getElementById('bestOnlyBtn').classList.remove('on');
+  // Reset significance
+  state.showSignificance = true;
+  state.pThreshold = 0.05;
+  const sigBtn = document.getElementById('sigBtn');
+  if (sigBtn) sigBtn.classList.add('on');
+  const pInput = document.getElementById('pThresholdInput');
+  if (pInput) pInput.value = '0.050';
+  const sigRow = document.getElementById('sigThresholdRow');
+  if (sigRow) sigRow.style.opacity = '';
+  render();
+}
+
+function resetBenchmarkFilters() {
+  // Reset only the benchmark column filters (Severity, Peaks, Dims, Frequencies)
+  state.activeIds.clear();
+  COLUMN_GROUPS.forEach(g => g.cols.forEach(c => state.activeIds.add(c.id)));
+  // Re-enable all column chips
+  document.querySelectorAll('.chip:not(.cat-chip)').forEach(c => c.classList.add('on'));
+  render();
+}
+
 function resetFilters() {
   state.activeIds.clear();
   COLUMN_GROUPS.forEach(g => g.cols.forEach(c => state.activeIds.add(c.id)));
@@ -2107,10 +2351,18 @@ function resetFilters() {
   document.getElementById('yearTo').value   = MAX_YEAR;
   state.yearFrom = MIN_YEAR;
   state.yearTo   = MAX_YEAR;
-  state.sortCol  = null;
+  state.sortCol  = '__rank__';
   state.sortDir  = 'asc';
   state.bestOnly = false;
   document.getElementById('bestOnlyBtn').classList.remove('on');
+  state.showSignificance = true;
+  state.pThreshold = 0.05;
+  const _sigBtn = document.getElementById('sigBtn');
+  if (_sigBtn) _sigBtn.classList.add('on');
+  const _pInput = document.getElementById('pThresholdInput');
+  if (_pInput) _pInput.value = '0.050';
+  const _sigRow = document.getElementById('sigThresholdRow');
+  if (_sigRow) _sigRow.style.opacity = '';
   state.showHybrid = true;
   const hybridChip = document.getElementById('hybridChip');
   if (hybridChip) hybridChip.classList.add('on');
@@ -2137,21 +2389,41 @@ function resetFilters() {
 // ─────────────────────────────────────────────
 function exportCSV() {
   const activeCols = getActiveCols();
-  const filtered = sortData(getFilteredData());
+  const filtered   = sortData(getFilteredData());
+  // Compute significance if active
+  const sigMap = state.showSignificance ? computeSignificance(filtered, activeCols) : {};
 
-  const headers = ['Method', 'Paper title', 'Year publication', 'Category', 'Runs',
-    ...activeCols.flatMap(c => [c.valKey, c.stdKey])];
-  const rows = filtered.map(row =>
-    headers.map(h => {
+  const baseHeaders = ['Method', 'Paper title', 'Year publication', 'Category', 'Runs'];
+  // For each result column add value, SE, and optionally significance flag
+  const colHeaders = activeCols.flatMap(c => {
+    const cols = [c.valKey, c.stdKey];
+    if (state.showSignificance) cols.push(`${c.valKey}_sig`);
+    return cols;
+  });
+  const headers = [...baseHeaders, ...colHeaders];
+
+  const rows = filtered.map(row => {
+    const method = (row['Method'] || '').trim();
+    return headers.map(h => {
       let val = (row[h] || '').trim();
       if (h === 'Category') {
         const cats = parseCats(val);
         val = cats.map(({ sub, main }) => main === sub ? sub : `${main} (${sub})`).join(' + ');
+      } else if (h.endsWith('_sig')) {
+        const colKey = h.replace('_sig', '');
+        const ns = sigMap[colKey] && sigMap[colKey].has(method);
+        const v  = (row[colKey] || '').trim();
+        val = v ? (ns ? 'ns' : 'sig') : '';
       }
       return `"${val.replace(/"/g, '""')}"`;
-    }).join(',')
-  );
-  const csv = [headers.join(','), ...rows].join('\n');
+    }).join(',');
+  });
+
+  // Add note about significance coding
+  const sigNote = state.showSignificance
+    ? `% Significance column: "ns" = not significantly different from best (Welch t-test two-tailed p>=${state.pThreshold}); "sig" = significantly worse\n`
+    : '';
+  const csv = sigNote + [headers.join(','), ...rows].join('\n');
   downloadFile(csv, 'MPB_Scenario2_results.csv', 'text/csv');
 }
 
@@ -2215,6 +2487,9 @@ function buildLatexForGroup(group, groupCols, filtered, dateStr) {
     latexMins[c.valKey] = isFinite(min) ? min : null;
   });
 
+  // Compute significance map for this group (if active)
+  const latexSigMap = state.showSignificance ? computeSignificance(usefulRows, groupCols) : {};
+
   // Data rows
   const dataRows = usefulRows.map(row => {
     const methodRaw = (row['Method'] || '').trim();
@@ -2233,8 +2508,13 @@ function buildLatexForGroup(group, groupCols, filtered, dateStr) {
       const vn = parseFloat(v), sn = parseFloat(s);
       const vStr = isNaN(vn) ? latexEsc(v) : vn.toFixed(2);
       const sStr = (!s || isNaN(sn)) ? '' : ` $\\pm$ ${sn.toFixed(2)}`;
-      const isBest = latexMins[c.valKey] !== null && !isNaN(vn) && vn === latexMins[c.valKey];
-      const cell = isBest ? `\\textbf{${vStr}${sStr}}` : `${vStr}${sStr}`;
+      const isBest   = latexMins[c.valKey] !== null && !isNaN(vn) && vn === latexMins[c.valKey];
+      const methodName = (row['Method'] || '').trim();
+      const isNonSig   = !isBest && latexSigMap[c.valKey] && latexSigMap[c.valKey].has(methodName);
+      let cell;
+      if (isBest)       cell = `\\textbf{${vStr}${sStr}}`;
+      else if (isNonSig) cell = `\\textbf{${vStr}${sStr}}$^{*}$`;
+      else               cell = `${vStr}${sStr}`;
       cells.push(cell);
     });
     return '    ' + cells.join(' & ') + ' \\\\';
@@ -2246,7 +2526,7 @@ function buildLatexForGroup(group, groupCols, filtered, dateStr) {
 % Requires: \\usepackage{booktabs}
 \\begin{table}[htbp]
   \\centering
-  \\caption{MPB Scenario 2 --- ${group.label} (offline error: mean $\\pm$ std.~error)}
+  \\caption{MPB Scenario 2 --- ${group.label} (offline error: mean $\\pm$ std.~error). \\textbf{Bold}: best result. $^{*}$Bold with asterisk: not significantly worse than best (Welch's $t$-test, two-tailed, $p \\geq ${state.pThreshold}$~\\cite{welch1947generalization}).}
   \\label{tab:mpb_${group.id}}
   \\resizebox{\\textwidth}{!}{%
   \\begin{tabular}{${colSpec}}
@@ -2314,10 +2594,82 @@ function exportLaTeX() {
     return m && usedKeys.has(m[1].trim());
   });
 
+  // Always include Welch citation in .bib if significance is shown
+  if (state.showSignificance) usedKeys.add('welch1947generalization');
+
+  const matchedEntries2 = allEntries.filter(entry => {
+    const m = entry.match(/@\w+\{([^,]+),/);
+    return m && usedKeys.has(m[1].trim());
+  });
+
   const bibHeader = `% MPB Scenario 2 — Reference Bibliography\n% Generated ${dateStr}\n% Algorithms: ${filtered.length}\n\n`;
   setTimeout(() => {
-    downloadFile(bibHeader + matchedEntries.join('\n\n'), 'MPB_Scenario2_references.bib', 'text/plain');
+    downloadFile(bibHeader + matchedEntries2.join('\n\n'), 'MPB_Scenario2_references.bib', 'text/plain');
   }, filesExported * 300);
+  filesExported++;
+
+  // Generate statistical test description .tex if significance is active
+  if (state.showSignificance) {
+    const statsTex = `% MPB Scenario 2 — Statistical Significance Note
+% Generated ${dateStr}
+% Requires: \\usepackage{amsmath}
+
+\\section*{Statistical Significance Testing}
+
+To assess whether the difference in performance between the best-performing algorithm
+and each other algorithm is statistically significant, we apply Welch's two-sample
+$t$-test~\\cite{welch1947generalization}.
+
+\\subsection*{Method}
+
+Let $\\bar{x}_A$ and $\\bar{x}_B$ denote the mean offline errors of the best algorithm~$A$
+and a compared algorithm~$B$, with standard errors $\\mathrm{SE}_A = \\sigma_A / \\sqrt{n_A}$
+and $\\mathrm{SE}_B = \\sigma_B / \\sqrt{n_B}$, where $n_A$ and $n_B$ are the respective
+numbers of independent runs.
+
+The test statistic is:
+\\begin{equation}
+  t = \\frac{\\bar{x}_B - \\bar{x}_A}{\\sqrt{\\mathrm{SE}_A^2 + \\mathrm{SE}_B^2}}
+\\end{equation}
+
+The effective degrees of freedom are computed via the Welch--Satterthwaite equation:
+\\begin{equation}
+  \\nu = \\frac{\\left(\\mathrm{SE}_A^2 + \\mathrm{SE}_B^2\\right)^2}{%
+    \\dfrac{\\mathrm{SE}_A^4}{n_A - 1} + \\dfrac{\\mathrm{SE}_B^4}{n_B - 1}}
+\\end{equation}
+
+The two-tailed $p$-value is:
+\\begin{equation}
+  p = P\\bigl(|T_{\\nu}| \\geq |t|\\bigr) = I_{x}\\!\\left(\\frac{\\nu}{2},\\, \\frac{1}{2}\\right),
+  \\quad x = \\frac{\\nu}{\\nu + t^2}
+\\end{equation}
+where $I_x(a,b)$ is the regularised incomplete beta function.
+
+\\subsection*{Interpretation}
+
+Results marked in \\textbf{bold with a superscript~$*$} are \\emph{not significantly worse}
+than the best result in that column at the chosen significance level
+($p \\geq ${state.pThreshold}$, two-tailed).
+The best result itself is shown in plain bold.
+All other results are significantly worse than the best ($p < ${state.pThreshold}$).
+
+\\subsection*{Notes}
+
+\\begin{itemize}
+  \\item The true Wilcoxon signed-rank test~\\cite{wilcoxon1945individual} would be preferable
+    but requires access to the raw per-run data, which is not stored in this table.
+    Welch's $t$-test is used as a statistically valid approximation given the availability
+    of the mean, standard error, and number of runs for each algorithm.
+  \\item The $t$-distribution $p$-value is computed exactly using the regularised incomplete
+    beta function via Lentz's continued-fraction algorithm.
+  \\item Each algorithm uses its own individual run count $n$ for the degrees-of-freedom calculation.
+\\end{itemize}
+`;
+    setTimeout(() => {
+      downloadFile(statsTex, 'MPB_Scenario2_statistical_test.tex', 'text/plain');
+    }, filesExported * 300);
+    filesExported++;
+  }
 }
 
 // ─────────────────────────────────────────────
@@ -2389,6 +2741,51 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
+
+// ─────────────────────────────────────────────
+// SIGNIFICANCE TOGGLE
+// ─────────────────────────────────────────────
+function pThresholdKeyStep(e) {
+  if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+  e.preventDefault();
+  const input = document.getElementById('pThresholdInput');
+  let p = parseFloat(String(input.value).replace(',', '.'));
+  if (isNaN(p)) p = 0.05;
+  const delta = e.key === 'ArrowUp' ? 0.001 : -0.001;
+  p = Math.round((p + delta) * 1000) / 1000;
+  if (p < 0.001) p = 0.001;
+  if (p > 0.999) p = 0.999;
+  input.value = p.toFixed(3);
+  state.pThreshold = p;
+  if (state.showSignificance) render();
+}
+
+function updatePThreshold(val) {
+  const p = parseFloat(String(val).replace(',', '.'));
+  if (!isNaN(p) && p >= 0.001 && p <= 0.999) {
+    state.pThreshold = p;
+    if (state.showSignificance) render();
+  }
+}
+
+function finalisePThreshold(val) {
+  let p = parseFloat(String(val).replace(',', '.'));
+  if (isNaN(p) || p < 0.001) p = 0.001;
+  if (p > 0.999)             p = 0.999;
+  p = Math.round(p * 1000) / 1000;
+  state.pThreshold = p;
+  document.getElementById('pThresholdInput').value = p.toFixed(3);
+  if (state.showSignificance) render();
+}
+
+function toggleSignificance() {
+  state.showSignificance = !state.showSignificance;
+  const btn = document.getElementById('sigBtn');
+  btn.classList.toggle('on', state.showSignificance);
+  const row = document.getElementById('sigThresholdRow');
+  if (row) row.style.opacity = state.showSignificance ? '' : '0.4';
+  render();
+}
 
 // ─────────────────────────────────────────────
 // HYBRID TOGGLE
