@@ -2025,13 +2025,28 @@ function render() {
   const activeCols = getActiveCols();
   syncCategoryChips();
   const filtered = getFilteredData();
-  const ranks = computeAvgRanks(filtered, activeCols);
-  // Attach ranks to rows so sortData can use them
-  const filteredWithRanks = filtered.map((row, i) => ({ ...row, __rank__: ranks[i] }));
-  let sorted = sortData(filteredWithRanks, ranks);
+  // Compute ranks across all filtered rows (used to pick the top K)
+  const ranksAll = computeAvgRanks(filtered, activeCols);
+  const filteredWithRanks = filtered.map((row, i) => ({ ...row, __rank__: ranksAll[i] }));
+  let sorted = sortData(filteredWithRanks, ranksAll);
+
+  // Always keep the input value clamped to the total available algorithms
+  const _topkInput = document.getElementById('topkInput');
+  const _maxAvail = sorted.length;
+  if (_topkInput) {
+    _topkInput.max = _maxAvail;
+    const _cur = parseInt(_topkInput.value);
+    if (!isNaN(_cur) && _cur > _maxAvail) _topkInput.value = _maxAvail;
+  }
+
   // Apply Top-K: keep only the K best by average rank
+  // Clamp K to the number of available algorithms in case filters reduced the pool
   if (state.topK !== null && state.topK >= 1) {
-    // Sort by rank ascending to pick the best K, then restore user sort
+    const maxAvailable = sorted.length;
+    if (state.topK > maxAvailable) {
+      state.topK = maxAvailable;
+      if (_topkInput) _topkInput.value = maxAvailable;
+    }
     const byRank = [...sorted].sort((a, b) => {
       const ra = a.__rank__, rb = b.__rank__;
       if (ra === null && rb === null) return 0;
@@ -2048,16 +2063,22 @@ function render() {
     const hint = document.getElementById('topkHint');
     if (hint) hint.textContent = '';
   }
-  // Recompute ranks in the sorted order for display
-  const sortedRanks = sorted.map(row => row.__rank__);
+
+  // Recompute ranks among the final visible rows only (so rank reflects the current table)
+  const finalRanks = computeAvgRanks(sorted, activeCols);
+  const sortedWithFinalRanks = sorted.map((row, i) => ({ ...row, __rank__: finalRanks[i] }));
+  // Re-sort with updated ranks in case __rank__ column is active sort
+  const finalSorted = sortData(sortedWithFinalRanks, finalRanks);
+  const sortedRanks  = finalSorted.map(row => row.__rank__);
+
   renderHeader(activeCols);
-  renderBody(sorted, activeCols, sortedRanks);
+  renderBody(finalSorted, activeCols, sortedRanks);
   renderTrend();
   // Stats
   const info = document.getElementById('stats-info');
-  info.innerHTML = `Showing <strong>${sorted.length}</strong> of <strong>${ALL_DATA.length}</strong> algorithms · <strong>${activeCols.length}</strong> result columns`;
+  info.innerHTML = `Showing <strong>${finalSorted.length}</strong> of <strong>${ALL_DATA.length}</strong> algorithms · <strong>${activeCols.length}</strong> result columns`;
   const hint = document.getElementById('bestOnlyHint');
-  if (hint) hint.textContent = state.bestOnly ? `${sorted.length} algorithm${sorted.length !== 1 ? 's' : ''} lead in at least one column` : '';
+  if (hint) hint.textContent = state.bestOnly ? `${finalSorted.length} algorithm${finalSorted.length !== 1 ? 's' : ''} lead in at least one column` : '';
 }
 
 // ─────────────────────────────────────────────
@@ -2298,6 +2319,14 @@ function downloadFile(content, filename, mime) {
 // ─────────────────────────────────────────────
 // TOP-K TOGGLE
 // ─────────────────────────────────────────────
+function clampTopK(k, max) {
+  // Clamp k to [1, max]; update the input field to reflect the clamped value
+  const clamped = Math.min(Math.max(1, k), max);
+  const input = document.getElementById('topkInput');
+  if (clamped !== k) input.value = clamped;
+  return clamped;
+}
+
 function toggleTopK() {
   const btn   = document.getElementById('topkBtn');
   const input = document.getElementById('topkInput');
@@ -2309,7 +2338,8 @@ function toggleTopK() {
     document.getElementById('topkHint').textContent = '';
   } else {
     if (!k || k < 1) { input.focus(); return; }
-    state.topK = k;
+    const maxK = getFilteredData().length;
+    state.topK = clampTopK(k, maxK);
     btn.classList.add('on');
   }
   render();
@@ -2318,9 +2348,29 @@ function toggleTopK() {
 // Re-apply top-K when input changes while active
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('topkInput').addEventListener('input', () => {
-    if (state.topK !== null) {
-      const k = parseInt(document.getElementById('topkInput').value);
-      if (k >= 1) { state.topK = k; render(); }
+    const input = document.getElementById('topkInput');
+    const maxK  = getFilteredData().length;
+    let k = parseInt(input.value);
+    // Always clamp to [1, maxK] regardless of whether Top-K is active
+    if (!isNaN(k) && k > maxK) {
+      k = maxK;
+      input.value = maxK;
+    }
+    if (state.topK !== null && k >= 1) {
+      state.topK = k;
+      render();
+    }
+  });
+
+  // Also clamp on blur (catches typed-then-tabbed-away values)
+  document.getElementById('topkInput').addEventListener('blur', () => {
+    const input = document.getElementById('topkInput');
+    const maxK  = getFilteredData().length;
+    let k = parseInt(input.value);
+    if (!isNaN(k)) {
+      if (k < 1)    { k = 1;    input.value = 1; }
+      if (k > maxK) { k = maxK; input.value = maxK; }
+      if (state.topK !== null) { state.topK = k; render(); }
     }
   });
 });

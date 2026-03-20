@@ -26,17 +26,17 @@ Filters are split into two side-by-side panels:
 - **Severity** (0–6), **Peaks** (1–200), **Dimensions** (10–100), **Frequencies** (500–10000) — toggle individual result columns on/off using chip-style checkboxes; each group has *all / none* shortcuts
 
 **Display & Algorithm Filters (right)**
-- **Algorithm Category** — filter by algorithmic subfamily (e.g. PSO, DE, GA, Firefly); subcategories are grouped under their full family name (*Swarm Intelligence*, *Differential Evolution*, *Evolutionary Algorithm*, *Direct Search*); hovering any chip shows the full subcategory name in an instant tooltip; chips are automatically enabled or disabled in sync with the table — subcategories absent from the current view are faded and non-clickable, and re-enabled automatically when they become available again; user-deselected chips are not force-reselected by filters
+- **Algorithm Category** — filter by algorithmic subfamily (e.g. PSO, DE, GA, Firefly); subcategories are grouped under their full family name (*Swarm Intelligence*, *Differential Evolution*, *Evolutionary Algorithm*, *Direct Search*); hovering any chip instantly shows the full subcategory name; chips are automatically enabled or disabled in sync with the table — subcategories absent from the current view are faded and non-clickable, and re-enabled when they become available again; user-deselected chips are not force-reselected by other filters
 - **Hybrid** — a dedicated toggle below the category chips; when turned off, algorithms that combine more than one algorithmic family (e.g. DE + PSO, Direct Search + CMA-ES) are excluded from the table
 - **Year Range** — restrict results to a specific publication period
-- **Top K by Average Rank** — enter a value K and click *Show Top K* to display only the K best-performing algorithms by average rank; updates live as K changes; works on top of all other filters
+- **Top K by Average Rank** — enter a value K and click *Show Top K* to display only the K best-performing algorithms by average rank; K is always clamped to the number of currently available algorithms — both while typing and on leaving the field — so it is never possible to enter an invalid value; the average rank column is recomputed within the Top K subset so ranks always reflect the visible algorithms; updates live as K or other filters change
 - **Best-in-class** — toggle *"Show only best-in-class algorithms"* to keep only algorithms that hold the lowest value in at least one currently visible column
 - **Reset All** — resets all filters to their default state
 
 ### Table
 
-- **Average Rank column** — the first column shows each algorithm's average rank across all visible result columns (lower = better, rank 1); ties are resolved by averaging; algorithms with no data in a column are not penalised; sorted by this column by default
-- **Algorithm Category column** — displays a colour-coded subcategory badge (e.g. `PSO`, `DE`, `Firefly`) for each algorithm; hovering a badge shows the full subcategory name instantly; hybrid algorithms show multiple badges; colour coding: blue = Swarm Intelligence, pink = Differential Evolution, green = Evolutionary Algorithm, yellow = Direct Search
+- **Average Rank column** — the first column shows each algorithm's average rank across all visible result columns (lower = better, rank 1); ties are resolved by averaging; algorithms with no data in a column are not penalised; sorted by this column by default; when Top K is active, ranks are recomputed within the visible subset
+- **Algorithm Category column** — displays a colour-coded subcategory badge (e.g. `PSO`, `DE`, `Firefly`) for each algorithm; hovering a badge instantly shows the full subcategory name; hybrid algorithms show multiple badges; colour coding: blue = Swarm Intelligence, pink = Differential Evolution, green = Evolutionary Algorithm, yellow = Direct Search
 - **Best value highlighting** — the lowest value in each result column is shown in **bold** with a subtle colour-coded background (purple = Severity, blue = Peaks, green = Dimensions, amber = Frequencies)
 - **Sort** — click any column header to sort ascending or descending
 - **Linked paper titles** — paper titles link directly to the source PDF or publisher page where available
