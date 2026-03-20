@@ -547,6 +547,29 @@
   .cat-Unknown { background: var(--surface2); color: var(--text-muted); }
   .chip.cat-chip.on { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
 
+  /* ── CUSTOM FAST TOOLTIP ── */
+  [data-tip] { position: relative; }
+  [data-tip]::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--text);
+    color: #fff;
+    font-size: 11px;
+    font-family: 'DM Sans', sans-serif;
+    white-space: nowrap;
+    padding: 4px 8px;
+    border-radius: 4px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.08s ease;
+    z-index: 100;
+    box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  [data-tip]:hover::after { opacity: 1; }
+
   /* ── RANK COLUMN ── */
   .col-rank { background: #141312; text-align: center; min-width: 72px; }
   .cell-rank {
@@ -652,16 +675,6 @@
       </div>
       <div class="panel-body">
 
-        <!-- YEAR RANGE -->
-        <div class="year-range-row">
-          <span class="year-range-label">Year Range</span>
-          <div class="year-inputs">
-            <input type="number" class="year-input" id="yearFrom" placeholder="2006" min="2006" max="2025"/>
-            <span class="year-sep">–</span>
-            <input type="number" class="year-input" id="yearTo" placeholder="2025" min="2006" max="2025"/>
-          </div>
-        </div>
-
         <!-- CATEGORY FILTER -->
         <div class="filter-row">
           <div class="filter-label">
@@ -671,6 +684,22 @@
             <button class="toggle-link" onclick="toggleAllCats(false)">none</button>
           </div>
           <div class="chip-group" id="chips-category"></div>
+          <div style="margin-top:8px;display:flex;align-items:center;gap:8px">
+            <div id="hybridChip" class="chip cat-chip on" style="cursor:pointer;user-select:none" data-tip="Hybrid: combines multiple algorithm families (e.g. DE + PSO, Direct Search + GA)" onclick="toggleHybrid()">
+              <span class="cat-badge" style="background:#f3e8ff;color:#581c87">Hybrid</span>
+            </div>
+            <span style="font-size:11px;color:var(--text-faint)">— show algorithms combining multiple families</span>
+          </div>
+        </div>
+
+        <!-- YEAR RANGE -->
+        <div class="year-range-row">
+          <span class="year-range-label">Year Range</span>
+          <div class="year-inputs">
+            <input type="number" class="year-input" id="yearFrom" placeholder="2006" min="2006" max="2025"/>
+            <span class="year-sep">–</span>
+            <input type="number" class="year-input" id="yearTo" placeholder="2025" min="2006" max="2025"/>
+          </div>
         </div>
 
         <!-- TOP-K FILTER -->
@@ -1454,6 +1483,7 @@ const state = {
   sortDir: 'asc',
   bestOnly: false,
   topK: null,
+  showHybrid: true,
   activeCats: new Set(), // populated by buildCategoryChips()
 };
 
@@ -1502,6 +1532,25 @@ function collectSubcats() {
 
 let ALL_SUBCATS = [];
 
+const SUB_FULL_NAMES = {
+  PSO: 'Particle Swarm Optimization',
+  Firefly: 'Firefly Algorithm',
+  Fireworks: 'Fireworks Algorithm',
+  'Cuckoo Search': 'Cuckoo Search',
+  'Fish Swarm': 'Artificial Fish Swarm Algorithm',
+  ALO: 'Ant Lion Optimizer',
+  WDO: 'Wind Driven Optimization',
+  DE: 'Differential Evolution',
+  GA: 'Genetic Algorithm',
+  AIS: 'Artificial Immune System',
+  EDA: 'Estimation of Distribution Algorithm',
+  'CMA-ES': 'Covariance Matrix Adaptation Evolution Strategy',
+  EA: 'Evolutionary Algorithm',
+  'Direct Search': 'Direct Search',
+  'Local Search': 'Local Search',
+  'Extremal Optimization': 'Extremal Optimization',
+};
+
 function buildCategoryChips() {
   ALL_SUBCATS = collectSubcats();
 
@@ -1527,7 +1576,8 @@ function buildCategoryChips() {
       }
       const sep = document.createElement('span');
       sep.style.cssText = 'font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-faint);align-self:center;padding:0 4px 0 0;white-space:nowrap';
-      sep.textContent = main + ':';
+      const mainFull = { SI: 'Swarm Intelligence', DE: 'Differential Evolution', EA: 'Evolutionary Algorithm', DS: 'Direct Search' };
+      sep.textContent = (mainFull[main] || main) + ':';
       container.appendChild(sep);
       lastMain = main;
     }
@@ -1541,6 +1591,8 @@ function buildCategoryChips() {
       chip.style.opacity = '0.3';
       chip.style.pointerEvents = 'none';
     }
+    const tooltip = SUB_FULL_NAMES[sub] || sub;
+    chip.setAttribute('data-tip', tooltip);
     chip.innerHTML = `<input type="checkbox" ${isPresent ? 'checked' : ''}/><span class="cat-badge cat-${main}">${sub}</span>`;
     chip.addEventListener('click', e => {
       e.preventDefault();
@@ -1663,8 +1715,11 @@ function getFilteredData() {
     return true;
   });
   // Category filter: row passes if ANY of its subcategories is active
+  // Also apply hybrid filter: if showHybrid is false, exclude multi-category algorithms
   const catFiltered = yearFiltered.filter(row => {
     const cats = parseCats((row['Category'] || '').trim());
+    // Hybrid filter: hide algorithms with more than one family category
+    if (!state.showHybrid && cats.length > 1) return false;
     return cats.some(({ sub }) => state.activeCats.has(sub));
   });
   if (!state.bestOnly) return catFiltered;
@@ -1870,9 +1925,10 @@ function renderBody(data, activeCols, ranks) {
     const rankDisplay = avgRank !== null ? avgRank.toFixed(2) : '—';
     const catRaw  = (row['Category'] || '').trim();
     const catList = parseCats(catRaw);
-    const catBadges = catList.map(({sub, main}) =>
-      `<span class="cat-badge cat-${main}" title="${main}">${sub}</span>`
-    ).join(' ');
+    const catBadges = catList.map(({sub, main}) => {
+      const fullName = SUB_FULL_NAMES[sub] || sub;
+      return `<span class="cat-badge cat-${main}" data-tip="${fullName}">${sub}</span>`;
+    }).join(' ');
     let tr = `<tr>
       <td class="col-fixed cell-rank">${rankDisplay}</td>
       <td class="col-fixed" style="text-align:center;min-width:90px">${catBadges}</td>
@@ -2019,6 +2075,9 @@ function resetFilters() {
   state.sortDir  = 'asc';
   state.bestOnly = false;
   document.getElementById('bestOnlyBtn').classList.remove('on');
+  state.showHybrid = true;
+  const hybridChip = document.getElementById('hybridChip');
+  if (hybridChip) hybridChip.classList.add('on');
   state.topK = null;
   document.getElementById('topkBtn').classList.remove('on');
   document.getElementById('topkInput').value = '';
@@ -2265,6 +2324,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
+
+// ─────────────────────────────────────────────
+// HYBRID TOGGLE
+// ─────────────────────────────────────────────
+function toggleHybrid() {
+  state.showHybrid = !state.showHybrid;
+  const chip = document.getElementById('hybridChip');
+  chip.classList.toggle('on', state.showHybrid);
+  render();
+}
 
 // ─────────────────────────────────────────────
 // BEST-ONLY TOGGLE
