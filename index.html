@@ -152,6 +152,18 @@
   .panel-actions { display: flex; gap: 8px; flex-wrap: wrap; }
   .panel-body { padding: 20px; display: flex; flex-direction: column; gap: 20px; }
 
+  /* ── TWO-COLUMN CONTROL PANEL ── */
+  .control-panels-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 900px) {
+    .control-panels-row { grid-template-columns: 1fr; }
+  }
+  .control-panel { margin-bottom: 0; }
+
   /* ── FILTER ROWS ── */
   .filter-row { display: flex; flex-direction: column; gap: 8px; }
   .filter-label {
@@ -570,127 +582,120 @@
 
 <div class="main-wrap">
 
-  <!-- CONTROL PANEL -->
-  <div class="control-panel">
-    <div class="panel-header">
-      <span class="panel-title">Filters &amp; Display</span>
-      <div class="panel-actions">
-        <button class="btn btn-ghost" onclick="resetFilters()">
-          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2.5 8A5.5 5.5 0 1 0 8 2.5"/><polyline points="2.5,2.5 2.5,8 8,8"/></svg>
-          Reset All
-        </button>
+  <!-- TWO-COLUMN CONTROL PANELS -->
+  <div class="control-panels-row">
+
+    <!-- LEFT: Benchmark Filters -->
+    <div class="control-panel">
+      <div class="panel-header">
+        <span class="panel-title">Benchmark Filters</span>
+      </div>
+      <div class="panel-body">
+
+        <!-- SEVERITY -->
+        <div class="filter-row">
+          <div class="filter-label">
+            <span class="dot dot-severity"></span>
+            Severity
+            <button class="toggle-link" onclick="toggleAll('severity', true)">all</button>/
+            <button class="toggle-link" onclick="toggleAll('severity', false)">none</button>
+          </div>
+          <div class="chip-group" id="chips-severity"></div>
+        </div>
+
+        <!-- PEAKS -->
+        <div class="filter-row">
+          <div class="filter-label">
+            <span class="dot dot-peaks"></span>
+            Peaks
+            <button class="toggle-link" onclick="toggleAll('peaks', true)">all</button>/
+            <button class="toggle-link" onclick="toggleAll('peaks', false)">none</button>
+          </div>
+          <div class="chip-group" id="chips-peaks"></div>
+        </div>
+
+        <!-- DIMENSIONS -->
+        <div class="filter-row">
+          <div class="filter-label">
+            <span class="dot dot-dims"></span>
+            Dimensions
+            <button class="toggle-link" onclick="toggleAll('dims', true)">all</button>/
+            <button class="toggle-link" onclick="toggleAll('dims', false)">none</button>
+          </div>
+          <div class="chip-group" id="chips-dims"></div>
+        </div>
+
+        <!-- FREQUENCIES -->
+        <div class="filter-row">
+          <div class="filter-label">
+            <span class="dot dot-freq"></span>
+            Frequencies
+            <button class="toggle-link" onclick="toggleAll('freq', true)">all</button>/
+            <button class="toggle-link" onclick="toggleAll('freq', false)">none</button>
+          </div>
+          <div class="chip-group" id="chips-freq"></div>
+        </div>
+
       </div>
     </div>
-    <div class="panel-body">
 
-      <!-- SEVERITY -->
-      <div class="filter-row">
-        <div class="filter-label">
-          <span class="dot dot-severity"></span>
-          Severity
-          <button class="toggle-link" onclick="toggleAll('severity', true)">all</button>/
-          <button class="toggle-link" onclick="toggleAll('severity', false)">none</button>
-        </div>
-        <div class="chip-group" id="chips-severity"></div>
-      </div>
-
-      <!-- PEAKS -->
-      <div class="filter-row">
-        <div class="filter-label">
-          <span class="dot dot-peaks"></span>
-          Peaks
-          <button class="toggle-link" onclick="toggleAll('peaks', true)">all</button>/
-          <button class="toggle-link" onclick="toggleAll('peaks', false)">none</button>
-        </div>
-        <div class="chip-group" id="chips-peaks"></div>
-      </div>
-
-      <!-- DIMENSIONS -->
-      <div class="filter-row">
-        <div class="filter-label">
-          <span class="dot dot-dims"></span>
-          Dimensions
-          <button class="toggle-link" onclick="toggleAll('dims', true)">all</button>/
-          <button class="toggle-link" onclick="toggleAll('dims', false)">none</button>
-        </div>
-        <div class="chip-group" id="chips-dims"></div>
-      </div>
-
-      <!-- FREQUENCIES -->
-      <div class="filter-row">
-        <div class="filter-label">
-          <span class="dot dot-freq"></span>
-          Frequencies
-          <button class="toggle-link" onclick="toggleAll('freq', true)">all</button>/
-          <button class="toggle-link" onclick="toggleAll('freq', false)">none</button>
-        </div>
-        <div class="chip-group" id="chips-freq"></div>
-      </div>
-
-      <!-- YEAR RANGE -->
-      <div class="year-range-row">
-        <span class="year-range-label">Year Range</span>
-        <div class="year-inputs">
-          <input type="number" class="year-input" id="yearFrom" placeholder="2006" min="2006" max="2025"/>
-          <span class="year-sep">–</span>
-          <input type="number" class="year-input" id="yearTo" placeholder="2025" min="2006" max="2025"/>
+    <!-- RIGHT: Display & Algorithm Filters -->
+    <div class="control-panel">
+      <div class="panel-header">
+        <span class="panel-title">Display &amp; Algorithm Filters</span>
+        <div class="panel-actions">
+          <button class="btn btn-ghost" onclick="resetFilters()">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2.5 8A5.5 5.5 0 1 0 8 2.5"/><polyline points="2.5,2.5 2.5,8 8,8"/></svg>
+            Reset All
+          </button>
         </div>
       </div>
+      <div class="panel-body">
 
-      <!-- CATEGORY FILTER -->
-      <div class="filter-row">
-        <div class="filter-label">
-          <span class="dot" style="background:#7c3aed"></span>
-          Algorithm Category
-          <button class="toggle-link" onclick="toggleAllCats(true)">all</button>/
-          <button class="toggle-link" onclick="toggleAllCats(false)">none</button>
+        <!-- YEAR RANGE -->
+        <div class="year-range-row">
+          <span class="year-range-label">Year Range</span>
+          <div class="year-inputs">
+            <input type="number" class="year-input" id="yearFrom" placeholder="2006" min="2006" max="2025"/>
+            <span class="year-sep">–</span>
+            <input type="number" class="year-input" id="yearTo" placeholder="2025" min="2006" max="2025"/>
+          </div>
         </div>
-        <div class="chip-group" id="chips-category"></div>
-      </div>
 
-      <!-- TOP-K FILTER -->
-      <div class="filter-row topk-row">
-        <span class="topk-label">Top K by Avg Rank</span>
-        <input type="number" id="topkInput" class="topk-input" min="1" max="200" placeholder="K" value=""/>
-        <button id="topkBtn" class="topk-btn" onclick="toggleTopK()">
-          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2v12M2 8l6-6 6 6"/></svg>
-          Show Top K
-        </button>
-        <span class="best-only-hint" id="topkHint"></span>
-      </div>
+        <!-- CATEGORY FILTER -->
+        <div class="filter-row">
+          <div class="filter-label">
+            <span class="dot" style="background:#7c3aed"></span>
+            Algorithm Category
+            <button class="toggle-link" onclick="toggleAllCats(true)">all</button>/
+            <button class="toggle-link" onclick="toggleAllCats(false)">none</button>
+          </div>
+          <div class="chip-group" id="chips-category"></div>
+        </div>
 
-      <!-- BEST ONLY FILTER -->
-      <div class="filter-row best-only-row">
-        <button id="bestOnlyBtn" class="best-only-btn" onclick="toggleBestOnly()">
-          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><polygon points="8,1 10,6 15,6 11,9.5 12.5,15 8,11.5 3.5,15 5,9.5 1,6 6,6"/></svg>
-          Show only best-in-class algorithms
-        </button>
-        <span class="best-only-hint" id="bestOnlyHint"></span>
-      </div>
+        <!-- TOP-K FILTER -->
+        <div class="filter-row topk-row">
+          <span class="topk-label">Top K by Avg Rank</span>
+          <input type="number" id="topkInput" class="topk-input" min="1" max="200" placeholder="K" value=""/>
+          <button id="topkBtn" class="topk-btn" onclick="toggleTopK()">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2v12M2 8l6-6 6 6"/></svg>
+            Show Top K
+          </button>
+          <span class="best-only-hint" id="topkHint"></span>
+        </div>
 
-    </div>
-  </div>
+        <!-- BEST ONLY FILTER -->
+        <div class="filter-row best-only-row">
+          <button id="bestOnlyBtn" class="best-only-btn" onclick="toggleBestOnly()">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><polygon points="8,1 10,6 15,6 11,9.5 12.5,15 8,11.5 3.5,15 5,9.5 1,6 6,6"/></svg>
+            Show only best-in-class algorithms
+          </button>
+          <span class="best-only-hint" id="bestOnlyHint"></span>
+        </div>
 
-  <!-- TREND CHART -->
-  <div class="trend-panel" id="trend-panel">
-    <div class="panel-header">
-      <span class="panel-title">Trend Over Years</span>
-      <div class="trend-controls">
-        <label style="font-size:12px;color:var(--text-muted)">Column:</label>
-        <select id="trendColSelect" class="trend-select" onchange="renderTrend()">
-          <option value="Standard_1_10_5_5000">Sev. 1 (default)</option>
-        </select>
-        <label style="font-size:12px;color:var(--text-muted)">Metric:</label>
-        <select id="trendMetric" class="trend-select" onchange="renderTrend()">
-          <option value="mean">Best result per year</option>
-          <option value="median">Median result per year</option>
-        </select>
       </div>
     </div>
-    <div id="trend-canvas-wrap">
-      <canvas id="trend-canvas"></canvas>
-      <div class="trend-empty" id="trend-empty" style="display:none">No data available for the selected column and filters.</div>
-    </div>
+
   </div>
 
   <!-- STATS + EXPORT -->
@@ -717,6 +722,30 @@
   </div>
 
 </div>
+
+  <!-- TREND CHART -->
+  <div class="trend-panel" id="trend-panel">
+    <div class="panel-header">
+      <span class="panel-title">Trend Over Years</span>
+      <div class="trend-controls">
+        <label style="font-size:12px;color:var(--text-muted)">Column:</label>
+        <select id="trendColSelect" class="trend-select" onchange="renderTrend()">
+          <option value="Standard_1_10_5_5000">Sev. 1 (default)</option>
+        </select>
+        <label style="font-size:12px;color:var(--text-muted)">Metric:</label>
+        <select id="trendMetric" class="trend-select" onchange="renderTrend()">
+          <option value="mean">Best result per year</option>
+          <option value="median">Median result per year</option>
+        </select>
+      </div>
+    </div>
+    <div id="trend-canvas-wrap">
+      <canvas id="trend-canvas"></canvas>
+      <div class="trend-empty" id="trend-empty" style="display:none">No data available for the selected column and filters.</div>
+    </div>
+  </div>
+
+
 
 <footer>
   <p>Moving Peaks Benchmark · Scenario 2 · Algorithm Comparison Table</p>
