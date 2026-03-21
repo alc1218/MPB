@@ -15,6 +15,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <style>
   :root {
@@ -562,27 +563,26 @@
   .chip.cat-chip.on { background: #f0fdf4; border-color: #0f766e; color: #0f766e; }
 
   /* ── CUSTOM FAST TOOLTIP ── */
-  [data-tip] { position: relative; }
-  [data-tip]::after {
-    content: attr(data-tip);
-    position: absolute;
-    bottom: calc(100% + 6px);
-    left: 50%;
-    transform: translateX(-50%);
+  /* ── FAST TOOLTIP (JS-driven, avoids overflow clipping) ── */
+  .tip-box {
+    position: fixed;
     background: var(--text);
     color: #fff;
     font-size: 11px;
     font-family: 'DM Sans', sans-serif;
-    white-space: nowrap;
-    padding: 4px 8px;
+    white-space: normal;
+    word-break: break-word;
+    max-width: 260px;
+    padding: 5px 9px;
     border-radius: 4px;
     pointer-events: none;
     opacity: 0;
     transition: opacity 0.08s ease;
-    z-index: 100;
-    box-shadow: 0 2px 6px rgba(0,0,0,.25);
+    z-index: 9999;
+    box-shadow: 0 2px 8px rgba(0,0,0,.28);
+    line-height: 1.4;
   }
-  [data-tip]:hover::after { opacity: 1; }
+  .tip-box.visible { opacity: 1; }
 
   /* ── RANK COLUMN ── */
   .col-rank { background: #141312; text-align: center; min-width: 72px; }
@@ -730,11 +730,12 @@
             <button class="toggle-link" onclick="toggleAllCats(false)">none</button>
           </div>
           <div class="chip-group" id="chips-category"></div>
-          <div style="margin-top:8px;display:flex;align-items:center;gap:8px">
-            <div id="hybridChip" class="chip cat-chip on" style="cursor:pointer;user-select:none" data-tip="Hybrid: combines multiple algorithm families (e.g. DE + PSO, Direct Search + GA)" onclick="toggleHybrid()">
+          <div class="chip-group" style="margin-top:0">
+            <div class="cat-group-sep" style="width:100%"></div>
+            <span style="font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-faint);align-self:center;padding:0 4px 0 0;white-space:nowrap">Hybrid:</span>
+            <div id="hybridChip" class="chip cat-chip on" style="cursor:pointer;user-select:none" data-tip="Hybrid: algorithms combining more than one family (e.g. DE + PSO, Direct Search + GA)" onclick="toggleHybrid()">
               <span class="cat-badge" style="background:#f1f5f9;color:#475569">Hybrid</span>
             </div>
-            <span style="font-size:11px;color:var(--text-faint)">— show algorithms combining multiple families</span>
           </div>
         </div>
 
@@ -959,6 +960,16 @@ const ALL_DATA = parseCSV(RAW_CSV);
 // BIBTEX DATABASE
 // ─────────────────────────────────────────────
 const BIBTEX_DB = `
+@inproceedings{branke1999memory,
+  title     = {Memory enhanced evolutionary algorithms for changing optimization problems},
+  author    = {Branke, J{\"u}rgen},
+  booktitle = {Proceedings of the 1999 Congress on Evolutionary Computation (CEC 1999)},
+  pages     = {1875--1882},
+  year      = {1999},
+  publisher = {IEEE},
+  doi       = {10.1109/CEC.1999.785502}
+}
+
 @article{wilcoxon1945individual,
   title     = {Individual comparisons by ranking methods},
   author    = {Wilcoxon, Frank},
@@ -2449,18 +2460,24 @@ function latexEsc(str) {
 
 function buildLatexForGroup(group, groupCols, filtered, dateStr) {
   // Only keep rows that have at least one non-empty value for this group
-  const usefulRows = filtered.filter(row =>
-    groupCols.some(c => (row[c.valKey] || '').trim() !== '')
-  );
+  const usefulRows = filtered
+    .filter(row => groupCols.some(c => (row[c.valKey] || '').trim() !== ''))
+    .sort((a, b) => {
+      const ra = parseFloat(a['__rank__']);
+      const rb = parseFloat(b['__rank__']);
+      if (isNaN(ra) && isNaN(rb)) return 0;
+      if (isNaN(ra)) return 1;
+      if (isNaN(rb)) return -1;
+      return ra - rb;
+    });
   if (usefulRows.length === 0) return null;
 
   const nResultCols = groupCols.length;
-  const colSpec = 'll cc ' + groupCols.map(() => 'r').join(' ');
+  const colSpec = 'l c c ' + groupCols.map(() => 'r').join(' ');
 
   // Column header labels
   const colHeaderParts = [
     'Method',
-    'Paper title',
     'Year',
     'Runs',
     ...groupCols.map(c => c.label.replace('=', '$=$'))
@@ -2468,13 +2485,13 @@ function buildLatexForGroup(group, groupCols, filtered, dateStr) {
   const colHeaderRow = colHeaderParts.join(' & ');
 
   // cmidrule for result block (cols 5 … 4+n)
-  const resultStart = 5;
-  const resultEnd   = 4 + nResultCols;
-  const cmidrules = `\\cmidrule(lr){1-4} \\cmidrule(lr){${resultStart}-${resultEnd}}`;
+  const resultStart = 4;
+  const resultEnd   = 3 + nResultCols;
+  const cmidrules = `\\cmidrule(lr){1-3} \\cmidrule(lr){${resultStart}-${resultEnd}}`;
 
   // Group span row
   const groupHeaderRow =
-    `\\multicolumn{4}{c}{Algorithm} & \\multicolumn{${nResultCols}}{c}{${group.label}}`;
+    `\\multicolumn{3}{c}{Algorithm} & \\multicolumn{${nResultCols}}{c}{${group.label}}`;
 
   // Compute best (min) value per column for this group
   const latexMins = {};
@@ -2496,11 +2513,9 @@ function buildLatexForGroup(group, groupCols, filtered, dateStr) {
     const method    = latexEsc(methodRaw);
     const citeKey   = (row['Bibtex'] || '').trim();
     const methodCell = citeKey ? `${method}~\\cite{${citeKey}}` : method;
-    const rawTitle = (row['Paper title'] || '').trim();
-    const title  = latexEsc(rawTitle.length > 48 ? rawTitle.substring(0, 45) + '...' : rawTitle);
     const year   = (row['Year publication'] || '').trim() || '---';
     const runs   = (row['Runs'] || '').trim() || '---';
-    const cells  = [methodCell, title, year, runs];
+    const cells  = [methodCell, year, runs];
     groupCols.forEach(c => {
       const v = (row[c.valKey] || '').trim();
       const s = (row[c.stdKey] || '').trim();
@@ -2526,8 +2541,7 @@ function buildLatexForGroup(group, groupCols, filtered, dateStr) {
 % Requires: \\usepackage{booktabs}
 \\begin{table}[htbp]
   \\centering
-  \\caption{MPB Scenario 2 --- ${group.label} (offline error: mean $\\pm$ std.~error). \\textbf{Bold}: best result. $^{*}$Bold with asterisk: not significantly worse than best (Welch's $t$-test, two-tailed, $p \\geq ${state.pThreshold}$~\\cite{welch1947generalization}).}
-  \\label{tab:mpb_${group.id}}
+  \\caption{MPB Scenario 2 --- ${group.label} (offline error: mean $\\pm$ std.~error). \\textbf{Bold}: best result per column.${state.showSignificance ? ' $^{*}$: not significantly worse than best.' : ''}}
   \\resizebox{\\textwidth}{!}{%
   \\begin{tabular}{${colSpec}}
     \\toprule
@@ -2546,37 +2560,107 @@ function exportLaTeX() {
   const filtered   = sortData(getFilteredData());
   const dateStr    = new Date().toISOString().slice(0, 10);
 
-  let filesExported = 0;
+  // Collect all files into a map: filename -> content string
+  const files = {};
+  const tableFileNames = [];
 
   COLUMN_GROUPS.forEach(group => {
-    // Only columns that are currently active AND belong to this group
     const groupCols = activeCols.filter(c => c.groupId === group.id);
-    if (groupCols.length === 0) return; // group entirely hidden — skip
-
+    if (groupCols.length === 0) return;
     const latex = buildLatexForGroup(group, groupCols, filtered, dateStr);
-    if (!latex) return; // no row had data for this group — skip
-
-    // Stagger downloads slightly so browsers don't block them
-    setTimeout(() => {
-      downloadFile(latex, `MPB_Scenario2_${group.id}.tex`, 'text/plain');
-    }, filesExported * 300);
-    filesExported++;
+    if (!latex) return;
+    const fname = `MPB_Scenario2_${group.id}.tex`;
+    files[fname] = latex;
+    tableFileNames.push(fname);
   });
 
-  if (filesExported === 0) {
+  if (tableFileNames.length === 0) {
     alert('No data to export: no visible columns have results for the current filter selection.');
     return;
   }
 
-  // Collect all unique cite keys from the filtered rows
+  // ── Statistical test note ──────────────────────────────────────────────
+  const statsFileName = state.showSignificance ? 'MPB_Scenario2_statistical_test.tex' : null;
+  if (state.showSignificance) {
+    files[statsFileName] = `% MPB Scenario 2 --- Statistical Significance, Metrics & Benchmark
+% Generated ${dateStr}
+% Compile alongside main.tex
+% Requires: \\usepackage{amsmath}, \\usepackage{amssymb}
+
+\\section*{The Moving Peaks Benchmark}
+
+The Moving Peaks Benchmark (MPB) was introduced by Branke~\\cite{branke1999memory}
+as a standard testbed for dynamic optimisation algorithms. The benchmark simulates
+a continuously changing fitness landscape composed of $m$ peaks. At each environmental
+change (every $\\tau$ function evaluations), peaks move by a distance controlled by
+severity~$s$, and their heights and widths are perturbed. The algorithm must continuously
+track the moving optima.
+
+\\subsection*{Scenario 2}
+
+Scenario~2 uses the fitness function:
+\\begin{equation}
+  f(\\mathbf{x}) = \\max_{i=1}^{m}
+    \\frac{W_i}{1 + H_i \\|\\mathbf{x} - \\mathbf{x}_i\\|^2}
+\\end{equation}
+Default: $m=10$ peaks, $d=5$ dimensions, severity $s=1$,
+change every $\\tau=5{,}000$ function evaluations.
+
+\\section*{Performance Metrics}
+
+\\subsection*{Current Error}
+
+\\begin{equation}
+  \\varepsilon(t) = f^*(t) - f_{\\mathrm{best}}(t) \\geq 0
+\\end{equation}
+
+\\subsection*{Offline Error}
+
+The offline error~\\cite{branke1999memory} is the mean current error across all changes:
+\\begin{equation}
+  E_{\\mathrm{off}} = \\frac{1}{T} \\sum_{t=1}^{T} \\varepsilon(t)
+\\end{equation}
+\\emph{Lower is better.} Known properties:
+\\begin{itemize}
+  \\item $E_{\\mathrm{off}} \\geq 0$; zero only if optimum tracked perfectly.
+  \\item Higher severity, more peaks, or higher dimensionality increases $E_{\\mathrm{off}}$.
+  \\item Lower change frequency (larger $\\tau$) gives more recovery time.
+\\end{itemize}
+
+\\subsection*{Standard Error}
+
+\\begin{equation}
+  \\mathrm{SE} = \\frac{\\hat{\\sigma}}{\\sqrt{n}}
+\\end{equation}
+A smaller SE indicates a more reliable mean estimate across $n$ runs.
+
+\\section*{Statistical Significance Testing}
+
+Welch's two-sample $t$-test~\\cite{welch1947generalization} (two-tailed):
+\\begin{equation}
+  t = \\frac{\\bar{x}_B - \\bar{x}_A}{\\sqrt{\\mathrm{SE}_A^2 + \\mathrm{SE}_B^2}},
+  \\qquad
+  \\nu = \\frac{(\\mathrm{SE}_A^2+\\mathrm{SE}_B^2)^2}{\\dfrac{\\mathrm{SE}_A^4}{n_A-1}+\\dfrac{\\mathrm{SE}_B^4}{n_B-1}}
+\\end{equation}
+$p = I_x(\\nu/2,1/2)$, $x=\\nu/(\\nu+t^2)$.
+
+Results in \\textbf{bold}$^{*}$: not significantly worse than best at
+$p \\geq ${state.pThreshold}$. Plain \\textbf{bold}: best result.
+(Proxy for Wilcoxon~\\cite{wilcoxon1945individual}, which needs raw per-run data.)
+`;
+  }
+
+  // ── Bibliography ───────────────────────────────────────────────────────
   const usedKeys = new Set();
   filtered.forEach(row => {
     const k = (row['Bibtex'] || '').trim();
     if (k) usedKeys.add(k);
   });
-
-  // Build a .bib file containing only the entries actually used
-  // Extract individual @entries from BIBTEX_DB
+  if (state.showSignificance) {
+    usedKeys.add('welch1947generalization');
+    usedKeys.add('wilcoxon1945individual');
+    usedKeys.add('branke1999memory');
+  }
   const bibLines   = BIBTEX_DB.split('\n');
   const allEntries = [];
   let current = [];
@@ -2588,90 +2672,77 @@ function exportLaTeX() {
     current.push(line);
   });
   if (current.length > 0) allEntries.push(current.join('\n'));
-
   const matchedEntries = allEntries.filter(entry => {
     const m = entry.match(/@\w+\{([^,]+),/);
     return m && usedKeys.has(m[1].trim());
   });
+  const bibContent = `% MPB Scenario 2 — Reference Bibliography\n% Generated ${dateStr}\n% Algorithms: ${filtered.length}\n\n` + matchedEntries.join('\n\n');
+  files['MPB_Scenario2_references.bib'] = bibContent;
 
-  // Always include Welch citation in .bib if significance is shown
-  if (state.showSignificance) usedKeys.add('welch1947generalization');
+  // ── Main .tex file ─────────────────────────────────────────────────────
+  const sigNote = state.showSignificance
+    ? `% Bold = best result per column.\n% Bold* = not significantly worse than best (Welch t-test, two-tailed, p >= ${state.pThreshold}).\n\n`
+    : `% Bold = best result per column.\n\n`;
 
-  const matchedEntries2 = allEntries.filter(entry => {
-    const m = entry.match(/@\w+\{([^,]+),/);
-    return m && usedKeys.has(m[1].trim());
-  });
+  const inputTables = tableFileNames.map(f => `\\input{${f}}`).join('\n');
+  const inputStats  = statsFileName ? `\n\n\\input{${statsFileName}}` : '';
 
-  const bibHeader = `% MPB Scenario 2 — Reference Bibliography\n% Generated ${dateStr}\n% Algorithms: ${filtered.length}\n\n`;
-  setTimeout(() => {
-    downloadFile(bibHeader + matchedEntries2.join('\n\n'), 'MPB_Scenario2_references.bib', 'text/plain');
-  }, filesExported * 300);
-  filesExported++;
-
-  // Generate statistical test description .tex if significance is active
-  if (state.showSignificance) {
-    const statsTex = `% MPB Scenario 2 — Statistical Significance Note
+  const mainTex = `% MPB Scenario 2 — Main LaTeX Document
 % Generated ${dateStr}
-% Requires: \\usepackage{amsmath}
+% Compile with: pdflatex main.tex && bibtex main && pdflatex main.tex && pdflatex main.tex
+%
+${sigNote}\\documentclass[a4paper,10pt]{article}
 
-\\section*{Statistical Significance Testing}
+% ── Packages ──────────────────────────────────────────────────────────────
+\\usepackage[utf8]{inputenc}
+\\usepackage[T1]{fontenc}
+\\usepackage[margin=2cm]{geometry}
+\\usepackage{booktabs}       % \\toprule, \\midrule, \\bottomrule
+\\usepackage{multirow}       % \\multirow
+\\usepackage{graphicx}       % \\resizebox
+\\usepackage{amsmath}        % equations in statistical test note
+\\usepackage{amssymb}
+\\usepackage{hyperref}       % clickable references
+\\usepackage[numbers,sort&compress]{natbib}  % bibliography
 
-To assess whether the difference in performance between the best-performing algorithm
-and each other algorithm is statistically significant, we apply Welch's two-sample
-$t$-test~\\cite{welch1947generalization}.
+% ── Document ──────────────────────────────────────────────────────────────
+\\begin{document}
 
-\\subsection*{Method}
+\\title{Moving Peaks Benchmark --- Scenario 2 Results}
+\\author{}
+\\date{${dateStr}}
+\\maketitle
 
-Let $\\bar{x}_A$ and $\\bar{x}_B$ denote the mean offline errors of the best algorithm~$A$
-and a compared algorithm~$B$, with standard errors $\\mathrm{SE}_A = \\sigma_A / \\sqrt{n_A}$
-and $\\mathrm{SE}_B = \\sigma_B / \\sqrt{n_B}$, where $n_A$ and $n_B$ are the respective
-numbers of independent runs.
+\\section*{Overview}
 
-The test statistic is:
-\\begin{equation}
-  t = \\frac{\\bar{x}_B - \\bar{x}_A}{\\sqrt{\\mathrm{SE}_A^2 + \\mathrm{SE}_B^2}}
-\\end{equation}
+This document collects, to our knowledge, all algorithms evaluated on the
+Moving Peaks Benchmark (MPB) Scenario~2~\\cite{branke1999memory}.
+Results are reported as offline error (mean $\\pm$ standard error) across
+multiple independent runs. The best result per column is shown in \\textbf{bold}.${state.showSignificance ? '\nResults in \\\\textbf{bold} followed by $^{*}$ are not significantly worse than\nthe best result at the $p \\\\geq ' + state.pThreshold + '$ level (Welch\'s two-tailed\n$t$-test~\\\\cite{welch1947generalization}).' : ''}
 
-The effective degrees of freedom are computed via the Welch--Satterthwaite equation:
-\\begin{equation}
-  \\nu = \\frac{\\left(\\mathrm{SE}_A^2 + \\mathrm{SE}_B^2\\right)^2}{%
-    \\dfrac{\\mathrm{SE}_A^4}{n_A - 1} + \\dfrac{\\mathrm{SE}_B^4}{n_B - 1}}
-\\end{equation}
+% ── Result Tables ─────────────────────────────────────────────────────────
+${inputTables}${inputStats}
 
-The two-tailed $p$-value is:
-\\begin{equation}
-  p = P\\bigl(|T_{\\nu}| \\geq |t|\\bigr) = I_{x}\\!\\left(\\frac{\\nu}{2},\\, \\frac{1}{2}\\right),
-  \\quad x = \\frac{\\nu}{\\nu + t^2}
-\\end{equation}
-where $I_x(a,b)$ is the regularised incomplete beta function.
+% ── Bibliography ──────────────────────────────────────────────────────────
+\\bibliographystyle{plainnat}
+\\bibliography{MPB_Scenario2_references}
 
-\\subsection*{Interpretation}
-
-Results marked in \\textbf{bold with a superscript~$*$} are \\emph{not significantly worse}
-than the best result in that column at the chosen significance level
-($p \\geq ${state.pThreshold}$, two-tailed).
-The best result itself is shown in plain bold.
-All other results are significantly worse than the best ($p < ${state.pThreshold}$).
-
-\\subsection*{Notes}
-
-\\begin{itemize}
-  \\item The true Wilcoxon signed-rank test~\\cite{wilcoxon1945individual} would be preferable
-    but requires access to the raw per-run data, which is not stored in this table.
-    Welch's $t$-test is used as a statistically valid approximation given the availability
-    of the mean, standard error, and number of runs for each algorithm.
-  \\item The $t$-distribution $p$-value is computed exactly using the regularised incomplete
-    beta function via Lentz's continued-fraction algorithm.
-  \\item Each algorithm uses its own individual run count $n$ for the degrees-of-freedom calculation.
-\\end{itemize}
+\\end{document}
 `;
-    setTimeout(() => {
-      downloadFile(statsTex, 'MPB_Scenario2_statistical_test.tex', 'text/plain');
-    }, filesExported * 300);
-    filesExported++;
-  }
-}
+  files['main.tex'] = mainTex;
 
+  // ── Pack everything into a ZIP and download ────────────────────────────
+  const zip = new JSZip();
+  Object.entries(files).forEach(([name, text]) => zip.file(name, text));
+  zip.generateAsync({ type: 'blob', compression: 'DEFLATE' }).then(blob => {
+    const url = URL.createObjectURL(blob);
+    const a   = document.createElement('a');
+    a.href = url;
+    a.download = `MPB_Scenario2_LaTeX_${dateStr}.zip`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+}
 // ─────────────────────────────────────────────
 // DOWNLOAD HELPER
 // ─────────────────────────────────────────────
@@ -2920,6 +2991,57 @@ function renderTrend() {
     }
   });
 }
+
+// ─────────────────────────────────────────────
+// TOOLTIP (JS-driven to avoid overflow clipping)
+// ─────────────────────────────────────────────
+(function() {
+  const box = document.createElement('div');
+  box.className = 'tip-box';
+  document.body.appendChild(box);
+
+  let activeEl = null;
+
+  function showTip(el, x, y) {
+    const tip = el.getAttribute('data-tip');
+    if (!tip) return;
+    box.textContent = tip;
+    box.classList.add('visible');
+    positionTip(x, y);
+    activeEl = el;
+  }
+
+  function positionTip(x, y) {
+    const vw = window.innerWidth, vh = window.innerHeight;
+    const bw = box.offsetWidth  || 200;
+    const bh = box.offsetHeight || 30;
+    let left = x + 12;
+    let top  = y - bh - 8;
+    if (left + bw > vw - 8) left = x - bw - 12;
+    if (top < 8)            top  = y + 16;
+    box.style.left = left + 'px';
+    box.style.top  = top  + 'px';
+  }
+
+  function hideTip() {
+    box.classList.remove('visible');
+    activeEl = null;
+  }
+
+  document.addEventListener('mouseover', e => {
+    const el = e.target.closest('[data-tip]');
+    if (el) showTip(el, e.clientX, e.clientY);
+    else    hideTip();
+  });
+  document.addEventListener('mousemove', e => {
+    if (activeEl) positionTip(e.clientX, e.clientY);
+  });
+  document.addEventListener('mouseout', e => {
+    const el = e.target.closest('[data-tip]');
+    if (el && !el.contains(e.relatedTarget)) hideTip();
+  });
+  document.addEventListener('scroll', hideTip, true);
+})();
 
 // ─────────────────────────────────────────────
 // INIT

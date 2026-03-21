@@ -8,7 +8,7 @@ An interactive reference table of all algorithms benchmarked on the **Moving Pea
 
 ## Overview
 
-The Moving Peaks Benchmark is a widely used dynamic optimisation benchmark. This repository collects, to our knowledge, **all published algorithms** evaluated on Scenario 2, and presents them in a searchable, filterable table.
+The Moving Peaks Benchmark is a widely used dynamic optimisation benchmark introduced by Branke (1999). This repository collects, to our knowledge, **all published algorithms** evaluated on Scenario 2, and presents them in a searchable, filterable table.
 
 Results are reported as **offline error (mean ± standard error)** across multiple independent runs.
 
@@ -18,7 +18,7 @@ If an entry is missing or incorrect, please contact us at [mpb.benchmark@gmail.c
 
 ## Page Layout
 
-The page is organised in the following order from top to bottom:
+The page is organised from top to bottom as:
 
 1. **Results table** — with stats bar and export buttons
 2. **Filter panels** — benchmark filters (left) and display & algorithm filters (right)
@@ -31,49 +31,52 @@ The page is organised in the following order from top to bottom:
 ### Two-column Filter Panel
 
 **Benchmark Filters (left)**
-- **Severity** (0–6), **Peaks** (1–200), **Dimensions** (10–100), **Frequencies** (500–10000) — toggle individual result columns on/off using chip-style checkboxes; each group has *all / none* shortcuts and an individual **Reset** button
+- **Severity** (0–6), **Peaks** (1–200), **Dimensions** (10–100), **Frequencies** (500–10000) — toggle individual result columns on/off; each group has *all / none* shortcuts and an independent **Reset** button
 
 **Display & Algorithm Filters (right)**
-- **Algorithm Category** — filter by algorithmic subfamily (e.g. PSO, DE, GA, Firefly); subcategories are grouped under their full family name (*Swarm Intelligence*, *Differential Evolution*, *Evolutionary Algorithm*, *Direct Search*); hovering any chip instantly shows the full subcategory name; chips are automatically enabled or disabled in sync with the table; user-deselected chips are not force-reselected by other filters
-- **Hybrid** — toggle to hide algorithms combining more than one algorithmic family (e.g. DE + PSO, Direct Search + CMA-ES)
+- **Algorithm Category** — filter by algorithmic subfamily (PSO, DE, GA, Firefly, etc.); grouped under full family names (*Swarm Intelligence*, *Differential Evolution*, *Evolutionary Algorithm*, *Direct Search*); hovering any chip instantly shows the full subcategory name; chips automatically disable when no algorithms of that subcategory are present in the current view; user-deselected chips are not force-reselected by other filters
+- **Hybrid** — when toggled off, algorithms combining more than one family are excluded
 - **Year Range** — restrict results to a specific publication period; values are clamped to the data range on leaving the field
-- **Top K by Average Rank** — display only the K best-performing algorithms; K is always clamped to the number of available algorithms (enforced on every keystroke and on blur); the average rank is recomputed within the Top K subset
-- **Statistical Significance** — toggle Welch's two-tailed *t*-test against the best algorithm per column; results not significantly worse than the best (at the chosen p-value threshold) are marked **bold with a superscript \***; the p-value threshold (default 0.05) can be adjusted dynamically using a spinner with step 0.001 in the range (0.001, 0.999)
-- **Best-in-class** — keep only algorithms that hold the lowest value in at least one currently visible column
-- **Reset** — resets only the Display & Algorithm Filters
+- **Top K by Average Rank** — show only the K best algorithms by average rank; K is always clamped to the number of available algorithms (enforced on every keystroke and on blur); the average rank column is recomputed within the Top K subset
+- **Statistical Significance** — enable/disable Welch's two-tailed *t*-test against the best result per column; results not significantly worse than the best (p ≥ threshold) are shown in **bold\***; the p-value threshold is configurable (default 0.05, range 0.001–0.999, spinner step 0.001)
+- **Best-in-class** — keep only algorithms that hold the lowest value in at least one visible column
+- **Reset** (right panel) — resets all display & algorithm filters independently
 
 ### Table
 
-- **Average Rank column** — average rank across all visible result columns (lower = better); ties resolved by averaging; recomputed within the visible subset when Top K is active
-- **Algorithm Category column** — colour-coded subcategory badge; hovering shows the full name; hybrid algorithms show multiple badges; teal = Swarm Intelligence, rose = Differential Evolution, orange = Evolutionary Algorithm, indigo = Direct Search
-- **Best value highlighting** — the lowest value per column is shown in **bold**; values not significantly worse are shown in **bold\*** when significance testing is active
-- **Sort** — click any column header to sort ascending or descending; missing values (—) always sort to the end
-- **Linked paper titles** — paper titles link directly to the source PDF or publisher page
+- **Average Rank** — average rank across visible result columns; ties averaged; missing data not penalised; recomputed within the Top K subset when active
+- **Algorithm Category** — colour-coded subcategory badge (teal = SI, rose = DE, orange = EA, indigo = DS); hovering shows the full name; hybrids show multiple badges
+- **Best value** — shown in **bold** with a colour-coded background
+- **Non-significant values** — shown in **bold\*** when Welch's test gives p ≥ threshold vs. the best
+- **Sort** — click any column header; missing values always sort to the end
+- **Linked paper titles** — link to source PDF or publisher page
 
-### Statistical Significance Testing
+### Statistical Significance Test
 
-Statistical significance is assessed using **Welch's two-sample *t*-test** (two-tailed), as introduced in:
+Results are tested using **Welch's two-sample *t*-test** (two-tailed):
 
-> Welch, B.L. (1947). *The generalization of 'Student's' problem when several different population variances are involved.* **Biometrika**, 34(1/2), 28–35.
-
-Since only the mean, standard error, and number of runs are stored (not raw per-run data), Welch's *t*-test is used as a statistically valid approximation. Each algorithm uses its own individual run count for the degrees-of-freedom calculation. The *p*-value is computed exactly via the regularised incomplete beta function.
-
-A result is marked **\*** if p ≥ threshold (cannot reject that it is equal to the best). The threshold is adjustable and defaults to 0.05.
+- **Reference:** Welch, B.L. (1947). *The generalization of 'Student's' problem when several different population variances are involved.* Biometrika, 34(1/2), 28–35.
+- Each algorithm uses its own individual run count *n* for the Welch–Satterthwaite degrees-of-freedom calculation
+- The *p*-value is computed exactly via the regularised incomplete beta function
+- The p-value threshold is adjustable and reflected dynamically in the table and all exports
 
 ### Trend Over Years
 
-A line chart showing how benchmark performance has evolved across publication years:
-
-- **Column selector** — defaults to Severity 1 (standard benchmark condition)
-- **Metric selector** — best result per year or median result per year
+- **Column selector** — any result column; defaults to Severity 1
+- **Metric** — best result per year or median result per year
 - Plots the full dataset regardless of active table filters
 
 ### Export
 
-- **Export to CSV** — currently visible rows and columns; includes a `_sig` column per result column (`ns` = not significant, `sig` = significant) when significance testing is active; a comment line explains the coding
-- **Export to LaTeX** — up to 4 `.tex` files (one per experimental condition); best values wrapped in `\textbf{}`; non-significant values wrapped in `\textbf{}$^{*}$`; table captions document the notation and cite the Welch reference; algorithm names include `\cite{}` references; `booktabs` formatting
-- **Export references** — `MPB_Scenario2_references.bib` with BibTeX entries for all cited algorithms, plus Welch (1947) and Wilcoxon (1945) when significance testing is active
-- **Statistical test description** — `MPB_Scenario2_statistical_test.tex` is generated when significance is active; contains the full mathematical formulation of the test (t-statistic, Welch–Satterthwaite df, exact p-value via regularised incomplete beta), interpretation of bold/bold\*/plain notation, and the current p-threshold value
+All LaTeX files are bundled into a single **ZIP file**.
+
+- **CSV** — visible rows and columns; if significance is active, adds a `_sig` column per result (`ns` = not significantly different from best, `sig` = significantly worse)
+- **`main.tex`** — standalone LaTeX document with all packages (`booktabs`, `multirow`, `graphicx`, `amsmath`, `amssymb`, `hyperref`, `natbib`), `\input{}` for each table, bibliography, and overview text
+- **Result tables** — up to 4 `.tex` files (one per condition: Severity, Peaks, Dimensions, Frequencies); algorithms sorted by Average Rank; columns: Method (with `\cite{}`), Year, Runs, results; best values in `\textbf{}`; non-significant values in `\textbf{..}$^{*}$`
+- **`MPB_Scenario2_statistical_test.tex`** — generated when significance is active; contains three sections: *The Moving Peaks Benchmark* (description, Scenario 2 fitness function), *Performance Metrics* (Current Error, Offline Error with known properties, Standard Error of the Mean), and *Statistical Significance Testing* (full mathematical derivation)
+- **`MPB_Scenario2_references.bib`** — BibTeX entries for all exported algorithms; always includes Branke (1999), Welch (1947), and Wilcoxon (1945) when significance is active
+
+Compile with: `pdflatex main.tex && bibtex main && pdflatex main.tex && pdflatex main.tex`
 
 ---
 
@@ -113,14 +116,14 @@ Hybrid algorithms are assigned to multiple subcategories (e.g. CDEPSO → DE + P
 
 ## Adding or Updating Results
 
-The data lives inside `index.html` as a semicolon-delimited string assigned to `const RAW_CSV`. To add or correct an entry:
+The data lives directly inside `index.html` as a plain semicolon-delimited string assigned to `const RAW_CSV`. To add or correct an entry:
 
 1. Open `index.html` in any text editor
 2. Find the `const RAW_CSV = \`` block near the top of the `<script>` section
-3. Add a new row or edit an existing one following the same format
+3. Add a new row or edit an existing one following the same semicolon-separated format
 4. Save, commit, and push
 
-The `Category` field uses `subcategory|MainFamily`, with multiple categories separated by commas (e.g. `DE|DE,PSO|SI`). Empty result fields are left blank between consecutive semicolons.
+The `Category` field uses `subcategory|MainFamily`, with multiple categories for hybrids separated by commas (e.g. `DE|DE,PSO|SI`). Empty result fields are left blank between consecutive semicolons.
 
 ---
 
@@ -134,6 +137,14 @@ The `Category` field uses `subcategory|MainFamily`, with multiple categories sep
 | **Frequencies** | f = 500, 1000, 2000, 2500, 3000, 10000 | Sev. = 1, Peaks = 10, Dim = 5 |
 
 Each result cell displays `mean ± std. error`. A dash (`—`) indicates the condition was not reported in the original paper.
+
+---
+
+## Key References
+
+- **MPB:** Branke, J. (1999). *Memory enhanced evolutionary algorithms for changing optimization problems.* IEEE CEC 1999, pp. 1875–1882.
+- **Welch's t-test:** Welch, B.L. (1947). *The generalization of 'Student's' problem when several different population variances are involved.* Biometrika, 34(1/2), 28–35.
+- **Wilcoxon test:** Wilcoxon, F. (1945). *Individual comparisons by ranking methods.* Biometrics Bulletin, 1(6), 80–83.
 
 ---
 
