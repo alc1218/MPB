@@ -57,7 +57,6 @@ Results are tested using **Welch's two-sample *t*-test** (two-tailed):
 
 - **Reference:** Welch, B.L. (1947). *The generalization of 'Student's' problem when several different population variances are involved.* Biometrika, 34(1/2), 28–35.
 - Each algorithm uses its own individual run count *n* for the Welch–Satterthwaite degrees-of-freedom calculation
-- The *p*-value is computed exactly via the regularised incomplete beta function
 - The p-value threshold is adjustable and reflected dynamically in the table and all exports
 
 ### Trend Over Years
@@ -93,27 +92,6 @@ Hybrid algorithms are assigned to multiple subcategories (e.g. CDEPSO → DE + P
 
 ---
 
-## Repository Structure
-
-```
-.
-├── index.html   # Fully self-contained webpage (layout, styles, data, logic)
-└── README.md
-```
-
-> **Note:** The page is entirely self-contained in a single file. The benchmark data is stored as plain text directly inside `index.html` — no separate data file, no build step, no dependencies.
-
----
-
-## Deployment (GitHub Pages)
-
-1. Fork or clone this repository
-2. Go to **Settings → Pages**
-3. Under *Source*, select `main` branch and `/ (root)` folder
-4. Click **Save** — your site will be live at `https://<your-username>.github.io/<your-repo>/`
-
----
-
 ## Adding or Updating Results
 
 The data lives directly inside `index.html` as a plain semicolon-delimited string assigned to `const RAW_CSV`. To add or correct an entry:
@@ -144,7 +122,6 @@ Each result cell displays `mean ± std. error`. A dash (`—`) indicates the con
 
 - **MPB:** Branke, J. (1999). *Memory enhanced evolutionary algorithms for changing optimization problems.* IEEE CEC 1999, pp. 1875–1882.
 - **Welch's t-test:** Welch, B.L. (1947). *The generalization of 'Student's' problem when several different population variances are involved.* Biometrika, 34(1/2), 28–35.
-- **Wilcoxon test:** Wilcoxon, F. (1945). *Individual comparisons by ranking methods.* Biometrics Bulletin, 1(6), 80–83.
 
 ---
 
