@@ -2541,7 +2541,7 @@ function buildLatexForGroup(group, groupCols, filtered, dateStr) {
 % Requires: \\usepackage{booktabs}
 \\begin{table}[htbp]
   \\centering
-  \\caption{MPB Scenario 2 --- ${group.label} (offline error: mean $\\pm$ std.~error). \\textbf{Bold}: best result per column.${state.showSignificance ? ' $^{*}$: not significantly worse than best.' : ''}}
+  \\caption{Offline error (mean $\\pm$ std.\ error) on MPB Scenario~2 varying ${group.label}. \\textbf{Bold}: best result per column.${state.showSignificance ? ' $^{*}$: not significantly worse than best.' : ''}}
   \\resizebox{\\textwidth}{!}{%
   \\begin{tabular}{${colSpec}}
     \\toprule
@@ -2718,7 +2718,7 @@ ${sigNote}\\documentclass[a4paper,10pt]{article}
 This document collects, to our knowledge, all algorithms evaluated on the
 Moving Peaks Benchmark (MPB) Scenario~2~\\cite{branke1999memory}.
 Results are reported as offline error (mean $\\pm$ standard error) across
-multiple independent runs. The best result per column is shown in \\textbf{bold}.${state.showSignificance ? '\nResults in \\\\textbf{bold} followed by $^{*}$ are not significantly worse than\nthe best result at the $p \\\\geq ' + state.pThreshold + '$ level (Welch\'s two-tailed\n$t$-test~\\\\cite{welch1947generalization}).' : ''}
+multiple independent runs. The best result per column is shown in \\textbf{bold}.${state.showSignificance ? '\nResults in \\textbf{bold} followed by $^{*}$ are not significantly worse than\nthe best result at the $p \\geq ' + state.pThreshold + '$ level (Welch\'s two-tailed\n$t$-test~\\cite{welch1947generalization}).' : ''}
 
 % ── Result Tables ─────────────────────────────────────────────────────────
 ${inputTables}${inputStats}
