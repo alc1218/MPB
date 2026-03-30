@@ -10,6 +10,7 @@
   gtag('js', new Date());
   gtag('config', 'G-GH21V37ZSB');
 </script>
+<meta name="google-site-verification" content="tOMzl6MVTroHKnzKM5bFQ6DP9Jg0tUlBNJAEZctlLSg" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>MPB Scenario 2 — Benchmark Results</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
@@ -968,6 +969,18 @@ const BIBTEX_DB = `
   year      = {1999},
   publisher = {IEEE},
   doi       = {10.1109/CEC.1999.785502}
+}
+
+@article{yazdani2021surveyB,
+  title     = {A Survey of Evolutionary Continuous Dynamic Optimization Over Two Decades--{Part B}},
+  author    = {Yazdani, Danial and Cheng, Ran and Yazdani, Donya and Branke, Jürgen and Jin, Yaochu and Yao, Xin},
+  journal   = {IEEE Transactions on Evolutionary Computation},
+  volume    = {25},
+  number    = {4},
+  pages     = {630--650},
+  year      = {2021},
+  publisher = {IEEE},
+  doi       = {10.1109/TEVC.2021.3060012}
 }
 
 @article{wilcoxon1945individual,
@@ -2541,18 +2554,18 @@ function buildLatexForGroup(group, groupCols, filtered, dateStr) {
 
   // Data rows
   const dataRows = usefulRows.map(row => {
-    const rankStr    = row.__catRank__ !== Infinity ? row.__catRank__.toFixed(2) : '---';
+    const rankStr    = row.__catRank__ !== Infinity ? row.__catRank__.toFixed(2) : 'NR';
     const methodRaw  = (row['Method'] || '').trim();
     const method     = latexEsc(methodRaw);
     const citeKey    = (row['Bibtex'] || '').trim();
     const methodCell = citeKey ? `${method}~\\cite{${citeKey}}` : method;
-    const year  = (row['Year publication'] || '').trim() || '---';
-    const runs  = (row['Runs'] || '').trim() || '---';
+    const year  = (row['Year publication'] || '').trim() || 'NR';
+    const runs  = (row['Runs'] || '').trim() || 'NR';
     const cells = [rankStr, methodCell, year, runs];
     groupCols.forEach(c => {
       const v = (row[c.valKey] || '').trim();
       const s = (row[c.stdKey] || '').trim();
-      if (!v) { cells.push('---'); return; }
+      if (!v) { cells.push('NR'); return; }
       const vn = parseFloat(v), sn = parseFloat(s);
       const vStr = isNaN(vn) ? latexEsc(v) : vn.toFixed(2);
       const sStr = (!s || isNaN(sn)) ? '' : ` $\\pm$ ${sn.toFixed(2)}`;
@@ -2568,13 +2581,30 @@ function buildLatexForGroup(group, groupCols, filtered, dateStr) {
     return '    ' + cells.join(' & ') + ' \\\\';
   });
 
+  const GROUP_INTROS = {
+    severity:
+      `Table~\\ref{tab:${group.id}} reports the offline error obtained by varying the severity parameter $s \\in \\{0,1,2,3,4,5,6\\}$, which controls the magnitude of each environmental change. All other parameters are held at their Scenario~2 defaults: $p=10$ peaks, $d=5$ dimensions, and a change frequency of $f=5{,}000$ evaluations.`,
+    peaks:
+      `Table~\\ref{tab:${group.id}} reports the offline error obtained by varying the number of peaks $p$, which controls the multimodality of the landscape. All other parameters are held at their Scenario~2 defaults: severity $s=1$, $d=5$ dimensions, and a change frequency of $f=5{,}000$ evaluations.`,
+    dims:
+      `Table~\\ref{tab:${group.id}} reports the offline error obtained by varying the search-space dimensionality $d$, which directly affects the difficulty of peak localisation. All other parameters are held at their Scenario~2 defaults: severity $s=1$, $p=10$ peaks, and a change frequency of $f=5{,}000$ evaluations.`,
+    freq:
+      `Table~\\ref{tab:${group.id}} reports the offline error obtained by varying the change frequency $f$, i.e.\\ the number of function evaluations between two consecutive environmental changes. All other parameters are held at their Scenario~2 defaults: severity $s=1$, $p=10$ peaks, and $d=5$ dimensions.`,
+  };
+  const groupIntro = GROUP_INTROS[group.id] || '';
+
   return `% MPB Scenario 2 — ${group.label} Results
 % Generated ${dateStr}
 % Algorithms: ${usefulRows.length} | Columns: ${nResultCols}
 % Requires: \\usepackage{booktabs}
+\\subsection{${group.label}}
+
+${groupIntro}
+
 \\begin{table}[htbp]
   \\centering
-  \\caption{Offline error (mean $\\pm$ std.\ error) on MPB Scenario~2 varying ${group.label}. \\textbf{Bold}: best result per column.${state.showSignificance ? ' $^{*}$: not significantly worse than best.' : ''} Avg Rank computed within this benchmark category.}
+  \\caption{Offline error (mean $\\pm$ std.\ error) on MPB Scenario~2 varying ${group.label}. \\textbf{Bold}: best result per column.${state.showSignificance ? ' $^{*}$: not significantly worse than best.' : ''} Avg Rank computed within this benchmark category. NR: not reported in the original article.}
+  \\label{tab:${group.id}}
   \\resizebox{\\textwidth}{!}{%
   \\begin{tabular}{${colSpec}}
     \\toprule
@@ -2618,73 +2648,330 @@ function exportLaTeX() {
   // ── Statistical test note ──────────────────────────────────────────────
   const statsFileName = state.showSignificance ? 'MPB_Scenario2_statistical_test.tex' : null;
   if (state.showSignificance) {
-    files[statsFileName] = `% MPB Scenario 2 --- Statistical Significance, Metrics & Benchmark
+    files[statsFileName] = `% MPB Scenario 2 -- Benchmark Description, Metrics & Statistical Significance
 % Generated ${dateStr}
 % Compile alongside main.tex
-% Requires: \\usepackage{amsmath}, \\usepackage{amssymb}
+% Requires: \\usepackage{amsmath}, \\usepackage{amssymb}, \\usepackage{booktabs}
 
-\\section*{The Moving Peaks Benchmark}
+% ─────────────────────────────────────────────────────────────────────────────
+\\section{The Moving Peaks Benchmark}
+\\label{sec:mpb}
+% ─────────────────────────────────────────────────────────────────────────────
 
-The Moving Peaks Benchmark (MPB) was introduced by Branke~\\cite{branke1999memory}
-as a standard testbed for dynamic optimisation algorithms. The benchmark simulates
-a continuously changing fitness landscape composed of $m$ peaks. At each environmental
-change (every $\\tau$ function evaluations), peaks move by a distance controlled by
-severity~$s$, and their heights and widths are perturbed. The algorithm must continuously
-track the moving optima.
+The Moving Peaks Benchmark (MPB), introduced by Branke~\\cite{branke1999memory},
+is the de-facto standard testbed for dynamic continuous optimisation~\\cite{yazdani2021surveyB}.
+The fitness landscape is defined by $p$~Gaussian-shaped peaks whose heights,
+widths, and positions shift after every $f$~function evaluations, creating a
+non-stationary environment that algorithms must continuously track.
+Performance is measured by the \\emph{offline error}, defined as the mean gap between
+the best-found fitness and the true global optimum, averaged over all
+evaluations and across multiple independent runs.
 
-\\subsection*{Scenario 2}
+The benchmark exposes four independent axes of variation, each isolating a
+distinct aspect of the dynamic optimisation problem.
 
-Scenario~2 uses the fitness function:
-\\begin{equation}
-  f(\\mathbf{x}) = \\max_{i=1}^{m}
-    \\frac{W_i}{1 + H_i \\|\\mathbf{x} - \\mathbf{x}_i\\|^2}
-\\end{equation}
-Default: $m=10$ peaks, $d=5$ dimensions, severity $s=1$,
-change every $\\tau=5{,}000$ function evaluations.
+% ── Four benchmark categories ────────────────────────────────────────────────
+\\subsection{Benchmark Categories}
+\\label{sec:mpb:categories}
 
-\\section*{Performance Metrics}
+\\paragraph{Severity ($s$)}
+The severity parameter $s \\in \\{0,1,2,3,4,5,6\\}$ controls the magnitude of
+each environmental change by scaling the step size applied to peak positions,
+heights, and widths.
+A value of $s=0$ corresponds to a nearly static landscape, while higher values
+produce increasingly abrupt, large-scale shifts.
+The default setting for Scenario~2 is $s=1$.
 
-\\subsection*{Current Error}
+\\paragraph{Peaks ($p$)}
+The number of peaks $p \\in \\{1, 5, 10, 20, 30, 40, 50, 100, 200\\}$ determines
+the multimodality of the landscape.
+A single peak ($p=1$) reduces the problem to unimodal tracking, whereas
+hundreds of peaks require sophisticated niching or multi-population strategies
+to simultaneously cover all optima.
+The canonical value is $p=10$.
 
+\\paragraph{Dimensions ($d$)}
+The search-space dimensionality $d \\in \\{5, 10, 20, 50, 100\\}$ directly affects
+peak localisation difficulty: the volume of the search space grows exponentially
+with $d$, making high-dimensional configurations particularly demanding for
+population-based optimisers.
+The standard setting for Scenario~2 is $d=5$.
+
+\\paragraph{Frequencies ($f$)}
+The change frequency $f \\in \\{500, 1000, 2000, 2500, 3000, 5000, 10000\\}$
+specifies the number of function evaluations allowed between two consecutive
+environmental changes.
+Low values (e.g.\\ $f=500$) simulate rapidly changing environments that leave
+little time for re-convergence; high values (e.g.\\ $f=10{,}000$) favour
+exploitation.
+The default is $f=5{,}000$.
+
+% ── Scenario 2 default parameters table ──────────────────────────────────────
+\\subsection{Default Parameters for Scenario~2}
+\\label{sec:mpb:scenario2}
+
+Scenario~2 is the reference configuration most widely adopted in the literature.
+Table~\\ref{tab:mpb:scenario2} lists its default parameter values.
+
+\\begin{table}[ht]
+  \\centering
+  \\caption{Default parameters of MPB Scenario~2.}
+  \\label{tab:mpb:scenario2}
+  \\begin{tabular}{llc}
+    \\toprule
+    \\textbf{Parameter} & \\textbf{Description} & \\textbf{Default value} \\\\
+    \\midrule
+    $p$                          & Number of peaks                           & $10$                    \\\\
+    $d$                          & Number of dimensions                      & $5$                     \\\\
+    $s$                          & Severity (shift length)                   & $1.0$                   \\\\
+    $f$                          & Change frequency (evals per change)       & $5{,}000$               \\\\
+    $[h_{\\min},\\,h_{\\max}]$   & Peak-height range                         & $[30.0,\\;70.0]$        \\\\
+    $[w_{\\min},\\,w_{\\max}]$   & Peak-width range                          & $[1.0,\\;12.0]$         \\\\
+    $\\lambda_{h}$               & Peak-height change severity               & $7.0$                   \\\\
+    $\\lambda_{w}$               & Peak-width change severity                & $1.0$                   \\\\
+    $\\rho$                      & Correlation coefficient                   & $0$                     \\\\
+    $N_{c}$                      & Number of changes                         & $100$                   \\\\
+    \\bottomrule
+  \\end{tabular}
+\\end{table}
+
+\\noindent
+Unless stated otherwise, all results in this document use the default
+Scenario~2 configuration ($s=1$, $p=10$, $d=5$, $f=5{,}000$).
+Variations along the four categories above are studied individually in the
+result tables that follow.
+
+% ─────────────────────────────────────────────────────────────────────────────
+\\subsection{Performance Metrics}
+\\label{sec:metrics}
+% ─────────────────────────────────────────────────────────────────────────────
+
+Evaluating algorithms on the MPB requires metrics that capture both the
+quality of the solutions found and the consistency of the algorithm across
+independent runs in a non-stationary setting.
+Unlike static optimisation, where a single best-found value suffices, dynamic
+environments demand that performance be assessed continuously over the entire
+optimisation horizon, accounting for the algorithm's ability to track optima
+as the landscape evolves.
+Two complementary quantities are used throughout this document: the
+\\textit{current error}, which measures instantaneous tracking accuracy at a
+given moment, and the \\textit{offline error}, which aggregates this accuracy
+over all environmental changes into a single scalar summary suitable for
+cross-algorithm comparison~\\cite{branke1999memory}.
+The reliability of these estimates across runs is further characterised by
+the standard error of the mean.
+
+\\subsubsection*{Current Error}
+
+The current error at time step $t$ is defined as~\\cite{branke1999memory}:
 \\begin{equation}
   \\varepsilon(t) = f^*(t) - f_{\\mathrm{best}}(t) \\geq 0
 \\end{equation}
+where $f^*(t)$ is the true global optimum at time $t$, and $f_{\\mathrm{best}}(t)$
+is the best fitness value found by the algorithm up to time $t$.
 
-\\subsection*{Offline Error}
+\\subsubsection*{Offline Error}
 
-The offline error~\\cite{branke1999memory} is the mean current error across all changes:
+The offline error, introduced by Branke~\\cite{branke1999memory}, is the mean
+current error accumulated over all environmental changes:
 \\begin{equation}
   E_{\\mathrm{off}} = \\frac{1}{T} \\sum_{t=1}^{T} \\varepsilon(t)
 \\end{equation}
-\\emph{Lower is better.} Known properties:
+where $T$ is the total number of environmental changes and $\\varepsilon(t)$ is
+the current error after the $t$-th change. \\emph{Lower is better.} Known properties:
 \\begin{itemize}
-  \\item $E_{\\mathrm{off}} \\geq 0$; zero only if optimum tracked perfectly.
+  \\item $E_{\\mathrm{off}} \\geq 0$; zero only if the optimum is tracked perfectly at every change.
   \\item Higher severity, more peaks, or higher dimensionality increases $E_{\\mathrm{off}}$.
-  \\item Lower change frequency (larger $\\tau$) gives more recovery time.
+  \\item Lower change frequency (larger $f$) gives more time for re-convergence.
 \\end{itemize}
 
-\\subsection*{Standard Error}
+\\subsubsection*{Standard Error}
 
+The standard error of the mean offline error across independent runs is computed as:
 \\begin{equation}
   \\mathrm{SE} = \\frac{\\hat{\\sigma}}{\\sqrt{n}}
 \\end{equation}
-A smaller SE indicates a more reliable mean estimate across $n$ runs.
+where $\\hat{\\sigma}$ is the sample standard deviation of the offline error across
+the $n$ independent runs. A smaller $\\mathrm{SE}$ indicates a more reliable mean estimate.
+`;
+  }
 
-\\section*{Statistical Significance Testing}
+  // ── Methodology file ──────────────────────────────────────────────────
+  const methodologyFileName = 'MPB_Scenario2_methodology.tex';
+  files[methodologyFileName] = `% MPB Scenario 2 -- Methodology
+% Generated ${dateStr}
 
-Welch's two-sample $t$-test~\\cite{welch1947generalization} (two-tailed):
+% ─────────────────────────────────────────────────────────────────────────────
+\\section{Data Collection and Comparative Tool}
+\\label{sec:methodology}
+% ─────────────────────────────────────────────────────────────────────────────
+
+To facilitate systematic comparison of algorithms evaluated on the Moving Peaks
+Benchmark Scenario~2, a dedicated interactive web-based tool was developed and
+made publicly available at \\url{https://alc1218.github.io/MPB/}.
+The platform aggregates, to our knowledge, all published results on this benchmark
+into a single, queryable database, and provides a suite of filtering, ranking,
+and statistical analysis features designed to support reproducible and fair
+algorithmic comparison.
+
+% ── Data collection ──────────────────────────────────────────────────────────
+\\subsection{Data Collection}
+\\label{sec:methodology:data}
+
+Each entry in the database corresponds to a unique algorithm--paper pair and
+records the following fields: algorithm name, full paper title and hyperlink,
+publication year, BibTeX citation key, algorithmic category, number of
+independent runs $n$, and the mean offline error together with its standard
+error for every experimental configuration in which results were reported.
+Configurations not reported in the original article are marked NR in all
+exported tables.
+The database currently covers results spanning all four benchmark categories
+(Severity, Peaks, Dimensions, and Frequencies) as defined in
+Section~\\ref{sec:mpb}.
+Contributions and corrections may be submitted via
+\\href{mailto:mpb.benchmark@gmail.com}{mpb.benchmark@gmail.com}.
+
+% ── Algorithmic categories ───────────────────────────────────────────────────
+\\subsection{Algorithmic Taxonomy}
+\\label{sec:methodology:taxonomy}
+
+Each algorithm is annotated with one or more categories drawn from a structured
+two-level taxonomy.
+At the top level, four algorithmic families are distinguished:
+\\textit{Swarm Intelligence} (SI), comprising particle swarm optimisation (PSO),
+firefly algorithms, fireworks algorithms, cuckoo search, artificial fish swarm,
+ant lion optimisers, and wind-driven optimisation;
+\\textit{Differential Evolution} (DE);
+\\textit{Evolutionary Algorithms} (EA), encompassing genetic algorithms (GA),
+artificial immune systems (AIS), estimation of distribution algorithms (EDA),
+covariance matrix adaptation evolution strategies (CMA-ES), and generic
+evolutionary algorithms;
+and \\textit{Direct Search} (DS), including direct search and local search
+methods.
+Algorithms that combine components from more than one top-level family are
+classified as \\textit{Hybrid} and can be included or excluded from the
+comparison independently.
+
+% ── Filtering and display options ────────────────────────────────────────────
+\\subsection{Filtering and Display Options}
+\\label{sec:methodology:filters}
+
+The tool exposes the following interactive controls, all of which are reflected
+in the exported tables:
+
+\\paragraph{Benchmark filters}
+Each of the four benchmark categories can be filtered independently.
+Within the Severity axis, the user may select any subset of
+$s \\in \\{0, 1, 2, 3, 4, 5, 6\\}$.
+Within the Peaks axis, any subset of
+$p \\in \\{1, 5, 20, 30, 40, 50, 100, 200\\}$.
+Within the Dimensions axis, any subset of
+$d \\in \\{10, 20, 50, 100\\}$.
+Within the Frequencies axis, any subset of
+$f \\in \\{500, 1000, 2000, 2500, 3000, 10000\\}$.
+Selecting a subset restricts both the displayed table columns and the
+data used for all downstream computations, including ranking.
+
+\\paragraph{Algorithm category filter}
+The user may include or exclude any algorithmic subcategory independently.
+A dedicated toggle controls the inclusion of hybrid algorithms.
+This allows, for example, a comparison restricted to pure SI methods, or one
+that includes all families simultaneously.
+
+\\paragraph{Publication year range}
+A year-range filter restricts the comparison to algorithms published within a
+specified interval, enabling longitudinal analysis of progress over time.
+
+\\paragraph{Top-$K$ filter}
+The user may request that only the $K$ best-performing algorithms by average
+rank be displayed, where $K$ is a positive integer no greater than the number
+of algorithms passing all other active filters.
+This is particularly useful for producing concise summary tables.
+
+\\paragraph{Best-in-class filter}
+Activating this filter retains only those algorithms that achieve the minimum
+offline error in at least one visible column, providing a compact view of
+Pareto-optimal performers across configurations.
+
+% ── Ranking ──────────────────────────────────────────────────────────────────
+\\subsection{Average Rank Computation}
+\\label{sec:methodology:ranking}
+
+For each visible result column $c$, algorithms are ranked by ascending offline
+error (lower is better), with ties resolved by assigning the average of the
+tied positions.
+Only algorithms that report a value for column $c$ participate in the ranking
+for that column.
+The average rank $\\bar{r}_i$ of algorithm $i$ is then defined as:
+\\begin{equation}
+  \\bar{r}_i = \\frac{1}{|\\mathcal{C}_i|} \\sum_{c \\in \\mathcal{C}_i} r_{ic}
+\\end{equation}
+where $\\mathcal{C}_i$ denotes the set of columns for which algorithm $i$
+reported a result, and $r_{ic}$ is the rank of algorithm $i$ in column $c$.
+Algorithms are sorted in the exported tables by ascending $\\bar{r}_i$,
+computed independently within each benchmark category.
+
+% ── Statistical significance ─────────────────────────────────────────────────
+\\subsection{Statistical Significance Testing}
+\\label{sec:stats}
+
+To assess whether differences between algorithms are statistically meaningful,
+the tool applies Welch's two-sample $t$-test~\\cite{welch1947generalization}, a
+two-tailed variant that does not assume equal variances across groups.
+The test is applied at a user-configurable significance threshold
+$\\alpha \\in (0, 1)$; the default value is $\\alpha = 0.05$.
+The test statistic and the associated degrees of freedom are given by:
 \\begin{equation}
   t = \\frac{\\bar{x}_B - \\bar{x}_A}{\\sqrt{\\mathrm{SE}_A^2 + \\mathrm{SE}_B^2}},
   \\qquad
-  \\nu = \\frac{(\\mathrm{SE}_A^2+\\mathrm{SE}_B^2)^2}{\\dfrac{\\mathrm{SE}_A^4}{n_A-1}+\\dfrac{\\mathrm{SE}_B^4}{n_B-1}}
+  \\nu = \\frac{\\left(\\mathrm{SE}_A^2+\\mathrm{SE}_B^2\\right)^2}{\\dfrac{\\mathrm{SE}_A^4}{n_A-1}+\\dfrac{\\mathrm{SE}_B^4}{n_B-1}}
 \\end{equation}
-$p = I_x(\\nu/2,1/2)$, $x=\\nu/(\\nu+t^2)$.
+where $\\bar{x}_A$ and $\\bar{x}_B$ are the mean offline errors of algorithms $A$
+and $B$ respectively; $\\mathrm{SE}_A$ and $\\mathrm{SE}_B$ are their standard errors;
+$n_A$ and $n_B$ are the number of independent runs; and $\\nu$ is the
+Welch--Satterthwaite approximation to the effective degrees of freedom.
+The two-tailed $p$-value is computed as:
+\\begin{equation}
+  p = I_x\\!\\left(\\frac{\\nu}{2},\\,\\frac{1}{2}\\right), \\qquad x = \\frac{\\nu}{\\nu + t^2}
+\\end{equation}
+where $I_x(a,b)$ is the regularised incomplete beta function.
+An algorithm whose result is not significantly worse than the best at the
+chosen level is marked \\textbf{bold}$^{*}$ in the table, while the strictly
+best result is shown in plain \\textbf{bold}.
+This test is used as a proxy for the Wilcoxon signed-rank
+test~\\cite{wilcoxon1945individual}, which would require access to the raw
+per-run data not available in this compilation.
 
-Results in \\textbf{bold}$^{*}$: not significantly worse than best at
-$p \\geq ${state.pThreshold}$. Plain \\textbf{bold}: best result.
-(Proxy for Wilcoxon~\\cite{wilcoxon1945individual}, which needs raw per-run data.)
+% ── Trend analysis ───────────────────────────────────────────────────────────
+\\subsection{Trend Analysis}
+\\label{sec:methodology:trend}
+
+The tool includes a temporal trend chart that displays, for any selected
+experimental configuration, either the best result reported each year or the
+median result across all algorithms published that year.
+This visualisation is computed over the full, unfiltered dataset and is
+intended to provide an overview of the historical progress of the field on
+the MPB Scenario~2 benchmark.
+
+% ── Export ───────────────────────────────────────────────────────────────────
+\\subsection{Export Formats}
+\\label{sec:methodology:export}
+
+All results visible under the active filter configuration can be exported in
+two formats.
+The \\textit{CSV export} produces a semicolon-delimited flat file containing
+all algorithm metadata and numerical results, suitable for downstream
+statistical analysis.
+The \\textit{LaTeX export} produces a ZIP archive containing: one
+\\texttt{.tex} file per benchmark category with a ready-to-compile
+\\texttt{booktabs} table; a file containing the benchmark description,
+performance metric definitions, and statistical methodology
+(\\texttt{MPB\\_Scenario2\\_statistical\\_test.tex}); a methodology section
+(the present file); and a \\texttt{.bib} file with all BibTeX entries for
+the algorithms included in the current selection.
+A \\texttt{main.tex} driver file ties all components together into a
+self-contained, compilable document.
 `;
-  }
 
   // ── Bibliography ───────────────────────────────────────────────────────
   const usedKeys = new Set();
@@ -2697,6 +2984,10 @@ $p \\geq ${state.pThreshold}$. Plain \\textbf{bold}: best result.
     usedKeys.add('wilcoxon1945individual');
     usedKeys.add('branke1999memory');
   }
+  usedKeys.add('yazdani2021surveyB');
+  usedKeys.add('welch1947generalization');
+  usedKeys.add('wilcoxon1945individual');
+  usedKeys.add('branke1999memory');
   const bibLines   = BIBTEX_DB.split('\n');
   const allEntries = [];
   let current = [];
@@ -2721,46 +3012,615 @@ $p \\geq ${state.pThreshold}$. Plain \\textbf{bold}: best result.
     : `% Bold = best result per column.\n\n`;
 
   const inputTables = tableFileNames.map(f => `\\input{${f}}`).join('\n');
-  const inputStats  = statsFileName ? `\n\n\\input{${statsFileName}}` : '';
+  const inputStats  = statsFileName ? `\\input{${statsFileName}}` : '';
+  const inputMethodology = `\\input{${methodologyFileName}}`;
+
+  // ── Related Work file ──────────────────────────────────────────────────
+  const relatedWorkFileName = 'MPB_Scenario2_related_work.tex';
+
+  // ── Classify every algorithm row into its top-level family ──
+  function classifyRow(row) {
+    const cats = (row['Category'] || '').trim().split(',').map(p => {
+      const parts = p.trim().split('|');
+      return parts[1] || 'Unknown';
+    });
+    const unique = [...new Set(cats)];
+    if (unique.length > 1) return 'Hybrid';
+    return unique[0] || 'Unknown';
+  }
+
+  // ── Build per-family algorithm lists from ALL_DATA ──
+  const familyMap = { SI: [], DE: [], EA: [], DS: [], Hybrid: [], Unknown: [] };
+  ALL_DATA.forEach(row => {
+    const fam = classifyRow(row);
+    const key = (row['Bibtex'] || '').trim();
+    const method = (row['Method'] || '').trim();
+    if (!key) return;
+    const target = familyMap[fam] || familyMap.Unknown;
+    if (!target.find(e => e.key === key)) {
+      target.push({ key, method, title: (row['Paper title'] || '').trim(), year: (row['Year publication'] || '').trim(), category: (row['Category'] || '').trim() });
+    }
+  });
+
+  // ── Count algorithms for pie chart ──
+  const famCounts = {};
+  Object.keys(familyMap).forEach(f => { famCounts[f] = familyMap[f].length; });
+  const totalAlgs = Object.values(famCounts).reduce((a,b) => a+b, 0);
+  function pct(f) { return totalAlgs > 0 ? (famCounts[f]/totalAlgs*100).toFixed(1) : '0.0'; }
+
+  // ── Per-paper descriptions (pro / con) ──
+  const PAPER_DESC = {
+    blackwell2004mqso:     { name: 'mQSO',        pro: 'Pioneered the multi-swarm paradigm with an exclusion operator that prevents swarms from converging to the same peak, establishing a widely adopted design template.', con: 'Fixed swarm sizes and static exclusion radius limit the ability to adapt to landscapes with varying numbers and spacings of peaks.' },
+    blackwell2006mcpso:    { name: 'mCPSO',       pro: 'Introduced anti-convergence as a complement to exclusion, more aggressively restoring diversity when a swarm stagnates.', con: 'The additional anti-convergence parameter increases the tuning burden and can cause instability under rapid change.' },
+    blackwell2007rspso:    { name: 'rSPSO',       pro: 'Applies linear regression to predict the trajectory of moving peaks, exploiting temporal correlations in the environment.', con: 'Regression accuracy depends on smooth, predictable peak motion; performance degrades under abrupt or non-linear changes.' },
+    blackwell2008amqso:    { name: 'AmQSO',       pro: 'Replaces classical particle dynamics with quantum potential wells, broadening the exploration neighbourhood of each swarm.', con: 'Quantum parameter calibration is non-trivial and the approach still relies on exclusion, which scales poorly to large peak counts.' },
+    hashemi2009cellularpso:{ name: 'CellularPSO', pro: 'Restricts communication to a cellular neighbourhood, naturally maintaining population diversity without an explicit exclusion mechanism.', con: 'Restricted information flow slows convergence, particularly in low-change-frequency environments where rapid exploitation is desirable.' },
+    kamosi2010hmso:        { name: 'HmSO',        pro: 'Hibernation suppresses subswarms that have converged to a local optimum, freeing evaluations for the active search.', con: 'The re-activation heuristic may lag after sudden, large-magnitude changes, increasing the offline error spike post-change.' },
+    kamosi2010mpso:        { name: 'mPSO',        pro: 'Simple and well-controlled multi-swarm design that provides a clean baseline for comparing diversity-maintenance strategies.', con: 'Performance degrades substantially with increasing dimensionality, suggesting limited scalability.' },
+    liu2010psocp:          { name: 'PSO-CP',      pro: 'Charged-particle repulsion provides a parameter-free implicit diversity mechanism that requires no explicit exclusion.', con: 'The charge magnitude is sensitive to landscape scale; results are only reported for default and a subset of peaks configurations.' },
+    lung2010esca:          { name: 'ESCA',        pro: 'Cooperative evolution between a PSO swarm and an evolutionary archive combines reactive diversity with directed memory.', con: 'Hybrid overhead increases computational cost, and the interaction between the two components requires careful tuning.' },
+    lung2007ceso:          { name: 'CESO',        pro: 'Collaborative model splits responsibilities between exploration (PSO) and memory (EA), reducing redundant evaluations.', con: 'Limited benchmark coverage makes it difficult to assess behaviour across the full range of benchmark axes.' },
+    parvin2011apso:        { name: 'APSO',        pro: 'Adaptive inertia weight responds to detected changes, improving tracking speed after environmental shifts.', con: 'The adaptation rule is heuristic and may misfire in noisy or gradually changing environments.' },
+    bashiri2012tpcpso:     { name: 'TP-CPSO',     pro: 'Two-phase structure separates global exploration from local convergence, improving precision near detected optima.', con: 'Phase-switching criteria must be calibrated carefully, and the benefit over simpler multi-swarm designs is marginal on default settings.' },
+    nickabadi2012ccpso:    { name: 'CCPSO',       pro: 'Competitive clustering dynamically adjusts subpopulation boundaries to match the current landscape topology.', con: 'Clustering overhead and the competition mechanism add complexity that may not justify the marginal performance gain.' },
+    wang2012mpso:          { name: 'MPSO',        pro: 'Memetic local search refines solutions near detected optima, reducing the residual offline error after convergence.', con: 'The local search cost is fixed regardless of change frequency, making the approach inefficient in rapidly changing environments.' },
+    hashemi2012psoaq:      { name: 'PSO-AQ',      pro: 'Adaptive quantisation adjusts particle resolution to the local peak width, improving precision for narrow peaks.', con: 'Results are reported for only a limited subset of benchmark configurations, making comprehensive comparison difficult.' },
+    yazdani2013ftmpso:     { name: 'FTMPSO',      pro: 'A fine-tuning phase applied after initial convergence reduces the steady-state error without sacrificing exploration speed.', con: 'Fine-tuning budget allocation is fixed a priori; the approach may over-invest in exploitation when the environment changes before convergence.' },
+    li2014amso:            { name: 'AMSO',        pro: 'Adaptively controls the number and size of swarms based on detected landscape complexity, making it more flexible than fixed-topology approaches.', con: 'Performance degrades sharply in high-dimensional spaces, and the adaptation mechanism adds parameter sensitivity.' },
+    sharifi2015novel:      { name: 'CHPSO',       pro: 'A collaborative hybrid architecture with 500 independent runs provides high statistical reliability and a thorough characterisation of average behaviour.', con: 'The large number of runs and the hybrid architecture make it computationally expensive compared to simpler alternatives.' },
+    li2015adaptive:        { name: 'AMP/PSO & AMP/DE', pro: 'A general adaptive multi-population framework applicable to different base optimisers (PSO and DE), demonstrating broad applicability.', con: 'Benchmark coverage is limited primarily to the peaks axis, making it difficult to assess performance under other axes of variation.' },
+    shen2020species:       { name: 'sslPSO',      pro: 'Species conservation maintains distinct subpopulations centred on different peaks, with a local search component improving precision.', con: 'Results are reported only for the severity axis, severely limiting the comparability with other algorithms.' },
+    liu2020affinity:       { name: 'APCPSO',      pro: 'Affinity propagation clustering is data-driven, automatically determining the number of subpopulations without a user-specified parameter.', con: 'Affinity propagation has quadratic complexity in population size, making the approach computationally expensive for large populations.' },
+    ejabati2020framework:  { name: 'idPSO / idALO', pro: 'A general framework that demonstrates how standard population-based algorithms (PSO, ALO) can be adapted to dynamic settings through a unified interface.', con: 'The framework evaluation covers only the severity axis, and no results are reported for peak count, dimensionality, or frequency variation.' },
+    qin2021adaptive:       { name: 'AdaMPSO / AdaMDE', pro: 'Adaptive strategy switches between PSO and DE operators based on environmental feedback, combining the complementary strengths of the two families.', con: 'The DE variant (AdaMDE) is consistently outperformed by the pure PSO variant, and no frequency axis results are reported for either.' },
+    li2024fast:            { name: 'DPCPSO',      pro: 'Density peak clustering efficiently identifies natural cluster centres in the swarm, providing an automatic and principled subpopulation decomposition.', con: 'Dimension axis results are not reported, and the clustering step introduces overhead proportional to swarm size.' },
+    kazemi2020note:        { name: 'Algorithms 1--4', pro: 'Provides a systematic comparative analysis of four exclusion operator variants, offering insight into the sensitivity of multi-swarm PSO to this design choice.', con: 'Coverage is restricted to the default configuration and the peaks axis, limiting the generalisability of the conclusions.' },
+    nasiri2012sfa:         { name: 'SFA',         pro: 'Speciation enables the firefly algorithm to maintain multiple distinct subswarms, each tracking a separate peak.', con: 'The random-walk exploration of the firefly algorithm is relatively slow, making the approach less competitive in rapidly changing environments.' },
+    nasiri2016improved:    { name: 'A-SFA',       pro: 'Improved speciation criteria and diversity preservation mechanisms reduce premature convergence compared to the original SFA.', con: 'Frequency axis results are limited, and the approach does not scale well to very large peak counts.' },
+    ozsoydan2019quantum:   { name: 'eFA-rw / eFA-seq', pro: 'Quantum-inspired movement rules broaden the effective search neighbourhood, improving escape from local optima.', con: 'Benchmark coverage is restricted to the severity and peaks axes, preventing a full assessment of the approach.' },
+    pekdemir2022efficient: { name: 'EFWA(CE)',    pro: 'The fireworks explosion mechanism naturally generates diverse offspring around each detected peak, providing implicit multi-modal coverage.', con: 'Offline error on the peaks axis is notably high, suggesting that the explosion radius calibration does not adapt well to large numbers of peaks.' },
+    yazdani2012dmafsa:     { name: 'DMAFSA',      pro: 'Artificial fish swarm behaviours (chasing, swarming, foraging) map naturally to multi-peak tracking through emergent collective intelligence.', con: 'No severity axis results are reported, and the approach is not evaluated in high-dimensional or high-frequency settings.' },
+    yazdani2014mnafsa:     { name: 'mNAFSA',      pro: 'An explicit memory component for storing promising regions allows the algorithm to rapidly re-exploit known optima after environmental changes.', con: 'Frequency axis coverage is sparse, limiting assessment of tracking ability under different change rates.' },
+    kordestani2018adaptive:{ name: 'BfCS-wVN',   pro: 'Variable nest count adapts the number of solution candidates to the estimated landscape complexity, reducing wasted evaluations.', con: 'Comprehensive results are reported primarily at the default frequency; behaviour under different change rates is largely unexplored.' },
+    boulesnane2017wd2o:    { name: 'WD2O',        pro: 'An effective change-detection mechanism triggers rapid population reinitialization, minimising the response latency after an environmental shift.', con: 'Benchmark coverage is very limited, with results restricted to the peaks axis and a narrow range of conditions.' },
+    nseef2011cellularde:   { name: 'CellularDE',  pro: 'Cellular topology reduces the effective neighbourhood size of DE, naturally maintaining population diversity without explicit reinitialisation.', con: 'Results are reported only for the default and peaks configurations, making cross-axis assessment impossible.' },
+    haghbayan2014cbde:     { name: 'CbDE-wCA',    pro: 'A crowding archive retains high-quality historical solutions, enabling rapid re-exploitation of previously visited regions after a change.', con: 'High result variance reduces statistical reliability, and no results are provided for dimensionality or frequency variation.' },
+    duplessis2013dynpopde: { name: 'DynPopDE',    pro: 'A population-based mechanism automatically estimates the number of optima without requiring this value as a parameter.', con: 'Frequency axis coverage is limited, and the approach has not been evaluated on large peak counts.' },
+    kordestani2019novel:   { name: 'DynDE+LA / DynDE+PI', pro: 'A scheduling framework dynamically allocates computational resources between exploration and exploitation sub-populations, improving efficiency.', con: 'Dimension axis results are absent, and the scheduling overhead may outweigh the benefit in simple environments.' },
+    zhu2018global:         { name: 'GRDE',        pro: 'Neighbour-based memory is lightweight and requires minimal storage, while the global replacement strategy prevents stagnation in static regions.', con: 'No dimension axis results are provided, and the approach has only been evaluated with a modest number of independent runs.' },
+    wu2021historical:      { name: 'HIDE',        pro: 'Historical information from previous environments is explicitly reused to warm-start the optimisation after a change, reducing recovery time.', con: 'Very limited benchmark coverage is provided, and the different severity width used raises comparability concerns.' },
+    servadio2010mdumda:    { name: 'MDUMDA',      pro: 'An estimation-of-distribution approach captures dependencies between variables, which may offer advantages on problems with structured landscapes.', con: 'Offline error values are high and highly variable, suggesting that the model-building overhead is not compensated by improved solution quality.' },
+    mohammadpour2018chaotic:{ name: 'cGA',        pro: 'Chaotic operators increase population diversity beyond what standard mutation can achieve, potentially aiding escape from local optima.', con: 'Performance degrades sharply with increasing severity, and the approach has not been evaluated on dimensionality or frequency variations.' },
+    zhang2019cluster:      { name: 'CCSA',        pro: 'Clonal selection with clustering maintains multiple antibody populations, each specialised to a distinct peak in the landscape.', con: 'No frequency axis results are reported, limiting assessment of the algorithm under varying change rates.' },
+    etaati2022full:        { name: 'CM-AIS',      pro: 'A fully featured cooperative coevolutionary memory system integrates multiple AIS mechanisms for comprehensive dynamic environment handling.', con: 'Extremely sparse result reporting (almost exclusively the frequency axis) makes meaningful comparison with other algorithms impossible.' },
+    rezvanian2023caais:    { name: 'CaAIS',       pro: 'Cellular automata structure adds a spatial dimension to the immune network, enabling localised interaction patterns that promote diversity.', con: 'Results are reported only for the peaks axis; severity and frequency axes are entirely absent, precluding a complete evaluation.' },
+    tinoco2010eo:          { name: 'EO',          pro: 'Extremal optimisation dynamics provide a natural mechanism for escaping local optima by selectively removing the worst-performing components.', con: 'Performance collapses for single-peak configurations and in high-dimensional spaces, suggesting limited scalability.' },
+    lepagnot2013mlsdo:     { name: 'MLSDO',       pro: 'Multiple concurrent local searches naturally maintain a diverse set of candidate solutions without requiring a global population management strategy.', con: 'Results are restricted to the severity axis only, making it impossible to assess behaviour under peak count, dimensionality, or frequency variation.' },
+    llanza2025fds:         { name: 'FDS',         pro: 'Fractal decomposition provides systematic, scale-independent coverage of the search space and delivers competitive performance across all four benchmark axes with 100 independent runs.', con: 'The recursive decomposition mechanism is computationally intensive and its overhead grows with dimensionality and the number of fractal levels.' },
+    kordestani2014cdepso:  { name: 'CDEPSO',      pro: 'A bi-population design assigns DE to global exploration and PSO to local exploitation, with an explicit migration mechanism between the two.', con: 'No frequency axis results are provided, and the migration parameters add to the already high parameter count of the hybrid.' },
+    raghul2023hybrid:      { name: 'HMRS',        pro: 'A hybrid multi-population reinitialization strategy explicitly manages when and how subpopulations are restarted, reducing unnecessary evaluations after stagnation.', con: 'A different severity width is used compared to the standard Scenario~2 setting, limiting strict comparability with other approaches.' },
+    llanza2025evolutionary:{ name: 'EFDS (FDS+CMA-ES / FDS+GA)', pro: 'Combines fractal decomposition with population-based search (CMA-ES or GA), yielding the lowest reported offline error at the default configuration while maintaining broad benchmark coverage.', con: 'The hybrid design inherits the parameter sensitivity of both components, and the small number of runs (10) may underestimate result variance.' },
+  };
+
+  // ── Family display names and labels ──
+  const FAM_DISPLAY = { SI: 'Swarm Intelligence', DE: 'Differential Evolution', EA: 'Evolutionary Algorithms', DS: 'Direct Search', Hybrid: 'Hybrid Algorithms' };
+  const FAM_ORDER   = ['SI', 'DE', 'EA', 'DS', 'Hybrid'];
+
+  // ── Sub-family grouping within SI ──
+  function siSubFamily(cat) {
+    if (cat.includes('PSO'))            return 'PSO';
+    if (cat.includes('Firefly'))        return 'Firefly';
+    if (cat.includes('Fireworks'))      return 'Fireworks';
+    if (cat.includes('Fish Swarm'))     return 'Fish Swarm';
+    if (cat.includes('Cuckoo'))         return 'Cuckoo Search';
+    if (cat.includes('ALO'))            return 'Ant Lion Optimiser';
+    if (cat.includes('WDO'))            return 'Wind-Driven Optimisation';
+    return 'Other SI';
+  }
+
+  // ── Build SI entries grouped by sub-family ──
+  function buildSISection(entries) {
+    const subGroups = {};
+    entries.forEach(e => {
+      const sf = siSubFamily(e.category);
+      if (!subGroups[sf]) subGroups[sf] = [];
+      subGroups[sf].push(e);
+    });
+    const sfOrder = ['PSO','Firefly','Fireworks','Fish Swarm','Cuckoo Search','Ant Lion Optimiser','Wind-Driven Optimisation','Other SI'];
+    let out = '';
+    sfOrder.forEach(sf => {
+      if (!subGroups[sf] || subGroups[sf].length === 0) return;
+      out += `\n\\subsubsection{${sf}}\n\n`;
+      // Group entries with the same bibtex key (same paper, different variants)
+      const byKey = {};
+      subGroups[sf].forEach(e => {
+        if (!byKey[e.key]) byKey[e.key] = [];
+        byKey[e.key].push(e);
+      });
+      Object.entries(byKey).forEach(([key, algs]) => {
+        const desc = PAPER_DESC[key];
+        const methods = algs.map(a => `\\textit{${latexEsc(a.method.trim())}}`).join(', ');
+        if (!desc) {
+          out += `${methods}~\\cite{${key}} proposed a ${sf}-based approach for dynamic optimisation. NR: detailed description not available.\n\n`;
+        } else {
+          out += `${methods}~\\cite{${key}} ${desc.pro} However, ${desc.con.charAt(0).toLowerCase()}${desc.con.slice(1)}\n\n`;
+        }
+      });
+    });
+    return out;
+  }
+
+  // ── Build generic family section ──
+  function buildFamilySection(entries) {
+    const byKey = {};
+    entries.forEach(e => {
+      if (!byKey[e.key]) byKey[e.key] = [];
+      byKey[e.key].push(e);
+    });
+    let out = '';
+    Object.entries(byKey).forEach(([key, algs]) => {
+      const desc = PAPER_DESC[key];
+      const methods = algs.map(a => `\\textit{${latexEsc(a.method.trim())}}`).join(', ');
+      if (!desc) {
+        out += `${methods}~\\cite{${key}} contributes to this family with a novel approach for dynamic optimisation on the MPB. NR: detailed description not available.\n\n`;
+      } else {
+        out += `${methods}~\\cite{${key}} ${desc.pro} However, ${desc.con.charAt(0).toLowerCase()}${desc.con.slice(1)}\n\n`;
+      }
+    });
+    return out;
+  }
+
+  // ── Assemble related work ──
+  let rwBody = '';
+  FAM_ORDER.forEach(fam => {
+    const entries = familyMap[fam];
+    if (!entries || entries.length === 0) return;
+    rwBody += `\n\\subsection{${FAM_DISPLAY[fam]}}\n\\label{sec:rw:${fam.toLowerCase()}}\n\n`;
+    if (fam === 'SI') {
+      rwBody += buildSISection(entries);
+    } else {
+      rwBody += buildFamilySection(entries);
+    }
+  });
+
+  // ── Pie chart values ──
+  const pieData = FAM_ORDER.filter(f => famCounts[f] > 0)
+    .map(f => `${pct(f)}/${FAM_DISPLAY[f]}`).join(',\n    ');
+
+  files[relatedWorkFileName] = `% MPB Scenario 2 -- Related Work
+% Generated ${dateStr}
+% Requires: \\usepackage{pgf-pie}, \\usepackage{tikz}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\\section{Related Work}
+\\label{sec:related}
+% ─────────────────────────────────────────────────────────────────────────────
+
+This section surveys all algorithms whose results appear in the comparison
+tables of Section~\\ref{sec:results}.
+To our knowledge, it constitutes the most comprehensive collection of
+algorithms evaluated on MPB Scenario~2 available in the literature.
+Algorithms are organised by algorithmic family: Swarm Intelligence (SI),
+Differential Evolution (DE), Evolutionary Algorithms (EA), Direct Search (DS),
+and Hybrid methods.
+An algorithm is classified as hybrid if and only if it draws components from
+more than one top-level family; in that case it is counted exclusively in the
+hybrid category.
+Figure~\\ref{fig:family_distribution} shows the distribution of the
+${totalAlgs}~algorithms collected across these families.
+
+\\begin{figure}[ht]
+  \\centering
+  \\begin{tikzpicture}
+    \\pie[text=legend, radius=2.5, color={blue!40, red!40, green!40, orange!40, purple!40}]{
+    ${pieData}
+    }
+  \\end{tikzpicture}
+  \\caption{Distribution of the ${totalAlgs}~algorithms in the database across algorithmic families. Hybrid algorithms are counted exclusively in the Hybrid category.}
+  \\label{fig:family_distribution}
+\\end{figure}
+
+Swarm Intelligence methods represent by far the dominant family, accounting
+for ${pct('SI')}\\% of all algorithms, with Particle Swarm Optimisation (PSO)
+alone being the most prevalent sub-family.
+Hybrid methods account for ${pct('Hybrid')}\\%, reflecting a growing trend
+towards combining complementary algorithmic components.
+Differential Evolution (${pct('DE')}\\%), Evolutionary Algorithms (${pct('EA')}\\%),
+and Direct Search methods (${pct('DS')}\\%) constitute the remaining share.
+${rwBody}`;
+
+  const inputRelatedWork = `\\input{${relatedWorkFileName}}`;
+
+  // ── Ablation / trend analysis ─────────────────────────────────────────
+  // Helper: median of an array
+  function median(arr) {
+    if (arr.length === 0) return null;
+    const s = [...arr].sort((a, b) => a - b);
+    const m = Math.floor(s.length / 2);
+    return s.length % 2 !== 0 ? s[m] : (s[m - 1] + s[m]) / 2;
+  }
+
+  // Default column key (Severity 1, 10 peaks, 5 dims, 5000 freq)
+  const DEFAULT_COL = 'Standard_1_10_5_5000';
+
+  // ── 1. Per-algorithm average rank across ALL active columns ──
+  const activeCols2 = getActiveCols();
+  const rankSums = {};
+  const rankCounts = {};
+  filtered.forEach(row => { rankSums[row['Method']] = 0; rankCounts[row['Method']] = 0; });
+  activeCols2.forEach(c => {
+    const vals = [];
+    filtered.forEach(row => {
+      const v = parseFloat((row[c.valKey] || '').trim());
+      if (!isNaN(v)) vals.push({ method: (row['Method'] || '').trim(), v });
+    });
+    vals.sort((a, b) => a.v - b.v);
+    let pos = 0;
+    while (pos < vals.length) {
+      let end = pos;
+      while (end + 1 < vals.length && vals[end + 1].v === vals[pos].v) end++;
+      const avgR = (pos + end) / 2 + 1;
+      for (let k = pos; k <= end; k++) {
+        rankSums[vals[k].method]  = (rankSums[vals[k].method]  || 0) + avgR;
+        rankCounts[vals[k].method] = (rankCounts[vals[k].method] || 0) + 1;
+      }
+      pos = end + 1;
+    }
+  });
+  const algRanks = filtered
+    .map(row => {
+      const m = (row['Method'] || '').trim();
+      const cnt = rankCounts[m] || 0;
+      return { method: m, cite: (row['Bibtex'] || '').trim(), avgRank: cnt > 0 ? rankSums[m] / cnt : Infinity, cnt };
+    })
+    .filter(x => x.cnt > 0)
+    .sort((a, b) => a.avgRank - b.avgRank);
+
+  const top5 = algRanks.slice(0, 5);
+  const top5Str = top5.map((a, i) => `(${i + 1})~\\textit{${latexEsc(a.method)}}~\\cite{${a.cite}} (avg.\ rank~${a.avgRank.toFixed(2)})`).join(', ');
+
+  // ── 2. Per-family median offline error on DEFAULT_COL ──
+  const famErrors = { SI: [], DE: [], EA: [], DS: [], Hybrid: [] };
+  filtered.forEach(row => {
+    const v = parseFloat((row[DEFAULT_COL] || '').trim());
+    if (isNaN(v)) return;
+    const fam = classifyRow(row);
+    if (famErrors[fam]) famErrors[fam].push(v);
+  });
+  const famMedians = {};
+  Object.keys(famErrors).forEach(f => { const m = median(famErrors[f]); if (m !== null) famMedians[f] = m; });
+  const famRanked = Object.entries(famMedians).sort((a, b) => a[1] - b[1]);
+  const famRankedStr = famRanked.map(([f, v]) => `${FAM_DISPLAY[f]} (${v.toFixed(2)})`).join(', ');
+
+  // ── 3. Year-over-year best on DEFAULT_COL ──
+  const byYear = {};
+  ALL_DATA.forEach(row => {
+    const y = parseInt(row['Year publication']);
+    const v = parseFloat((row[DEFAULT_COL] || '').trim());
+    if (isNaN(y) || isNaN(v)) return;
+    if (!byYear[y] || v < byYear[y].best) {
+      byYear[y] = { best: v, method: (row['Method'] || '').trim(), cite: (row['Bibtex'] || '').trim() };
+    }
+  });
+  const years = Object.keys(byYear).map(Number).sort((a, b) => a - b);
+  const firstYear = years[0], lastYear = years[years.length - 1];
+  const firstBest = byYear[firstYear], lastBest = byYear[lastYear];
+  const improvement = firstBest && lastBest ? ((firstBest.best - lastBest.best) / firstBest.best * 100).toFixed(1) : null;
+
+  // ── 4. Yearly median trend (all algorithms) ──
+  const yearlyMedians = {};
+  const yearlyData = {};
+  ALL_DATA.forEach(row => {
+    const y = parseInt(row['Year publication']);
+    const v = parseFloat((row[DEFAULT_COL] || '').trim());
+    if (isNaN(y) || isNaN(v)) return;
+    if (!yearlyData[y]) yearlyData[y] = [];
+    yearlyData[y].push(v);
+  });
+  years.forEach(y => { const m = median(yearlyData[y]); if (m !== null) yearlyMedians[y] = m; });
+  // Detect overall downward trend
+  const medYears = Object.keys(yearlyMedians).map(Number).sort((a,b) => a-b);
+  const firstMed = yearlyMedians[medYears[0]], lastMed = yearlyMedians[medYears[medYears.length-1]];
+  const trendDir = lastMed < firstMed ? 'decreasing' : 'increasing';
+  const medChange = firstMed ? ((firstMed - lastMed) / firstMed * 100).toFixed(1) : null;
+
+  // ── 5. Best per group (default col) ──
+  const groupBest = {};
+  COLUMN_GROUPS.forEach(g => {
+    g.cols.forEach(c => {
+      let best = null;
+      filtered.forEach(row => {
+        const v = parseFloat((row[c.valKey] || '').trim());
+        if (!isNaN(v) && (best === null || v < best.v)) {
+          best = { v, method: (row['Method'] || '').trim(), cite: (row['Bibtex'] || '').trim(), label: c.label };
+        }
+      });
+      if (best) {
+        if (!groupBest[g.id]) groupBest[g.id] = [];
+        groupBest[g.id].push(best);
+      }
+    });
+  });
+
+  // ── 6. Coverage analysis ──
+  const totalCols = activeCols2.length;
+  const coverageByAlg = filtered.map(row => {
+    const covered = activeCols2.filter(c => (row[c.valKey] || '').trim() !== '').length;
+    return { method: (row['Method'] || '').trim(), cite: (row['Bibtex'] || '').trim(), coverage: covered, pct: totalCols > 0 ? (covered / totalCols * 100).toFixed(0) : 0 };
+  }).sort((a, b) => b.coverage - a.coverage);
+  const topCoverage = coverageByAlg.slice(0, 3);
+
+  // ── Build per-group best tables ──
+  function groupBestRows(gid) {
+    if (!groupBest[gid]) return 'NR';
+    return groupBest[gid].map(b => `${b.label}: \\textit{${latexEsc(b.method)}}~\\cite{${b.cite}} (${b.v.toFixed(2)})`).join('; ');
+  }
+
+  const ablationTex = `
+% ── Ablation Study ────────────────────────────────────────────────────────
+\\subsection{Trend Analysis and Discussion}
+\\label{sec:ablation}
+
+This subsection synthesises the key quantitative observations that emerge
+from the comparison tables presented above.
+The analysis is computed from the current filter selection and reflects the
+state of the database at the time of export.
+
+\\paragraph{Overall ranking}
+Considering all visible benchmark configurations jointly, the five
+best-performing algorithms by average rank across columns are:
+${top5Str}.
+These algorithms consistently achieve low offline error across multiple
+axes of variation, suggesting that their core designs are robust to
+diverse dynamic environments rather than optimised for a single setting.
+
+\\paragraph{Performance by algorithmic family}
+Table~\\ref{tab:family_median} reports the median offline error at the
+default Scenario~2 configuration ($s=1$, $p=10$, $d=5$, $f=5{,}000$)
+for each algorithmic family.
+The ranking from best to worst median is: ${famRankedStr}.
+${famRanked.length > 0 ? `The ${famRanked[0][0] === 'Hybrid' ? 'Hybrid' : FAM_DISPLAY[famRanked[0][0]]} family achieves the lowest median offline error (${famRanked[0][1].toFixed(2)}), while ${FAM_DISPLAY[famRanked[famRanked.length-1][0]]} records the highest (${famRanked[famRanked.length-1][1].toFixed(2)}).` : ''}
+It should be noted that family-level comparisons are influenced by the
+number of algorithms in each family and by publication recency; more
+recent families may benefit from access to earlier results as baselines.
+
+\\begin{table}[ht]
+  \\centering
+  \\caption{Median offline error per algorithmic family at the default Scenario~2 configuration ($s=1$, $p=10$, $d=5$, $f=5{,}000$). Families with no reported results at this configuration are omitted.}
+  \\label{tab:family_median}
+  \\begin{tabular}{lc}
+    \\toprule
+    \\textbf{Family} & \\textbf{Median offline error} \\\\
+    \\midrule
+    ${famRanked.map(([f, v]) => `${FAM_DISPLAY[f]} & ${v.toFixed(3)} \\\\`).join('\n    ')}
+    \\bottomrule
+  \\end{tabular}
+\\end{table}
+
+\\paragraph{Temporal trend}
+${improvement !== null ? `Between ${firstYear} and ${lastYear}, the best reported offline error
+decreased from ${firstBest.best.toFixed(3)} (\\textit{${latexEsc(firstBest.method)}}~\\cite{${firstBest.cite}})
+to ${lastBest.best.toFixed(3)} (\\textit{${latexEsc(lastBest.method)}}~\\cite{${lastBest.cite}}),
+representing a reduction of ${improvement}\\%.` : ''}
+The yearly median offline error across all algorithms is ${trendDir}
+over the observation period${medChange !== null ? `, with a change of ${Math.abs(parseFloat(medChange)).toFixed(1)}\\% from ${medYears[0]} to ${medYears[medYears.length-1]}` : ''}.
+This suggests that, collectively, the field is making measurable progress
+on the benchmark, although the magnitude of improvement is modest relative
+to the reduction achieved by individual state-of-the-art algorithms,
+indicating that a large gap persists between average and best-in-class
+performance.
+
+\\paragraph{Benchmark coverage}
+The three algorithms with the broadest benchmark coverage across the
+currently visible columns are:
+${topCoverage.map(a => `\\textit{${latexEsc(a.method)}}~\\cite{${a.cite}} (${a.coverage}/${totalCols} columns, ${a.pct}\\%)`).join(', ')}.
+In contrast, a substantial proportion of algorithms in the database report
+results for fewer than half of the available configurations, which limits
+the reliability of their global ranking and highlights the need for more
+systematic evaluation practices in the community.
+`;
+
+  const inputAblation = ablationTex;
 
   const mainTex = `% MPB Scenario 2 — Main LaTeX Document
 % Generated ${dateStr}
 % Compile with: pdflatex main.tex && bibtex main && pdflatex main.tex && pdflatex main.tex
 %
-${sigNote}\\documentclass[a4paper,10pt]{article}
+${sigNote}\\documentclass[preprint,12pt,authoryear]{elsarticle}
 
 % ── Packages ──────────────────────────────────────────────────────────────
 \\usepackage[utf8]{inputenc}
 \\usepackage[T1]{fontenc}
-\\usepackage[margin=2cm]{geometry}
 \\usepackage{booktabs}       % \\toprule, \\midrule, \\bottomrule
 \\usepackage{multirow}       % \\multirow
 \\usepackage{graphicx}       % \\resizebox
 \\usepackage{amsmath}        % equations in statistical test note
 \\usepackage{amssymb}
-\\usepackage{hyperref}       % clickable references
-\\usepackage[numbers,sort&compress]{natbib}  % bibliography
+\\usepackage{hyperref}       % clickable references, \\url, \\href
+\\usepackage{tikz}           % pie chart
+\\usepackage{pgf-pie}        % pie chart
 
 % ── Document ──────────────────────────────────────────────────────────────
 \\begin{document}
 
-\\title{Moving Peaks Benchmark --- Scenario 2 Results}
-\\author{}
-\\date{${dateStr}}
-\\maketitle
+\\begin{frontmatter}
 
-\\section*{Overview}
+\\title{Moving Peaks Benchmark: Scenario~2 Results}
 
-This document collects, to our knowledge, all algorithms evaluated on the
-Moving Peaks Benchmark (MPB) Scenario~2~\\cite{branke1999memory}.
-Results are reported as offline error (mean $\\pm$ standard error) across
-multiple independent runs. The best result per column is shown in \\textbf{bold}.${state.showSignificance ? '\nResults in \\textbf{bold} followed by $^{*}$ are not significantly worse than\nthe best result at the $p \\geq ' + state.pThreshold + '$ level (Welch\'s two-tailed\n$t$-test~\\cite{welch1947generalization}).' : ''}
+\\author[1,2]{Arcadi Llanza}
+\\ead{arcadi.llanza-carmona@u-pec.fr}
 
-% ── Result Tables ─────────────────────────────────────────────────────────
-${inputTables}${inputStats}
+\\author[2]{Nadiya Shvai}
+\\ead{nadiya.shvai@cyclope.ai}
+
+\\author[1,2]{Amir Nakib}
+\\ead{nakib@u-pec.fr}
+
+\\affiliation[1]{organization={University Paris Est Créteil (Laboratoire LISSI)},
+                city={Paris},
+                country={France}}
+
+\\affiliation[2]{organization={Cyclope.ai},
+                city={Paris},
+                country={France}}
+
+\\begin{abstract}
+The Moving Peaks Benchmark (MPB) Scenario~2 has established itself as the
+de-facto standard testbed for evaluating dynamic continuous optimisation
+algorithms over the past two decades.
+Despite a large and growing body of work, fair and reproducible comparison
+across studies remains difficult: results are scattered across the literature,
+reported under heterogeneous parameter configurations, and no centralised
+compilation exists.
+This paper addresses this gap by presenting, to our knowledge, the most
+comprehensive structured collection of results published on MPB Scenario~2.
+We survey ${totalAlgs}~algorithms drawn from five algorithmic families:
+Swarm Intelligence (${pct('SI')}\\%), Differential Evolution (${pct('DE')}\\%),
+Evolutionary Algorithms (${pct('EA')}\\%), Direct Search (${pct('DS')}\\%),
+and Hybrid methods (${pct('Hybrid')}\\%), covering all four benchmark
+axes: Severity, Peaks, Dimensions, and Frequencies.
+For each algorithm we provide a concise characterisation of its core
+contribution together with a critical assessment of its strengths and
+limitations.
+All results are made available through an interactive web-based comparison
+platform at \\url{https://alc1218.github.io/MPB/}, which supports
+filtering, statistical ranking, significance testing, and export of
+ready-to-compile \\LaTeX{} tables.
+The present document is itself generated by that platform.
+Our analysis reveals that Swarm Intelligence, and Particle Swarm
+Optimisation in particular, dominates the literature, while benchmark
+coverage across the four axes remains highly uneven, with the frequency
+and dimensionality axes being notably under-explored.
+\\end{abstract}
+
+\\begin{keyword}
+Dynamic optimisation \\sep Moving Peaks Benchmark \\sep Swarm Intelligence \\sep
+Evolutionary algorithms \\sep Algorithm comparison \\sep Offline error
+\\end{keyword}
+
+\\end{frontmatter}
+
+% ── Introduction ──────────────────────────────────────────────────────────
+\\section{Introduction}
+\\label{sec:introduction}
+
+Dynamic optimisation problems (DOPs) arise in a broad range of real-world
+engineering and scientific applications where the objective function, the
+feasible region, or both change over time~\\cite{yazdani2021surveyB}.
+Unlike static optimisation, where the goal is to locate a single global
+optimum, dynamic optimisation requires an algorithm to continuously track
+one or more moving optima as the landscape evolves, balancing the competing
+demands of exploration and exploitation under temporal constraints.
+
+The field has grown substantially over the past two decades, producing a
+diverse ecosystem of algorithms rooted in evolutionary computation and swarm
+intelligence~\\cite{yazdani2021surveyB}.
+Despite this progress, fair and reproducible comparison across studies
+remains challenging.
+Results are scattered across the literature, reported under different
+parameter configurations, with varying numbers of independent runs, and
+using different subsets of the available benchmark conditions.
+The absence of a centralised, structured comparison resource makes it
+difficult to assess the true state of the art or to identify which
+algorithmic components drive performance gains.
+
+The Moving Peaks Benchmark (MPB), introduced by Branke~\\cite{branke1999memory},
+is the most widely adopted testbed for dynamic continuous optimisation
+and provides a controlled, parametric environment in which the difficulty
+of the problem can be tuned along several independent axes.
+Its Scenario~2 configuration has become the de-facto standard for
+algorithm evaluation~\\cite{yazdani2021surveyB}, and a large body of
+results has accumulated around it over more than two decades of research.
+
+This document addresses the reproducibility and comparability challenge
+by presenting a comprehensive, structured compilation of all results
+published on MPB Scenario~2 to our knowledge.
+The collection is made available through an interactive web-based
+platform at \\url{https://alc1218.github.io/MPB/}, which allows
+researchers to filter, rank, and statistically compare algorithms
+across all benchmark configurations, and to export the results in
+ready-to-compile \\LaTeX{} tables.
+The present document is itself generated by that platform and reflects
+the state of the database at the time of export.
+
+The remainder of this document is organised as follows.
+Section~\\ref{sec:mpb} introduces the Moving Peaks Benchmark, describes
+the four axes of variation, presents the default Scenario~2 parameters,
+and defines the performance metrics used throughout.
+Section~\\ref{sec:methodology} details the data collection procedure,
+algorithmic taxonomy, filtering and ranking methodology of the platform,
+and the statistical significance test applied to the results.
+Section~\\ref{sec:related} surveys all algorithms collected in the database,
+organised by algorithmic family.
+Section~\\ref{sec:results} presents the comparative results tables,
+organised by benchmark category.
+
+% ── Benchmark Description, Metrics & Statistical Tests ────────────────────
+${inputStats}
+
+% ── Methodology ───────────────────────────────────────────────────────────
+${inputMethodology}
+
+% ── Related Work ──────────────────────────────────────────────────────────
+${inputRelatedWork}
+
+% ── Results ───────────────────────────────────────────────────────────────
+\\section{Results}
+\\label{sec:results}
+
+This section presents, to our knowledge, a comprehensive collection of results
+reported in the literature for algorithms benchmarked on MPB Scenario~2~\\cite{branke1999memory},
+organised by the four benchmark categories introduced in Section~\\ref{sec:mpb}.
+
+${inputTables}
+
+${inputAblation}
+
+% ── Conclusions ───────────────────────────────────────────────────────────
+\\section{Conclusions}
+\\label{sec:conclusions}
+
+This paper presented a comprehensive, structured compilation of all results
+published on the Moving Peaks Benchmark Scenario~2 to our knowledge,
+covering ${totalAlgs}~algorithms from the literature spanning more than two
+decades of research on dynamic continuous optimisation.
+The collection is accompanied by an interactive web-based platform
+(\\url{https://alc1218.github.io/MPB/}) that enables researchers to filter,
+rank, and statistically compare algorithms across all four benchmark axes
+(Severity, Peaks, Dimensions, and Frequencies), and to export the results
+as ready-to-compile \\LaTeX{} tables.
+
+Several observations emerge from the compiled data.
+First, Swarm Intelligence methods, and Particle Swarm Optimisation variants
+in particular, constitute the dominant algorithmic family (${pct('SI')}\\%),
+reflecting the historical prevalence of PSO-based approaches in the dynamic
+optimisation literature.
+Second, benchmark coverage across the four axes is highly uneven: the
+default Severity configuration is by far the most reported, while the
+Dimensions and Frequencies axes remain substantially under-explored,
+leaving important open questions about algorithmic scalability and temporal
+sensitivity.
+Third, the most recent approaches, including fractal decomposition and hybrid
+evolutionary methods, achieve the lowest reported offline errors at the
+default configuration, suggesting that systematic landscape decomposition
+and complementary operator combination are promising directions for future
+work.
+Fourth, a non-trivial fraction of entries in the database report results
+under non-standard parameter settings or with incomplete benchmark coverage,
+which limits the conclusions that can be drawn from direct numerical
+comparison; the NR annotation used throughout this document makes these
+gaps explicit.
+
+We hope that this compilation and the associated platform will lower the
+barrier to reproducible comparison in the field, encourage authors to report
+results across all benchmark axes, and provide a shared reference point for
+assessing progress on MPB Scenario~2.
+Future extensions of the platform will incorporate additional benchmark
+scenarios, multi-objective dynamic optimisation testbeds, and automated
+statistical comparison across parameter sweeps.
 
 % ── Bibliography ──────────────────────────────────────────────────────────
-\\bibliographystyle{plainnat}
+\\bibliographystyle{elsarticle-num}
 \\bibliography{MPB_Scenario2_references}
 
 \\end{document}
