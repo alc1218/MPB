@@ -962,7 +962,7 @@ const ALL_DATA = parseCSV(RAW_CSV);
 const BIBTEX_DB = `
 @inproceedings{branke1999memory,
   title     = {Memory enhanced evolutionary algorithms for changing optimization problems},
-  author    = {Branke, J{\"u}rgen},
+  author    = {Branke, Jürgen},
   booktitle = {Proceedings of the 1999 Congress on Evolutionary Computation (CEC 1999)},
   pages     = {1875--1882},
   year      = {1999},
@@ -1492,7 +1492,7 @@ const BIBTEX_DB = `
 
 @inproceedings{blackwell2007rspso,
   title     = {Using regression to improve local convergence},
-  author    = {Blackwell, Tim and Branke, J{\"u}rgen},
+  author    = {Blackwell, Tim and Branke, Jürgen},
   booktitle = {IEEE Congress on Evolutionary Computation (CEC)},
   pages     = {3555--3562},
   year      = {2007},
@@ -1502,7 +1502,7 @@ const BIBTEX_DB = `
 
 @incollection{blackwell2008amqso,
   title     = {Particle Swarms for Dynamic Optimization Problems},
-  author    = {Blackwell, Tim and Branke, J{\"u}rgen and Li, Xiaodong},
+  author    = {Blackwell, Tim and Branke, Jürgen and Li, Xiaodong},
   booktitle = {Swarm Intelligence: Introduction and Applications},
   series    = {Natural Computing Series},
   pages     = {193--217},
@@ -1513,7 +1513,7 @@ const BIBTEX_DB = `
 
 @incollection{blackwell2004mqso,
   title     = {Multi-swarm Optimization in Dynamic Environments},
-  author    = {Blackwell, Tim M. and Branke, J{\"u}rgen},
+  author    = {Blackwell, Tim M. and Branke, Jürgen},
   booktitle = {Applications of Evolutionary Computing},
   series    = {Lecture Notes in Computer Science},
   volume    = {3005},
@@ -1537,7 +1537,7 @@ const BIBTEX_DB = `
 
 @article{blackwell2006mcpso,
   title     = {Multiswarms, exclusion, and anti-convergence in dynamic environments},
-  author    = {Blackwell, Tim and Branke, J{\"u}rgen},
+  author    = {Blackwell, Tim and Branke, Jürgen},
   journal   = {IEEE Transactions on Evolutionary Computation},
   volume    = {10},
   number    = {4},
@@ -2400,7 +2400,11 @@ function resetFilters() {
 // ─────────────────────────────────────────────
 function exportCSV() {
   const activeCols = getActiveCols();
-  const filtered   = sortData(getFilteredData());
+  // Compute ranks and attach them so buildLatexForGroup can sort by Avg Rank
+  const _rawFiltered = getFilteredData();
+  const _rawRanks    = computeAvgRanks(_rawFiltered, activeCols);
+  const _withRanks   = _rawFiltered.map((row, i) => ({ ...row, __rank__: _rawRanks[i] }));
+  const filtered     = _withRanks; // sort by rank happens inside buildLatexForGroup
   // Compute significance if active
   const sigMap = state.showSignificance ? computeSignificance(filtered, activeCols) : {};
 
@@ -2460,23 +2464,51 @@ function latexEsc(str) {
 
 function buildLatexForGroup(group, groupCols, filtered, dateStr) {
   // Only keep rows that have at least one non-empty value for this group
-  const usefulRows = filtered
-    .filter(row => groupCols.some(c => (row[c.valKey] || '').trim() !== ''))
-    .sort((a, b) => {
-      const ra = parseFloat(a['__rank__']);
-      const rb = parseFloat(b['__rank__']);
-      if (isNaN(ra) && isNaN(rb)) return 0;
-      if (isNaN(ra)) return 1;
-      if (isNaN(rb)) return -1;
-      return ra - rb;
+  const baseRows = filtered.filter(row =>
+    groupCols.some(c => (row[c.valKey] || '').trim() !== '')
+  );
+  if (baseRows.length === 0) return null;
+
+  // ── Compute per-category average rank (rank only within this group's columns) ──
+  const catRankMap = {};
+  baseRows.forEach((_, i) => { catRankMap[i] = { sum: 0, count: 0 }; });
+  groupCols.forEach(c => {
+    const entries = [];
+    baseRows.forEach((row, i) => {
+      const v = parseFloat((row[c.valKey] || '').trim());
+      if (!isNaN(v)) entries.push({ i, v });
     });
-  if (usefulRows.length === 0) return null;
+    if (entries.length === 0) return;
+    entries.sort((a, b) => a.v - b.v);
+    let pos = 0;
+    while (pos < entries.length) {
+      let end = pos;
+      while (end + 1 < entries.length && entries[end+1].v === entries[pos].v) end++;
+      const avgR = (pos + end) / 2 + 1;
+      for (let k = pos; k <= end; k++) {
+        catRankMap[entries[k].i].sum   += avgR;
+        catRankMap[entries[k].i].count += 1;
+      }
+      pos = end + 1;
+    }
+  });
+  const catRanks = baseRows.map((_, i) =>
+    catRankMap[i].count > 0 ? catRankMap[i].sum / catRankMap[i].count : Infinity
+  );
+
+  // Sort by per-category average rank (ascending)
+  const usefulRows = baseRows
+    .map((row, i) => ({ row, catRank: catRanks[i] }))
+    .sort((a, b) => a.catRank - b.catRank)
+    .map(x => ({ ...x.row, __catRank__: x.catRank }));
 
   const nResultCols = groupCols.length;
-  const colSpec = 'l c c ' + groupCols.map(() => 'r').join(' ');
+  // colSpec: Avg Rank col + Method + Year + Runs + result cols
+  const colSpec = 'r l c c ' + groupCols.map(() => 'r').join(' ');
 
-  // Column header labels
+  // Column header labels — add Avg Rank as first column
   const colHeaderParts = [
+    'Avg Rank',
     'Method',
     'Year',
     'Runs',
@@ -2484,16 +2516,16 @@ function buildLatexForGroup(group, groupCols, filtered, dateStr) {
   ];
   const colHeaderRow = colHeaderParts.join(' & ');
 
-  // cmidrule for result block (cols 5 … 4+n)
-  const resultStart = 4;
-  const resultEnd   = 3 + nResultCols;
-  const cmidrules = `\\cmidrule(lr){1-3} \\cmidrule(lr){${resultStart}-${resultEnd}}`;
+  // cmidrule: col 1 = rank, cols 2–4 = algorithm info, cols 5… = results
+  const resultStart = 5;
+  const resultEnd   = 4 + nResultCols;
+  const cmidrules = `\\cmidrule(lr){1-1} \\cmidrule(lr){2-4} \\cmidrule(lr){${resultStart}-${resultEnd}}`;
 
   // Group span row
   const groupHeaderRow =
-    `\\multicolumn{3}{c}{Algorithm} & \\multicolumn{${nResultCols}}{c}{${group.label}}`;
+    `& \\multicolumn{3}{c}{Algorithm} & \\multicolumn{${nResultCols}}{c}{${group.label}}`;
 
-  // Compute best (min) value per column for this group
+  // Compute best (min) per column
   const latexMins = {};
   groupCols.forEach(c => {
     let min = Infinity;
@@ -2504,18 +2536,19 @@ function buildLatexForGroup(group, groupCols, filtered, dateStr) {
     latexMins[c.valKey] = isFinite(min) ? min : null;
   });
 
-  // Compute significance map for this group (if active)
+  // Significance map
   const latexSigMap = state.showSignificance ? computeSignificance(usefulRows, groupCols) : {};
 
   // Data rows
   const dataRows = usefulRows.map(row => {
-    const methodRaw = (row['Method'] || '').trim();
-    const method    = latexEsc(methodRaw);
-    const citeKey   = (row['Bibtex'] || '').trim();
+    const rankStr    = row.__catRank__ !== Infinity ? row.__catRank__.toFixed(2) : '---';
+    const methodRaw  = (row['Method'] || '').trim();
+    const method     = latexEsc(methodRaw);
+    const citeKey    = (row['Bibtex'] || '').trim();
     const methodCell = citeKey ? `${method}~\\cite{${citeKey}}` : method;
-    const year   = (row['Year publication'] || '').trim() || '---';
-    const runs   = (row['Runs'] || '').trim() || '---';
-    const cells  = [methodCell, year, runs];
+    const year  = (row['Year publication'] || '').trim() || '---';
+    const runs  = (row['Runs'] || '').trim() || '---';
+    const cells = [rankStr, methodCell, year, runs];
     groupCols.forEach(c => {
       const v = (row[c.valKey] || '').trim();
       const s = (row[c.stdKey] || '').trim();
@@ -2523,9 +2556,9 @@ function buildLatexForGroup(group, groupCols, filtered, dateStr) {
       const vn = parseFloat(v), sn = parseFloat(s);
       const vStr = isNaN(vn) ? latexEsc(v) : vn.toFixed(2);
       const sStr = (!s || isNaN(sn)) ? '' : ` $\\pm$ ${sn.toFixed(2)}`;
-      const isBest   = latexMins[c.valKey] !== null && !isNaN(vn) && vn === latexMins[c.valKey];
-      const methodName = (row['Method'] || '').trim();
-      const isNonSig   = !isBest && latexSigMap[c.valKey] && latexSigMap[c.valKey].has(methodName);
+      const isBest    = latexMins[c.valKey] !== null && !isNaN(vn) && vn === latexMins[c.valKey];
+      const methodName = methodRaw;
+      const isNonSig  = !isBest && latexSigMap[c.valKey] && latexSigMap[c.valKey].has(methodName);
       let cell;
       if (isBest)       cell = `\\textbf{${vStr}${sStr}}`;
       else if (isNonSig) cell = `\\textbf{${vStr}${sStr}}$^{*}$`;
@@ -2541,7 +2574,7 @@ function buildLatexForGroup(group, groupCols, filtered, dateStr) {
 % Requires: \\usepackage{booktabs}
 \\begin{table}[htbp]
   \\centering
-  \\caption{Offline error (mean $\\pm$ std.\ error) on MPB Scenario~2 varying ${group.label}. \\textbf{Bold}: best result per column.${state.showSignificance ? ' $^{*}$: not significantly worse than best.' : ''}}
+  \\caption{Offline error (mean $\\pm$ std.\ error) on MPB Scenario~2 varying ${group.label}. \\textbf{Bold}: best result per column.${state.showSignificance ? ' $^{*}$: not significantly worse than best.' : ''} Avg Rank computed within this benchmark category.}
   \\resizebox{\\textwidth}{!}{%
   \\begin{tabular}{${colSpec}}
     \\toprule
@@ -2556,8 +2589,11 @@ ${dataRows.join('\n')}
 }
 
 function exportLaTeX() {
-  const activeCols = getActiveCols();
-  const filtered   = sortData(getFilteredData());
+  const activeCols  = getActiveCols();
+  // Attach __rank__ so buildLatexForGroup can sort by Avg Rank
+  const _filtered0  = getFilteredData();
+  const _ranks0     = computeAvgRanks(_filtered0, activeCols);
+  const filtered    = _filtered0.map((row, i) => ({ ...row, __rank__: _ranks0[i] }));
   const dateStr    = new Date().toISOString().slice(0, 10);
 
   // Collect all files into a map: filename -> content string
