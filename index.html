@@ -43,6 +43,61 @@
     --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -1px rgba(0,0,0,0.04);
     --radius: 8px;
     --font-mono: 'JetBrains Mono', monospace;
+    --header-bg: #1a1917;
+  }
+
+  /* Dark theme */
+  html[data-theme="dark"] {
+    --bg: #111318;
+    --surface: #1c1f2a;
+    --surface2: #252832;
+    --border: #323644;
+    --text: #e8e6e0;
+    --text-muted: #9ca3af;
+    --text-faint: #6b7280;
+    --accent: #3b82f6;
+    --accent-light: #1e3a5f;
+    --accent-hover: #60a5fa;
+    --teal: #14b8a6;
+    --teal-light: #134e4a;
+    --orange: #fb923c;
+    --orange-light: #431407;
+    --severity-col: #a78bfa;
+    --peaks-col: #38bdf8;
+    --dims-col: #34d399;
+    --freq-col: #fbbf24;
+    --row-hover: #20232f;
+    --shadow: 0 1px 3px rgba(0,0,0,0.25), 0 1px 2px rgba(0,0,0,0.2);
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.3), 0 2px 4px -1px rgba(0,0,0,0.2);
+    --header-bg: #0c0e12;
+  }
+
+  /* Auto: follow system preference if no theme is set */
+  @media (prefers-color-scheme: dark) {
+    html:not([data-theme]) {
+      --bg: #111318;
+      --surface: #1c1f2a;
+      --surface2: #252832;
+      --border: #323644;
+      --text: #e8e6e0;
+      --text-muted: #9ca3af;
+      --text-faint: #6b7280;
+      --accent: #3b82f6;
+      --accent-light: #1e3a5f;
+      --accent-hover: #60a5fa;
+      --teal: #14b8a6;
+      --teal-light: #134e4a;
+      --orange: #fb923c;
+      --orange-light: #431407;
+      --severity-col: #a78bfa;
+      --peaks-col: #38bdf8;
+      --dims-col: #34d399;
+      --freq-col: #fbbf24;
+      --row-hover: #20232f;
+      --shadow: 0 1px 3px rgba(0,0,0,0.25), 0 1px 2px rgba(0,0,0,0.2);
+      --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.3), 0 2px 4px -1px rgba(0,0,0,0.2);
+      --header-bg: #0c0e12;
+    }
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -57,7 +112,7 @@
 
   /* ── HEADER ── */
   header {
-    background: var(--text);
+    background: var(--header-bg);
     color: white;
     padding: 48px 40px 40px;
     position: relative;
@@ -133,6 +188,96 @@
     font-size: 12px;
   }
   .header-contact a:hover { text-decoration: underline; }
+
+  /* ── HEADER CONTROLS (theme + lang) ── */
+  .header-controls {
+    position: absolute;
+    top: 16px; right: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 2;
+  }
+  .header-author-credit {
+    font-size: 11px;
+    color: rgba(255,255,255,0.45);
+    font-family: 'DM Sans', sans-serif;
+    letter-spacing: .03em;
+  }
+  .header-author-credit span { color: rgba(255,255,255,0.7); font-weight: 500; }
+  .header-author-credit a { text-decoration: none; }
+  .header-author-credit a:hover span { text-decoration: underline; }
+
+  /* Theme toggle button */
+  .theme-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px; height: 30px;
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.18);
+    background: rgba(255,255,255,0.06);
+    cursor: pointer;
+    font-size: .95rem;
+    transition: border-color .2s, background .2s;
+    flex-shrink: 0;
+  }
+  .theme-btn:hover { border-color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.12); }
+
+  /* Language dropdown */
+  .lang-dropdown { position: relative; }
+  .lang-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 9px;
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.18);
+    background: rgba(255,255,255,0.06);
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.8);
+    font-family: 'DM Sans', sans-serif;
+    letter-spacing: .04em;
+    transition: border-color .2s, background .2s;
+    white-space: nowrap;
+  }
+  .lang-trigger:hover { border-color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.12); }
+  .lang-trigger .caret { font-size: .55rem; color: rgba(255,255,255,0.5); transition: transform .2s; }
+  .lang-dropdown.open .caret { transform: rotate(180deg); }
+  .lang-menu {
+    display: none;
+    position: absolute;
+    right: 0; top: calc(100% + 6px);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+    min-width: 90px;
+    z-index: 200;
+  }
+  .lang-dropdown.open .lang-menu { display: block; }
+  .lang-opt {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    width: 100%;
+    padding: 8px 14px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    font-family: 'DM Sans', sans-serif;
+    text-align: left;
+    transition: background .15s, color .15s;
+  }
+  .lang-opt:hover { background: var(--surface2); color: var(--text); }
+  .lang-opt.active { color: var(--accent); background: var(--surface2); }
+  .lang-opt .flag { font-size: .95rem; }
 
   /* ── MAIN LAYOUT ── */
   .main-wrap { max-width: 1400px; margin: 0 auto; padding: 32px 24px 60px; }
@@ -221,6 +366,16 @@
   .chip.peaks-chip.on    { background: #e0f2fe; border-color: var(--peaks-col); color: var(--peaks-col); }
   .chip.dims-chip.on     { background: #d1fae5; border-color: var(--dims-col); color: var(--dims-col); }
   .chip.freq-chip.on     { background: #fef3c7; border-color: var(--freq-col); color: var(--freq-col); }
+  html[data-theme="dark"] .chip.severity-chip.on { background: #2e1065; }
+  html[data-theme="dark"] .chip.peaks-chip.on    { background: #082f49; }
+  html[data-theme="dark"] .chip.dims-chip.on     { background: #022c22; }
+  html[data-theme="dark"] .chip.freq-chip.on     { background: #2c1a00; }
+  @media (prefers-color-scheme: dark) {
+    html:not([data-theme]) .chip.severity-chip.on { background: #2e1065; }
+    html:not([data-theme]) .chip.peaks-chip.on    { background: #082f49; }
+    html:not([data-theme]) .chip.dims-chip.on     { background: #022c22; }
+    html:not([data-theme]) .chip.freq-chip.on     { background: #2c1a00; }
+  }
 
   /* ── YEAR RANGE ── */
   .year-range-row {
@@ -603,17 +758,37 @@
 
 <header>
   <div class="header-inner">
-    <div class="header-author">Created by <a href="https://alc1218.github.io/PersonalWebpage/" target="_blank" rel="noopener noreferrer"><span>Arcadi Llanza</span></a></div>
+    <!-- Top-right controls: author credit, theme toggle, language picker -->
+    <div class="header-controls">
+      <div class="header-author-credit"><span data-i18n="created_by">Created by</span> <a href="https://alc1218.github.io/PersonalWebpage/" target="_blank" rel="noopener noreferrer"><span>Arcadi Llanza</span></a></div>
+      <button class="theme-btn" id="themeBtn" aria-label="Toggle theme" title="Toggle theme">
+        <span id="themeIcon">🌙</span>
+      </button>
+      <div class="lang-dropdown" id="langDropdown">
+        <button class="lang-trigger" id="langTrigger" aria-haspopup="true" aria-expanded="false">
+          <span id="langFlag"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 5 3" width="16" height="10" style="vertical-align:middle;border-radius:2px;"><rect width="5" height="3" fill="#012169"/><line x1="0" y1="0" x2="5" y2="3" stroke="#fff" stroke-width=".6"/><line x1="5" y1="0" x2="0" y2="3" stroke="#fff" stroke-width=".6"/><line x1="0" y1="0" x2="5" y2="3" stroke="#C8102E" stroke-width=".3"/><line x1="5" y1="0" x2="0" y2="3" stroke="#C8102E" stroke-width=".3"/><rect x="2" y="0" width="1" height="3" fill="#fff"/><rect x="0" y="1" width="5" height="1" fill="#fff"/><rect x="2.2" y="0" width=".6" height="3" fill="#C8102E"/><rect x="0" y="1.2" width="5" height=".6" fill="#C8102E"/></svg></span>
+          <span id="langCode">EN</span>
+          <span class="caret">▼</span>
+        </button>
+        <div class="lang-menu" role="menu">
+          <button class="lang-opt active" data-lang="en" role="menuitem"><span class="flag"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 5 3" width="16" height="10" style="vertical-align:middle;border-radius:2px;"><rect width="5" height="3" fill="#012169"/><line x1="0" y1="0" x2="5" y2="3" stroke="#fff" stroke-width=".6"/><line x1="5" y1="0" x2="0" y2="3" stroke="#fff" stroke-width=".6"/><line x1="0" y1="0" x2="5" y2="3" stroke="#C8102E" stroke-width=".3"/><line x1="5" y1="0" x2="0" y2="3" stroke="#C8102E" stroke-width=".3"/><rect x="2" y="0" width="1" height="3" fill="#fff"/><rect x="0" y="1" width="5" height="1" fill="#fff"/><rect x="2.2" y="0" width=".6" height="3" fill="#C8102E"/><rect x="0" y="1.2" width="5" height=".6" fill="#C8102E"/></svg></span> EN</button>
+          <button class="lang-opt" data-lang="es" role="menuitem"><span class="flag"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 5 3" width="16" height="10" style="vertical-align:middle;border-radius:2px;"><rect width="5" height="3" fill="#AA151B"/><rect y=".75" width="5" height="1.5" fill="#F1BF00"/></svg></span> ES</button>
+          <button class="lang-opt" data-lang="ca" role="menuitem"><span class="flag"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 5 3" width="16" height="10" style="vertical-align:middle;border-radius:2px;"><rect width="5" height="3" fill="#FCDD09"/><rect y=".375" width="5" height=".375" fill="#DA121A"/><rect y="1.125" width="5" height=".375" fill="#DA121A"/><rect y="1.875" width="5" height=".375" fill="#DA121A"/><rect y="2.625" width="5" height=".375" fill="#DA121A"/></svg></span> CA</button>
+          <button class="lang-opt" data-lang="fr" role="menuitem"><span class="flag"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 5 3" width="16" height="10" style="vertical-align:middle;border-radius:2px;"><rect width="5" height="3" fill="#002395"/><rect x="1.667" width="1.666" height="3" fill="#fff"/><rect x="3.333" width="1.667" height="3" fill="#ED2939"/></svg></span> FR</button>
+        </div>
+      </div>
+    </div>
+
     <div class="header-tag">Moving Peaks Benchmark · Scenario 2</div>
-    <h1>MPB Benchmark<br/><span>Algorithm Results</span></h1>
-    <p>
+    <h1>MPB Benchmark<br/><span data-i18n="header_results">Algorithm Results</span></h1>
+    <p data-i18n-html="header_desc">
       To our knowledge, a comprehensive collection of all algorithms benchmarked
       on the <strong style="color:rgba(255,255,255,.85)">Moving Peaks Benchmark Scenario 2</strong>.
       Results are reported as the offline error (mean ± standard error) across multiple independent runs.
       If any entry is missing or incorrect, please get in touch.
     </p>
     <div class="header-contact">
-      Missing an entry? &nbsp;→&nbsp;
+      <span data-i18n="header_contact">Missing an entry?</span> &nbsp;→&nbsp;
       <a href="/cdn-cgi/l/email-protection#4e233e2c602c2b202d26232f3c250e29232f2722602d2123">mpb.benchmark&#64;gmail.com</a>
     </div>
   </div>
@@ -627,11 +802,11 @@
     <div class="export-group">
       <button class="btn btn-ghost" onclick="exportCSV()">
         <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 14h12M8 2v8M4 7l4 4 4-4"/></svg>
-        Export CSV
+        <span data-i18n="btn_export_csv">Export CSV</span>
       </button>
       <button class="btn btn-teal" onclick="exportLaTeX()">
         <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="12" height="12" rx="1"/><path d="M5 8h6M5 5h6M5 11h4"/></svg>
-        Export LaTeX
+        <span data-i18n="btn_export_latex">Export LaTeX</span>
       </button>
     </div>
   </div>
@@ -652,11 +827,11 @@
     <!-- LEFT: Benchmark Filters -->
     <div class="control-panel">
       <div class="panel-header">
-        <span class="panel-title">Benchmark Filters</span>
+        <span class="panel-title" data-i18n="panel_bench">Benchmark Filters</span>
         <div class="panel-actions">
           <button class="btn btn-ghost" onclick="resetBenchmarkFilters()">
             <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2.5 8A5.5 5.5 0 1 0 8 2.5"/><polyline points="2.5,2.5 2.5,8 8,8"/></svg>
-            Reset
+            <span data-i18n="btn_reset">Reset</span>
           </button>
         </div>
       </div>
@@ -666,9 +841,9 @@
         <div class="filter-row">
           <div class="filter-label">
             <span class="dot dot-severity"></span>
-            Severity
-            <button class="toggle-link" onclick="toggleAll('severity', true)">all</button>/
-            <button class="toggle-link" onclick="toggleAll('severity', false)">none</button>
+            <span data-i18n="filter_severity">Severity</span>
+            <button class="toggle-link" onclick="toggleAll('severity', true)" data-i18n="lbl_all">all</button>/
+            <button class="toggle-link" onclick="toggleAll('severity', false)" data-i18n="lbl_none">none</button>
           </div>
           <div class="chip-group" id="chips-severity"></div>
         </div>
@@ -677,9 +852,9 @@
         <div class="filter-row">
           <div class="filter-label">
             <span class="dot dot-peaks"></span>
-            Peaks
-            <button class="toggle-link" onclick="toggleAll('peaks', true)">all</button>/
-            <button class="toggle-link" onclick="toggleAll('peaks', false)">none</button>
+            <span data-i18n="filter_peaks">Peaks</span>
+            <button class="toggle-link" onclick="toggleAll('peaks', true)" data-i18n="lbl_all">all</button>/
+            <button class="toggle-link" onclick="toggleAll('peaks', false)" data-i18n="lbl_none">none</button>
           </div>
           <div class="chip-group" id="chips-peaks"></div>
         </div>
@@ -688,9 +863,9 @@
         <div class="filter-row">
           <div class="filter-label">
             <span class="dot dot-dims"></span>
-            Dimensions
-            <button class="toggle-link" onclick="toggleAll('dims', true)">all</button>/
-            <button class="toggle-link" onclick="toggleAll('dims', false)">none</button>
+            <span data-i18n="filter_dims">Dimensions</span>
+            <button class="toggle-link" onclick="toggleAll('dims', true)" data-i18n="lbl_all">all</button>/
+            <button class="toggle-link" onclick="toggleAll('dims', false)" data-i18n="lbl_none">none</button>
           </div>
           <div class="chip-group" id="chips-dims"></div>
         </div>
@@ -699,9 +874,9 @@
         <div class="filter-row">
           <div class="filter-label">
             <span class="dot dot-freq"></span>
-            Frequencies
-            <button class="toggle-link" onclick="toggleAll('freq', true)">all</button>/
-            <button class="toggle-link" onclick="toggleAll('freq', false)">none</button>
+            <span data-i18n="filter_freq">Frequencies</span>
+            <button class="toggle-link" onclick="toggleAll('freq', true)" data-i18n="lbl_all">all</button>/
+            <button class="toggle-link" onclick="toggleAll('freq', false)" data-i18n="lbl_none">none</button>
           </div>
           <div class="chip-group" id="chips-freq"></div>
         </div>
@@ -712,11 +887,11 @@
     <!-- RIGHT: Display & Algorithm Filters -->
     <div class="control-panel">
       <div class="panel-header">
-        <span class="panel-title">Display &amp; Algorithm Filters</span>
+        <span class="panel-title" data-i18n="panel_display">Display &amp; Algorithm Filters</span>
         <div class="panel-actions">
           <button class="btn btn-ghost" onclick="resetAlgorithmFilters()">
             <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2.5 8A5.5 5.5 0 1 0 8 2.5"/><polyline points="2.5,2.5 2.5,8 8,8"/></svg>
-            Reset
+            <span data-i18n="btn_reset">Reset</span>
           </button>
         </div>
       </div>
@@ -726,9 +901,9 @@
         <div class="filter-row">
           <div class="filter-label">
             <span class="dot" style="background:#7c3aed"></span>
-            Algorithm Category
-            <button class="toggle-link" onclick="toggleAllCats(true)">all</button>/
-            <button class="toggle-link" onclick="toggleAllCats(false)">none</button>
+            <span data-i18n="filter_algo_cat">Algorithm Category</span>
+            <button class="toggle-link" onclick="toggleAllCats(true)" data-i18n="lbl_all">all</button>/
+            <button class="toggle-link" onclick="toggleAllCats(false)" data-i18n="lbl_none">none</button>
           </div>
           <div class="chip-group" id="chips-category"></div>
           <div class="chip-group" style="margin-top:0">
@@ -742,7 +917,7 @@
 
         <!-- YEAR RANGE -->
         <div class="year-range-row">
-          <span class="year-range-label">Year Range</span>
+          <span class="year-range-label" data-i18n="filter_year_range">Year Range</span>
           <div class="year-inputs">
             <input type="number" class="year-input" id="yearFrom" placeholder="2006" min="2006" max="2025"/>
             <span class="year-sep">–</span>
@@ -752,11 +927,11 @@
 
         <!-- TOP-K FILTER -->
         <div class="filter-row topk-row">
-          <span class="topk-label">Top K by Avg Rank</span>
+          <span class="topk-label" data-i18n="filter_topk">Top K by Avg Rank</span>
           <input type="number" id="topkInput" class="topk-input" min="1" max="200" placeholder="K" value=""/>
           <button id="topkBtn" class="topk-btn" onclick="toggleTopK()">
             <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2v12M2 8l6-6 6 6"/></svg>
-            Show Top K
+            <span data-i18n="btn_show_topk">Show Top K</span>
           </button>
           <span class="best-only-hint" id="topkHint"></span>
         </div>
@@ -766,11 +941,11 @@
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
           <button id="sigBtn" class="best-only-btn on" onclick="toggleSignificance()">
             <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 8h2l2-5 4 10 2-5h2"/></svg>
-            Statistical significance (Welch's t-test, two-tailed)
+            <span data-i18n="btn_sig">Statistical significance (Welch's t-test, two-tailed)</span>
           </button>
         </div>
         <div style="display:flex;align-items:center;gap:8px;padding-left:2px" id="sigThresholdRow">
-          <span style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);white-space:nowrap">p-value threshold:</span>
+          <span style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);white-space:nowrap" data-i18n="lbl_pvalue">p-value threshold:</span>
           <input type="number" id="pThresholdInput" class="topk-input" style="width:80px"
             type="number" lang="en" min="0.001" max="0.999" step="0.001" value="0.050"
             oninput="updatePThreshold(this.value)"
@@ -783,7 +958,7 @@
         <div class="filter-row best-only-row">
           <button id="bestOnlyBtn" class="best-only-btn" onclick="toggleBestOnly()">
             <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><polygon points="8,1 10,6 15,6 11,9.5 12.5,15 8,11.5 3.5,15 5,9.5 1,6 6,6"/></svg>
-            Show only best-in-class algorithms
+            <span data-i18n="btn_best_only">Show only best-in-class algorithms</span>
           </button>
           <span class="best-only-hint" id="bestOnlyHint"></span>
         </div>
@@ -797,31 +972,31 @@
   <!-- TREND CHART -->
   <div class="trend-panel" id="trend-panel">
     <div class="panel-header">
-      <span class="panel-title">Trend Over Years</span>
+      <span class="panel-title" data-i18n="panel_trend">Trend Over Years</span>
       <div class="trend-controls">
-        <label style="font-size:12px;color:var(--text-muted)">Column:</label>
+        <label style="font-size:12px;color:var(--text-muted)" data-i18n="lbl_column">Column:</label>
         <select id="trendColSelect" class="trend-select" onchange="renderTrend()">
           <option value="Standard_1_10_5_5000">Sev. 1 (default)</option>
         </select>
-        <label style="font-size:12px;color:var(--text-muted)">Metric:</label>
+        <label style="font-size:12px;color:var(--text-muted)" data-i18n="lbl_metric">Metric:</label>
         <select id="trendMetric" class="trend-select" onchange="renderTrend()">
-          <option value="mean">Best result per year</option>
-          <option value="median">Median result per year</option>
+          <option value="mean" data-i18n="opt_best_year">Best result per year</option>
+          <option value="median" data-i18n="opt_median_year">Median result per year</option>
         </select>
       </div>
     </div>
     <div id="trend-canvas-wrap">
       <canvas id="trend-canvas"></canvas>
-      <div class="trend-empty" id="trend-empty" style="display:none">No data available for the selected column and filters.</div>
+      <div class="trend-empty" id="trend-empty" style="display:none" data-i18n="trend_empty">No data available for the selected column and filters.</div>
     </div>
   </div>
 
 
 
 <footer>
-  <p>Moving Peaks Benchmark · Scenario 2 · Algorithm Comparison Table</p>
-  <p style="margin-top:6px">To report a missing entry or correction: <a href="/cdn-cgi/l/email-protection#a1ccd1c38fc3c4cfc2c9ccc0d3cae1c6ccc0c8cd8fc2cecc">mpb.benchmark&#64;gmail.com</a></p>
-  <p style="margin-top:10px;font-size:11px;color:var(--text-faint)">Created by <a href="https://alc1218.github.io/PersonalWebpage/" target="_blank" rel="noopener noreferrer" style="color:var(--text-muted);font-weight:700;text-decoration:none"><strong>Arcadi Llanza</strong></a></p>
+  <p data-i18n="footer_title">Moving Peaks Benchmark · Scenario 2 · Algorithm Comparison Table</p>
+  <p style="margin-top:6px"><span data-i18n="footer_contact">To report a missing entry or correction:</span> <a href="/cdn-cgi/l/email-protection#a1ccd1c38fc3c4cfc2c9ccc0d3cae1c6ccc0c8cd8fc2cecc">mpb.benchmark&#64;gmail.com</a></p>
+  <p style="margin-top:10px;font-size:11px;color:var(--text-faint)"><span data-i18n="created_by">Created by</span> <a href="https://alc1218.github.io/PersonalWebpage/" target="_blank" rel="noopener noreferrer" style="color:var(--text-muted);font-weight:700;text-decoration:none"><strong>Arcadi Llanza</strong></a></p>
 </footer>
 
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
@@ -3947,6 +4122,256 @@ buildCategoryChips();
 initYearRange();
 populateTrendSelect();
 render();
+</script>
+
+<!-- ── THEME & LANGUAGE ── -->
+<script>
+(function () {
+  'use strict';
+
+  /* ─── Translations ─── */
+  var T = {
+    en: {
+      created_by: 'Created by',
+      header_results: 'Algorithm Results',
+      header_desc: 'To our knowledge, a comprehensive collection of all algorithms benchmarked on the <strong style="color:rgba(255,255,255,.85)">Moving Peaks Benchmark Scenario 2</strong>. Results are reported as the offline error (mean \u00b1 standard error) across multiple independent runs. If any entry is missing or incorrect, please get in touch.',
+      header_contact: 'Missing an entry?',
+      panel_bench: 'Benchmark Filters',
+      panel_display: 'Display & Algorithm Filters',
+      panel_trend: 'Trend Over Years',
+      btn_reset: 'Reset',
+      btn_export_csv: 'Export CSV',
+      btn_export_latex: 'Export LaTeX',
+      btn_show_topk: 'Show Top K',
+      btn_sig: "Statistical significance (Welch\u2019s t-test, two-tailed)",
+      btn_best_only: 'Show only best-in-class algorithms',
+      filter_severity: 'Severity',
+      filter_peaks: 'Peaks',
+      filter_dims: 'Dimensions',
+      filter_freq: 'Frequencies',
+      filter_algo_cat: 'Algorithm Category',
+      filter_year_range: 'Year Range',
+      filter_topk: 'Top K by Avg Rank',
+      lbl_all: 'all',
+      lbl_none: 'none',
+      lbl_column: 'Column:',
+      lbl_metric: 'Metric:',
+      lbl_pvalue: 'p-value threshold:',
+      opt_best_year: 'Best result per year',
+      opt_median_year: 'Median result per year',
+      trend_empty: 'No data available for the selected column and filters.',
+      footer_title: 'Moving Peaks Benchmark \u00b7 Scenario 2 \u00b7 Algorithm Comparison Table',
+      footer_contact: 'To report a missing entry or correction:',
+    },
+    es: {
+      created_by: 'Creado por',
+      header_results: 'Resultados de Algoritmos',
+      header_desc: 'Una colecci\u00f3n exhaustiva de todos los algoritmos evaluados en el <strong style="color:rgba(255,255,255,.85)">Moving Peaks Benchmark Escenario 2</strong>. Los resultados se expresan como el error offline (media \u00b1 error est\u00e1ndar) en m\u00faltiples ejecuciones independientes. Si falta alguna entrada o es incorrecta, ponte en contacto.',
+      header_contact: '\u00bFFalta alguna entrada?',
+      panel_bench: 'Filtros de Benchmark',
+      panel_display: 'Filtros de Visualizaci\u00f3n y Algoritmos',
+      panel_trend: 'Tendencia por A\u00f1os',
+      btn_reset: 'Reiniciar',
+      btn_export_csv: 'Exportar CSV',
+      btn_export_latex: 'Exportar LaTeX',
+      btn_show_topk: 'Mostrar Top K',
+      btn_sig: "Significancia estad\u00edstica (t-test de Welch, bilateral)",
+      btn_best_only: 'Mostrar solo los mejores de cada categor\u00eda',
+      filter_severity: 'Severidad',
+      filter_peaks: 'Picos',
+      filter_dims: 'Dimensiones',
+      filter_freq: 'Frecuencias',
+      filter_algo_cat: 'Categor\u00eda de Algoritmo',
+      filter_year_range: 'Rango de A\u00f1os',
+      filter_topk: 'Top K por Rango Medio',
+      lbl_all: 'todos',
+      lbl_none: 'ninguno',
+      lbl_column: 'Columna:',
+      lbl_metric: 'M\u00e9trica:',
+      lbl_pvalue: 'Umbral del valor p:',
+      opt_best_year: 'Mejor resultado por a\u00f1o',
+      opt_median_year: 'Resultado mediano por a\u00f1o',
+      trend_empty: 'No hay datos disponibles para la columna y filtros seleccionados.',
+      footer_title: 'Moving Peaks Benchmark \u00b7 Escenario 2 \u00b7 Tabla de Comparaci\u00f3n de Algoritmos',
+      footer_contact: 'Para reportar una entrada faltante o correcci\u00f3n:',
+    },
+    ca: {
+      created_by: 'Creat per',
+      header_results: 'Resultats d\u2019Algorismes',
+      header_desc: 'Una col\u00b7lecci\u00f3 exhaustiva de tots els algorismes avaluats al <strong style="color:rgba(255,255,255,.85)">Moving Peaks Benchmark Escenari 2</strong>. Els resultats s\u2019expressen com l\u2019error offline (mitjana \u00b1 error est\u00e0ndard) en m\u00faltiples execucions independents. Si manca alguna entrada o \u00e9s incorrecta, poseu-vos en contacte.',
+      header_contact: 'Falta alguna entrada?',
+      panel_bench: 'Filtres de Benchmark',
+      panel_display: 'Filtres de Visualitzaci\u00f3 i Algorismes',
+      panel_trend: 'Tend\u00e8ncia per Anys',
+      btn_reset: 'Reiniciar',
+      btn_export_csv: 'Exportar CSV',
+      btn_export_latex: 'Exportar LaTeX',
+      btn_show_topk: 'Mostrar Top K',
+      btn_sig: "Signific\u00e0ncia estad\u00edsstica (t-test de Welch, bilateral)",
+      btn_best_only: 'Mostrar nom\u00e9s els millors de cada categoria',
+      filter_severity: 'Severitat',
+      filter_peaks: 'Pics',
+      filter_dims: 'Dimensions',
+      filter_freq: 'Freq\u00fc\u00e8ncies',
+      filter_algo_cat: 'Categoria d\u2019Algorisme',
+      filter_year_range: 'Rang d\u2019Anys',
+      filter_topk: 'Top K per Rang Mitj\u00e0',
+      lbl_all: 'tots',
+      lbl_none: 'cap',
+      lbl_column: 'Columna:',
+      lbl_metric: 'M\u00e8trica:',
+      lbl_pvalue: 'Llindar del valor p:',
+      opt_best_year: 'Millor resultat per any',
+      opt_median_year: 'Resultat mediana per any',
+      trend_empty: 'No hi ha dades disponibles per a la columna i filtres seleccionats.',
+      footer_title: 'Moving Peaks Benchmark \u00b7 Escenari 2 \u00b7 Taula de Comparaci\u00f3 d\u2019Algorismes',
+      footer_contact: 'Per reportar una entrada absent o correcci\u00f3:',
+    },
+    fr: {
+      created_by: 'Cr\u00e9\u00e9 par',
+      header_results: 'R\u00e9sultats des Algorithmes',
+      header_desc: 'Une collection exhaustive de tous les algorithmes \u00e9valu\u00e9s sur le <strong style="color:rgba(255,255,255,.85)">Moving Peaks Benchmark Sc\u00e9nario 2</strong>. Les r\u00e9sultats sont exprim\u00e9s en erreur hors ligne (moyenne \u00b1 erreur standard) sur plusieurs ex\u00e9cutions ind\u00e9pendantes. Si une entr\u00e9e est manquante ou incorrecte, veuillez nous contacter.',
+      header_contact: 'Une entr\u00e9e manquante\u00a0?',
+      panel_bench: 'Filtres de Benchmark',
+      panel_display: 'Filtres Affichage & Algorithmes',
+      panel_trend: 'Tendance par Ann\u00e9es',
+      btn_reset: 'R\u00e9initialiser',
+      btn_export_csv: 'Exporter CSV',
+      btn_export_latex: 'Exporter LaTeX',
+      btn_show_topk: 'Afficher Top K',
+      btn_sig: "Signification statistique (t-test de Welch, bilat\u00e9ral)",
+      btn_best_only: "Afficher uniquement les meilleurs par cat\u00e9gorie",
+      filter_severity: 'S\u00e9v\u00e9rit\u00e9',
+      filter_peaks: 'Pics',
+      filter_dims: 'Dimensions',
+      filter_freq: 'Fr\u00e9quences',
+      filter_algo_cat: "Cat\u00e9gorie d\u2019Algorithme",
+      filter_year_range: "Plage d\u2019Ann\u00e9es",
+      filter_topk: 'Top K par Rang Moyen',
+      lbl_all: 'tout',
+      lbl_none: 'aucun',
+      lbl_column: 'Colonne\u00a0:',
+      lbl_metric: 'M\u00e9trique\u00a0:',
+      lbl_pvalue: 'Seuil de la valeur p\u00a0:',
+      opt_best_year: 'Meilleur r\u00e9sultat par ann\u00e9e',
+      opt_median_year: 'R\u00e9sultat m\u00e9dian par ann\u00e9e',
+      trend_empty: 'Aucune donn\u00e9e disponible pour la colonne et les filtres s\u00e9lectionn\u00e9s.',
+      footer_title: 'Moving Peaks Benchmark \u00b7 Sc\u00e9nario 2 \u00b7 Tableau de Comparaison des Algorithmes',
+      footer_contact: 'Pour signaler une entr\u00e9e manquante ou une correction\u00a0:',
+    }
+  };
+
+  /* ─── Flag SVGs ─── */
+  var FLAGS = {
+    en: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 5 3" width="16" height="10" style="vertical-align:middle;border-radius:2px;"><rect width="5" height="3" fill="#012169"/><line x1="0" y1="0" x2="5" y2="3" stroke="#fff" stroke-width=".6"/><line x1="5" y1="0" x2="0" y2="3" stroke="#fff" stroke-width=".6"/><line x1="0" y1="0" x2="5" y2="3" stroke="#C8102E" stroke-width=".3"/><line x1="5" y1="0" x2="0" y2="3" stroke="#C8102E" stroke-width=".3"/><rect x="2" y="0" width="1" height="3" fill="#fff"/><rect x="0" y="1" width="5" height="1" fill="#fff"/><rect x="2.2" y="0" width=".6" height="3" fill="#C8102E"/><rect x="0" y="1.2" width="5" height=".6" fill="#C8102E"/></svg>',
+    es: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 5 3" width="16" height="10" style="vertical-align:middle;border-radius:2px;"><rect width="5" height="3" fill="#AA151B"/><rect y=".75" width="5" height="1.5" fill="#F1BF00"/></svg>',
+    ca: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 5 3" width="16" height="10" style="vertical-align:middle;border-radius:2px;"><rect width="5" height="3" fill="#FCDD09"/><rect y=".375" width="5" height=".375" fill="#DA121A"/><rect y="1.125" width="5" height=".375" fill="#DA121A"/><rect y="1.875" width="5" height=".375" fill="#DA121A"/><rect y="2.625" width="5" height=".375" fill="#DA121A"/></svg>',
+    fr: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 5 3" width="16" height="10" style="vertical-align:middle;border-radius:2px;"><rect width="5" height="3" fill="#002395"/><rect x="1.667" width="1.666" height="3" fill="#fff"/><rect x="3.333" width="1.667" height="3" fill="#ED2939"/></svg>'
+  };
+  var LANG_META = {
+    en: { flagHtml: FLAGS.en, code: 'EN' },
+    es: { flagHtml: FLAGS.es, code: 'ES' },
+    ca: { flagHtml: FLAGS.ca, code: 'CA' },
+    fr: { flagHtml: FLAGS.fr, code: 'FR' }
+  };
+
+  /* ─── Apply language ─── */
+  function applyLang(lang) {
+    var tl = T[lang] || T['en'];
+    document.documentElement.lang = lang;
+    document.querySelectorAll('[data-i18n]').forEach(function (el) {
+      var k = el.getAttribute('data-i18n');
+      if (tl[k] !== undefined) el.textContent = tl[k];
+    });
+    document.querySelectorAll('[data-i18n-html]').forEach(function (el) {
+      var k = el.getAttribute('data-i18n-html');
+      if (tl[k] !== undefined) el.innerHTML = tl[k];
+    });
+    /* update <option> elements (textContent works for options) */
+    document.querySelectorAll('option[data-i18n]').forEach(function (el) {
+      var k = el.getAttribute('data-i18n');
+      if (tl[k] !== undefined) el.textContent = tl[k];
+    });
+    /* update dropdown trigger */
+    var meta = LANG_META[lang] || { flagHtml: '🌐', code: lang.toUpperCase() };
+    document.getElementById('langFlag').innerHTML = meta.flagHtml;
+    document.getElementById('langCode').textContent = meta.code;
+    document.querySelectorAll('.lang-opt').forEach(function (b) {
+      b.classList.toggle('active', b.dataset.lang === lang);
+    });
+    try { localStorage.setItem('lang', lang); } catch(e) {}
+  }
+
+  /* ─── Theme toggle ─── */
+  var htmlEl = document.documentElement;
+  var themeBtn = document.getElementById('themeBtn');
+  var themeIcon = document.getElementById('themeIcon');
+
+  function getVisual() {
+    var e = htmlEl.getAttribute('data-theme');
+    if (e === 'dark' || e === 'light') return e;
+    return window.matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light';
+  }
+  function syncIcon(theme) {
+    themeIcon.textContent = theme === 'dark' ? '\u2600\ufe0f' : '\uD83C\uDF19';
+    themeBtn.title = theme === 'dark' ? 'Switch to Light' : 'Switch to Dark';
+  }
+
+  try {
+    var savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark' || savedTheme === 'light') htmlEl.setAttribute('data-theme', savedTheme);
+  } catch(e) {}
+  syncIcon(getVisual());
+
+  themeBtn.addEventListener('click', function () {
+    var next = getVisual() === 'dark' ? 'light' : 'dark';
+    htmlEl.setAttribute('data-theme', next);
+    try { localStorage.setItem('theme', next); } catch(e) {}
+    syncIcon(next);
+  });
+
+  /* ─── Language dropdown ─── */
+  var langDropdown = document.getElementById('langDropdown');
+  var langTrigger = document.getElementById('langTrigger');
+
+  langTrigger.addEventListener('click', function (e) {
+    e.stopPropagation();
+    var open = langDropdown.classList.toggle('open');
+    langTrigger.setAttribute('aria-expanded', open);
+  });
+  document.addEventListener('click', function () {
+    langDropdown.classList.remove('open');
+    langTrigger.setAttribute('aria-expanded', 'false');
+  });
+  document.querySelectorAll('.lang-opt').forEach(function (btn) {
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      applyLang(btn.dataset.lang);
+      langDropdown.classList.remove('open');
+      langTrigger.setAttribute('aria-expanded', 'false');
+    });
+  });
+
+  /* ─── Detect browser language ─── */
+  function detectLang() {
+    var supported = ['en', 'es', 'ca', 'fr'];
+    try {
+      var saved = localStorage.getItem('lang');
+      if (saved && supported.indexOf(saved) !== -1) return saved;
+    } catch(e) {}
+    var prefs = navigator.languages && navigator.languages.length
+      ? navigator.languages : [navigator.language || 'en'];
+    for (var i = 0; i < prefs.length; i++) {
+      var code = prefs[i].toLowerCase().split('-')[0];
+      if (supported.indexOf(code) !== -1) return code;
+    }
+    return 'en';
+  }
+
+  /* ─── Init ─── */
+  applyLang(detectLang());
+
+}());
 </script>
 </body>
 </html>
