@@ -881,7 +881,7 @@ PSO-CP;An adaptive bi-flight cuckoo search with variable nests for continuous dy
 HmSO;A hibernating multi-swarm optimization algorithm for dynamic environments;https://ieeexplore.ieee.org/abstract/document/5716372;2010;kamosi2010hmso;PSO|SI;100;;;1.46;0.04;2.54;0.13;3.79;0.16;5.03;0.19;6.04;0.22;;;1.01;0.03;1.23;0.05;1.67;0.04;1.72;0.03;1.78;0.03;1.75;0.02;1.78;0.02;1.82;0.01;4.63;0.17;25.40;0.32;66.25;1.37;;;8.04;0.14;4.79;0.07;;;2.43;0.07;;;0.90;0.04;
 ESCA;Evolutionary swarm cooperative optimization in dynamic environments;https://link.springer.com/article/10.1007/s11047-009-9129-9;2010;lung2010esca;EA|EA,PSO|SI;50;1.72;0.03;1.53;0.01;1.57;0.01;1.67;0.01;1.72;0.03;1.78;0.06;1.79;0.03;0.98;0.00;;;1.89;0.04;1.52;0.02;1.61;0.02;1.67;0.02;1.61;0.03;;;;;;;;;;;;;;;;;;;;;;;
 mPSO;A new particle swarm optimization algorithm for dynamic environments;https://link.springer.com/chapter/10.1007/978-3-642-17563-3_16;2010;kamosi2010mpso;PSO|SI;100;;;1.66;0.08;2.54;0.11;3.46;0.11;4.51;0.15;5.32;0.09;;;0.90;0.05;1.21;0.12;2.05;0.08;2.18;0.06;2.24;0.06;2.30;0.04;2.32;0.04;2.34;0.03;4.52;0.15;12.52;0.20;119.80;3.21;;;7.19;0.23;4.57;0.18;;;2.66;0.16;;;1.05;0.10;
-MDUMDA;Multi-population and diffusion UMDA for dynamic multimodal problems;https://ieeexplore.ieee.org/abstract/document/6075515;2010;servadio2010mdumda;EDA|EA;50;;;1.14;0.39;2.87;0.45;4.44;1.21;6.67;1.54;8.22;4.17;10.59;4.08;4.45;0.69;1.53;0.47;2.99;0.50;3.98;0.74;4.05;0.46;4.66;0.54;;;;;;;;;;;;;;;;;;;;;;;;;
+MDUMDA;Multi-population and diffusion UMDA for dynamic multimodal problems;https://ieeexplore.ieee.org/abstract/document/6075515;2010;servadio2010mdumda;EDA|EA;50;;;1.14;0.06;2.87;0.06;4.44;0.17;6.67;0.22;8.22;0.59;10.59;0.58;4.45;0.10;1.53;0.07;2.99;0.07;3.98;0.10;4.05;0.07;4.66;0.08;;;;;;;;;;;;;;;;;;;;;;;;;
 CellularPSO;Cellular PSO: A PSO for Dynamic Environments;https://link.springer.com/chapter/10.1007/978-3-642-04843-2_45;2009;hashemi2009cellularpso;PSO|SI;100;;;1.93;0.08;2.72;0.10;3.70;0.11;4.71;0.14;5.68;0.18;;;2.79;0.19;1.94;0.18;2.73;0.12;3.08;0.11;3.28;0.11;3.34;0.07;3.48;0.11;3.37;0.08;;;;;;;;;6.81;0.17;5.94;0.23;;;3.09;0.16;;;1.19;0.09;
 CESO;A collaborative model for tracking optima in dynamic environments;https://ieeexplore.ieee.org/abstract/document/4424520;2007;lung2007ceso;EA|EA,PSO|SI;50;;;1.38;0.02;1.78;0.02;2.03;0.03;;;2.52;0.06;;;1.04;0.00;;;1.72;0.02;1.24;0.01;1.30;0.02;1.45;0.01;1.28;0.02;;;2.51;0.04;;;6.81;0.07;24.60;0.25;;;;;;;;;;;;;
 rSPSO;Using regression to improve local convergence;https://ieeexplore.ieee.org/abstract/document/4424524;2007;blackwell2007rspso;PSO|SI;50;;;1.50;0.08;1.87;0.05;2.40;0.08;2.90;0.08;3.25;0.09;3.86;0.11;1.42;0.06;1.04;0.03;2.20;0.07;2.62;0.07;2.76;0.08;2.72;0.08;2.93;0.06;2.79;0.05;;;;;;;;;;;;;;;;;;;;;PAPER NOT FOUND
@@ -2482,9 +2482,11 @@ function buildLatexForGroup(group, groupCols, filtered, dateStr) {
   );
   if (baseRows.length === 0) return null;
 
-  // ── Compute per-category average rank (rank only within this group's columns) ──
-  const catRankMap = {};
-  baseRows.forEach((_, i) => { catRankMap[i] = { sum: 0, count: 0 }; });
+  // ── Compute per-category normalised rank: r*_ic = (r_ic − 1)/(m_c − 1) ──
+  // Store per-algorithm array of normalised ranks for mean ± SD computation
+  const normRankArrays = {};
+  baseRows.forEach((_, i) => { normRankArrays[i] = []; });
+
   groupCols.forEach(c => {
     const entries = [];
     baseRows.forEach((row, i) => {
@@ -2492,36 +2494,49 @@ function buildLatexForGroup(group, groupCols, filtered, dateStr) {
       if (!isNaN(v)) entries.push({ i, v });
     });
     if (entries.length === 0) return;
+    const mc = entries.length; // participants in this column
     entries.sort((a, b) => a.v - b.v);
     let pos = 0;
     while (pos < entries.length) {
       let end = pos;
       while (end + 1 < entries.length && entries[end+1].v === entries[pos].v) end++;
-      const avgR = (pos + end) / 2 + 1;
+      const rawR = (pos + end) / 2 + 1; // 1-based raw rank with tie averaging
+      // Normalise: (rawR − 1) / (mc − 1), clamped to [0,1]; 0 if mc=1
+      const normR = mc > 1 ? (rawR - 1) / (mc - 1) : 0;
       for (let k = pos; k <= end; k++) {
-        catRankMap[entries[k].i].sum   += avgR;
-        catRankMap[entries[k].i].count += 1;
+        normRankArrays[entries[k].i].push(normR);
       }
       pos = end + 1;
     }
   });
-  const catRanks = baseRows.map((_, i) =>
-    catRankMap[i].count > 0 ? catRankMap[i].sum / catRankMap[i].count : Infinity
-  );
 
-  // Sort by per-category average rank (ascending)
+  const totalK = groupCols.length; // total columns in this group
+
+  // Build sort key = mean normalised rank (lower = better)
+  function normStats(arr) {
+    if (arr.length === 0) return { mean: Infinity, sd: 0, k: 0 };
+    const mean = arr.reduce((s, v) => s + v, 0) / arr.length;
+    const sd   = arr.length > 1
+      ? Math.sqrt(arr.reduce((s, v) => s + (v - mean) ** 2, 0) / (arr.length - 1))
+      : 0;
+    return { mean, sd, k: arr.length };
+  }
+
+  const catNormStats = baseRows.map((_, i) => normStats(normRankArrays[i]));
+
+  // Sort by mean normalised rank ascending (NR last)
   const usefulRows = baseRows
-    .map((row, i) => ({ row, catRank: catRanks[i] }))
-    .sort((a, b) => a.catRank - b.catRank)
-    .map(x => ({ ...x.row, __catRank__: x.catRank }));
+    .map((row, i) => ({ row, ns: catNormStats[i] }))
+    .sort((a, b) => a.ns.mean - b.ns.mean)
+    .map(x => ({ ...x.row, __normMean__: x.ns.mean, __normSD__: x.ns.sd, __normK__: x.ns.k }));
 
   const nResultCols = groupCols.length;
-  // colSpec: Avg Rank col + Method + Year + Runs + result cols
+  // colSpec: Norm Rank col + Method + Year + Runs + result cols
   const colSpec = 'r l c c ' + groupCols.map(() => 'r').join(' ');
 
-  // Column header labels — add Avg Rank as first column
+  // Column header labels
   const colHeaderParts = [
-    'Avg Rank',
+    'Norm. Rank',
     'Method',
     'Year',
     'Runs',
@@ -2554,7 +2569,15 @@ function buildLatexForGroup(group, groupCols, filtered, dateStr) {
 
   // Data rows
   const dataRows = usefulRows.map(row => {
-    const rankStr    = row.__catRank__ !== Infinity ? row.__catRank__.toFixed(2) : 'NR';
+    // Normalised rank display: mean ± SD (k/K)
+    let rankStr;
+    if (row.__normK__ === 0) {
+      rankStr = 'NR';
+    } else {
+      const meanStr = row.__normMean__.toFixed(2);
+      const sdStr   = row.__normSD__.toFixed(2);
+      rankStr = `${meanStr} $\\pm$ ${sdStr} (${row.__normK__}/${totalK})`;
+    }
     const methodRaw  = (row['Method'] || '').trim();
     const method     = latexEsc(methodRaw);
     const citeKey    = (row['Bibtex'] || '').trim();
@@ -2603,7 +2626,7 @@ ${groupIntro}
 
 \\begin{table}[htbp]
   \\centering
-  \\caption{Offline error (mean $\\pm$ std.\ error) on MPB Scenario~2 varying ${group.label}. \\textbf{Bold}: best result per column.${state.showSignificance ? ' $^{*}$: not significantly worse than best.' : ''} Avg Rank computed within this benchmark category. NR: not reported in the original article.}
+  \\caption{Offline error (mean $\\pm$ std.\ error) on MPB Scenario~2 varying ${group.label}. \\textbf{Bold}: best result per column.${state.showSignificance ? ' $^{*}$: not significantly worse than best.' : ''} Norm.~Rank: mean~$\\pm$~SD of the normalised rank $r^*_{ic} = (r_{ic}-1)/(m_c-1)$ across reported columns, with coverage $k/K$ ($k$: columns reported, $K$: total columns in this category). NR: not reported in the original article.}
   \\label{tab:${group.id}}
   \\resizebox{\\textwidth}{!}{%
   \\begin{tabular}{${colSpec}}
@@ -2897,19 +2920,31 @@ Pareto-optimal performers across configurations.
 \\subsection{Average Rank Computation}
 \\label{sec:methodology:ranking}
 
-For each visible result column $c$, algorithms are ranked by ascending offline
-error (lower is better), with ties resolved by assigning the average of the
-tied positions.
-Only algorithms that report a value for column $c$ participate in the ranking
-for that column.
-The average rank $\\bar{r}_i$ of algorithm $i$ is then defined as:
+For each visible result column $c$ with $m_c$ participating algorithms,
+algorithms are ranked by ascending offline error (lower is better), with
+ties resolved by assigning the average of the tied positions.
+The raw rank $r_{ic}$ of algorithm $i$ in column $c$ is then normalised to
+$[0, 1]$ as:
 \\begin{equation}
-  \\bar{r}_i = \\frac{1}{|\\mathcal{C}_i|} \\sum_{c \\in \\mathcal{C}_i} r_{ic}
+  r^*_{ic} = \\frac{r_{ic} - 1}{m_c - 1}, \\qquad m_c > 1
+\\end{equation}
+where $r^*_{ic} = 0$ indicates the best result and $r^*_{ic} = 1$ the worst.
+When $m_c = 1$ (only one algorithm reports a value for that column),
+$r^*_{ic} = 0$ by convention.
+The normalised rank summary for algorithm $i$ within a benchmark category
+is reported as mean~$\\pm$~SD of $r^*_{ic}$ across the $k$ columns for
+which algorithm $i$ reported a result, together with the coverage fraction
+$k/K$ where $K$ is the total number of columns in the category:
+\\begin{equation}
+  \\bar{r}^*_i = \\frac{1}{k}\\sum_{c \\in \\mathcal{C}_i} r^*_{ic}, \\qquad
+  \\sigma^*_i  = \\sqrt{\\frac{1}{k-1}\\sum_{c \\in \\mathcal{C}_i}(r^*_{ic} - \\bar{r}^*_i)^2}
 \\end{equation}
 where $\\mathcal{C}_i$ denotes the set of columns for which algorithm $i$
-reported a result, and $r_{ic}$ is the rank of algorithm $i$ in column $c$.
-Algorithms are sorted in the exported tables by ascending $\\bar{r}_i$,
-computed independently within each benchmark category.
+reported a result.
+Algorithms are sorted in the exported tables by ascending $\\bar{r}^*_i$.
+This formulation is more informative than a raw average rank because it
+accounts for the number of competitors in each column and penalises
+incomplete coverage through the explicit $k/K$ annotation.
 
 % ── Statistical significance ─────────────────────────────────────────────────
 \\subsection{Statistical Significance Testing}
